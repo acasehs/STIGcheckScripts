@@ -155,9 +155,9 @@ def generate_markdown_report(checks):
     report.append(f"**Total Checks:** {len(checks)}\n")
     report.append("\n---\n")
 
-    # Summary statistics
-    report.append("\n## Summary\n")
+    report.append("\n## 📊 Executive Summary\n")
 
+    # Calculate statistics
     automatable = 0
     partial = 0
     manual = 0
@@ -166,15 +166,25 @@ def generate_markdown_report(checks):
     system_specific_count = 0
 
     severity_counts = {'high': 0, 'medium': 0, 'low': 0}
+    automation_by_severity = {
+        'high': {'automatable': 0, 'partial': 0, 'manual': 0, 'total': 0},
+        'medium': {'automatable': 0, 'partial': 0, 'manual': 0, 'total': 0},
+        'low': {'automatable': 0, 'partial': 0, 'manual': 0, 'total': 0}
+    }
 
     for check in checks:
         auto_status, _, _, _, is_env, is_sys, _ = analyze_check_automation(check)
+        severity = check.get('Severity', 'medium').lower()
+
         if auto_status == 'Automatable':
             automatable += 1
+            automation_by_severity[severity]['automatable'] += 1
         elif auto_status == 'Partially Automatable':
             partial += 1
+            automation_by_severity[severity]['partial'] += 1
         elif auto_status == 'Manual':
             manual += 1
+            automation_by_severity[severity]['manual'] += 1
         else:
             needs_analysis += 1
 
@@ -183,9 +193,52 @@ def generate_markdown_report(checks):
         if is_sys:
             system_specific_count += 1
 
-        severity = check.get('Severity', 'medium').lower()
         severity_counts[severity] = severity_counts.get(severity, 0) + 1
+        automation_by_severity[severity]['total'] += 1
 
+    # Generate summary tables
+    report.append("\n### Automation Status Overview\n\n")
+    report.append("| Automation Status | Count | Percentage | Status |\n")
+    report.append("|------------------|-------|------------|--------|\n")
+    report.append(f"| ✅ Automatable | {automatable} | {automatable/len(checks)*100:.1f}% | Can be fully automated |\n")
+    report.append(f"| ⚠️ Partially Automatable | {partial} | {partial/len(checks)*100:.1f}% | Requires some manual validation |\n")
+    report.append(f"| 📝 Manual Review Required | {manual} | {manual/len(checks)*100:.1f}% | Cannot be automated |\n")
+    report.append(f"| 🔍 Needs Analysis | {needs_analysis} | {needs_analysis/len(checks)*100:.1f}% | Automation feasibility TBD |\n")
+    report.append(f"| **TOTAL** | **{len(checks)}** | **100.0%** | |\n")
+
+    report.append("\n### Automation Status by Severity\n\n")
+    report.append("| Severity | Total | Automatable | Partial | Manual | Automation Rate |\n")
+    report.append("|----------|-------|-------------|---------|--------|----------------|\n")
+    for sev in ['high', 'medium', 'low']:
+        total = automation_by_severity[sev]['total']
+        auto = automation_by_severity[sev]['automatable']
+        part = automation_by_severity[sev]['partial']
+        man = automation_by_severity[sev]['manual']
+        auto_rate = ((auto + part) / total * 100) if total > 0 else 0
+        report.append(f"| {sev.upper()} | {total} | {auto} | {part} | {man} | {auto_rate:.1f}% |\n")
+
+    total_all = len(checks)
+    auto_all = automatable + partial
+    auto_rate_all = (auto_all / total_all * 100)
+    report.append(f"| **TOTAL** | **{total_all}** | **{automatable}** | **{partial}** | **{manual}** | **{auto_rate_all:.1f}%** |\n")
+
+    report.append("\n### Configuration Dependencies\n\n")
+    report.append("| Dependency Type | Count | Percentage | Description |\n")
+    report.append("|----------------|-------|------------|-------------|\n")
+    report.append(f"| 🌐 Environment-Specific | {environment_specific_count} | {environment_specific_count/len(checks)*100:.1f}% | Requires site-specific/organizational values |\n")
+    report.append(f"| 🖥️ System-Specific | {system_specific_count} | {system_specific_count/len(checks)*100:.1f}% | Depends on deployment/installation config |\n")
+    report.append(f"| ✓ Standard | {len(checks) - environment_specific_count - system_specific_count} | {(len(checks) - environment_specific_count - system_specific_count)/len(checks)*100:.1f}% | No special dependencies |\n")
+
+    report.append("\n### Severity Distribution\n\n")
+    report.append("| Severity | Count | Percentage |\n")
+    report.append("|----------|-------|------------|\n")
+    report.append(f"| 🔴 HIGH | {severity_counts.get('high', 0)} | {severity_counts.get('high', 0)/len(checks)*100:.1f}% |\n")
+    report.append(f"| 🟡 MEDIUM | {severity_counts.get('medium', 0)} | {severity_counts.get('medium', 0)/len(checks)*100:.1f}% |\n")
+    report.append(f"| 🟢 LOW | {severity_counts.get('low', 0)} | {severity_counts.get('low', 0)/len(checks)*100:.1f}% |\n")
+    report.append(f"| **TOTAL** | **{len(checks)}** | **100.0%** |\n")
+
+    # Keep old summary for compatibility
+    report.append("\n## Summary\n")
     report.append(f"- **Automatable Checks:** {automatable} ({automatable/len(checks)*100:.1f}%)\n")
     report.append(f"- **Partially Automatable:** {partial} ({partial/len(checks)*100:.1f}%)\n")
     report.append(f"- **Manual Review Required:** {manual} ({manual/len(checks)*100:.1f}%)\n")
@@ -354,19 +407,36 @@ def generate_markdown_report(checks):
 
 
 def main():
+    import sys
+
+    # Determine which version to use
+    if len(sys.argv) > 1 and sys.argv[1] == 'v2':
+        json_file = 'weblogic_checks_v2.json'
+        report_file = 'reports/Oracle_WebLogic_Server_12c_STIG_Analysis_v2.md'
+        version_label = 'v2'
+    else:
+        json_file = 'weblogic_checks.json'
+        report_file = 'reports/Oracle_WebLogic_Server_12c_STIG_Analysis.md'
+        version_label = 'v1'
+
     # Load WebLogic checks
-    with open('weblogic_checks.json', 'r') as f:
-        checks = json.load(f)
+    try:
+        with open(json_file, 'r') as f:
+            checks = json.load(f)
+    except FileNotFoundError:
+        print(f"Error: {json_file} not found!")
+        sys.exit(1)
 
     # Generate report
     report = generate_markdown_report(checks)
 
     # Save report
-    with open('reports/Oracle_WebLogic_Server_12c_STIG_Analysis.md', 'w') as f:
+    with open(report_file, 'w') as f:
         f.write(report)
 
-    print(f"Report generated: reports/Oracle_WebLogic_Server_12c_STIG_Analysis.md")
+    print(f"Report generated: {report_file}")
     print(f"Total checks analyzed: {len(checks)}")
+    print(f"Version: {version_label}")
 
 
 if __name__ == '__main__':
