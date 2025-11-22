@@ -98,16 +98,42 @@ EOF
 # MAIN CHECK LOGIC
 ################################################################################
 
-main() {
-    # TODO: Implement actual STIG check logic
-    # This placeholder will be replaced with actual implementation
-
-    echo "TODO: Implement check logic for $STIG_ID"
-    echo "Rule: Oracle WebLogic must be integrated with a tool to monitor audit subsystem failure notification information that is sent out (e.g., the recipients of the message and the nature of the failure)."
-
-    [[ -n "$OUTPUT_JSON" ]] && output_json "ERROR" "Not implemented" "Requires implementation"
-    exit 3
-}
+
+    # WebLogic Monitoring and Audit Check
+    echo "INFO: Checking for WebLogic monitoring configuration"
+    echo ""
+    
+    # Check if DOMAIN_HOME is set
+    if [[ -z "$DOMAIN_HOME" ]]; then
+        if [[ -n "$CONFIG_FILE" ]] && [[ -f "$CONFIG_FILE" ]]; then
+            DOMAIN_HOME=$(grep -i "domain_home" "$CONFIG_FILE" 2>/dev/null | cut -d'=' -f2 | tr -d ' "')
+        fi
+    fi
+    
+    if [[ -z "$DOMAIN_HOME" ]]; then
+        echo "WARNING: DOMAIN_HOME not set"
+        echo "Cannot verify WebLogic configuration without DOMAIN_HOME"
+    else
+        echo "DOMAIN_HOME: $DOMAIN_HOME"
+        
+        # Look for monitoring/diagnostic configuration
+        if [[ -d "$DOMAIN_HOME/config" ]]; then
+            echo "Configuration directory found: $DOMAIN_HOME/config"
+        fi
+    fi
+    echo ""
+    
+    echo "MANUAL REVIEW REQUIRED: Verify monitoring tool configuration"
+    echo "This check requires verification that:"
+    echo "- Audit subsystem failure monitoring is configured"
+    echo "- Notification mechanisms are in place"
+    echo "- Tools like Oracle Diagnostic Framework are integrated"
+    echo ""
+    echo "Manual inspection of WebLogic configuration is necessary"
+    
+    [[ -n "$OUTPUT_JSON" ]] && output_json "MANUAL" "Manual review required" "Monitoring configuration"
+    exit 2  # Manual review required
+
 
 # Run main check
 main "$@"
