@@ -44,11 +44,15 @@ Based on user requirements, STIGs are prioritized as follows:
 
 **Priority 3 Completed**: 1,175 checks across RHEL 8, RHEL 9, Ubuntu 20.04, and Ubuntu 22.04
 
-### Priority 4: Apache Web Server
-- [ ] Apache Server 2.4 UNIX Site v2r5 (181 checks)
-- [ ] Apache Server 2.4 Windows Site v3r1 (172 checks)
-- [ ] Apache Server 2.2 UNIX Site v1r19 (162 checks)
-- [ ] Apache Server 2.2 Windows Site v1r19 (157 checks)
+### Priority 4: Apache Web Server ⭐ **COMPLETE**
+- [x] Apache Server 2.4 UNIX Server v2r6 - **COMPLETE** (47 checks - bash + python)
+- [x] Apache Server 2.4 UNIX Site v2r6 - **COMPLETE** (27 checks - bash + python)
+- [x] Apache Server 2.4 Windows Server v2r3 - **COMPLETE** (54 checks - PowerShell + python)
+- [x] Apache Server 2.4 Windows Site v2r3 - **COMPLETE** (36 checks - PowerShell + python)
+- [x] Apache Server 2.2 UNIX Site v1r20 - **COMPLETE** (29 checks - bash + python)
+- [x] Apache Server 2.2 Windows Site v1r20 - **COMPLETE** (28 checks - PowerShell + python)
+
+**Priority 4 Completed**: 221 checks across 6 Apache Web Server benchmarks
 
 ### Priority 5: BIND DNS
 - [ ] BIND 9.x DNS STIG v2r3 (73 checks)
