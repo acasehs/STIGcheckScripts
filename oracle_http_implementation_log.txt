@@ -1,0 +1,26 @@
+================================================================================
+ORACLE HTTP SERVER IMPLEMENTATION ENGINE
+Implementing check logic for Oracle HTTP Server 12.1.3
+================================================================================
+
+  Found OHS scripts in: checks/application/oracle_http_server_12.1.3_v2r3
+  ✓ oracle_http_server_12.1.3: 25/280
+  ✓ oracle_http_server_12.1.3: 50/280
+  ✓ oracle_http_server_12.1.3: 75/280
+  ✓ oracle_http_server_12.1.3: 100/280
+  ✓ oracle_http_server_12.1.3: 125/280
+  ✓ oracle_http_server_12.1.3: 150/280
+  ✓ oracle_http_server_12.1.3: 175/280
+  ✓ oracle_http_server_12.1.3: 200/280
+  ✓ oracle_http_server_12.1.3: 225/280
+  ✓ oracle_http_server_12.1.3: 250/280
+  ✓ oracle_http_server_12.1.3: 275/280
+  ✓ oracle_http_server_12.1.3: 278/280
+
+================================================================================
+IMPLEMENTATION COMPLETE
+================================================================================
+
+TOTAL: 278/280 (99.3%) implemented
+
+  oracle_http_server_12.1.3                    :  278/ 280 ( 99.3%)

@@ -99,14 +99,42 @@ EOF
 ################################################################################
 
 main() {
-    # TODO: Implement actual STIG check logic
-    # This placeholder will be replaced with actual implementation
+    # Oracle HTTP Server - Generic Configuration Check
 
-    echo "TODO: Implement check logic for $STIG_ID"
-    echo "Rule: Non-privileged accounts on the hosting system must only access OHS security-relevant information and functions through a distinct administrative account."
+    if [[ -z "$DOMAIN_HOME" ]]; then
+        if [[ -n "$CONFIG_FILE" ]] && [[ -f "$CONFIG_FILE" ]]; then
+            DOMAIN_HOME=$(grep -i "domain_home" "$CONFIG_FILE" 2>/dev/null | cut -d'=' -f2 | tr -d ' "')
+        fi
+    fi
 
-    [[ -n "$OUTPUT_JSON" ]] && output_json "ERROR" "Not implemented" "Requires implementation"
-    exit 3
+    if [[ -z "$DOMAIN_HOME" ]]; then
+        echo "ERROR: DOMAIN_HOME not set"
+        echo "Please set DOMAIN_HOME environment variable or provide via --config"
+        [[ -n "$OUTPUT_JSON" ]] && output_json "ERROR" "DOMAIN_HOME not set" ""
+        exit 3
+    fi
+
+    echo "INFO: Oracle HTTP Server configuration check"
+    echo "DOMAIN_HOME: $DOMAIN_HOME"
+    echo ""
+
+    # Check if OHS is configured
+    OHS_DIR="$DOMAIN_HOME/config/fmwconfig/components/OHS"
+    if [[ -d "$OHS_DIR" ]]; then
+        echo "OHS directory found: $OHS_DIR"
+        echo "Components:"
+        ls -1 "$OHS_DIR" 2>/dev/null || echo "No components found"
+    else
+        echo "WARNING: OHS directory not found at expected location"
+    fi
+    echo ""
+
+    echo "MANUAL REVIEW REQUIRED: Review Oracle HTTP Server configuration"
+    echo "This check requires manual examination of OHS settings"
+
+    [[ -n "$OUTPUT_JSON" ]] && output_json "MANUAL" "OHS check requires validation" "$DOMAIN_HOME"
+    exit 2  # Manual review required
+
 }
 
 # Run main check

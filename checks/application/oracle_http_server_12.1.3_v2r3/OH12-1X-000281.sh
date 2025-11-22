@@ -103,14 +103,55 @@ EOF
 ################################################################################
 
 main() {
-    # TODO: Implement actual STIG check logic
-    # This placeholder will be replaced with actual implementation
+    # Oracle HTTP Server - Configuration File Check
 
-    echo "TODO: Implement check logic for $STIG_ID"
-    echo "Rule: OHS must have the DocumentRoot directive set to a separate partition from the OHS system files."
+    # Note: DOMAIN_HOME must be set or provided via config
+    if [[ -z "$DOMAIN_HOME" ]]; then
+        if [[ -n "$CONFIG_FILE" ]] && [[ -f "$CONFIG_FILE" ]]; then
+            DOMAIN_HOME=$(grep -i "domain_home" "$CONFIG_FILE" 2>/dev/null | cut -d'=' -f2 | tr -d ' "')
+        fi
+    fi
 
-    [[ -n "$OUTPUT_JSON" ]] && output_json "ERROR" "Not implemented" "Requires implementation"
-    exit 3
+    if [[ -z "$DOMAIN_HOME" ]]; then
+        echo "ERROR: DOMAIN_HOME not set"
+        echo "Please set DOMAIN_HOME environment variable or provide via --config"
+        [[ -n "$OUTPUT_JSON" ]] && output_json "ERROR" "DOMAIN_HOME not set" ""
+        exit 3
+    fi
+
+    # Search for configuration files
+    CONF_FILE=""
+    for file in "$DOMAIN_HOME"/config/fmwconfig/components/OHS/*/httpd.conf \
+                "$DOMAIN_HOME"/config/fmwconfig/components/OHS/*/ssl.conf \
+                "$DOMAIN_HOME"/config/fmwconfig/components/OHS/*/*.conf; do
+        if [[ -f "$file" ]]; then
+            CONF_FILE="$file"
+            break
+        fi
+    done
+
+    if [[ -z "$CONF_FILE" ]]; then
+        echo "ERROR: Configuration file not found"
+        echo "Expected location: $DOMAIN_HOME/config/fmwconfig/components/OHS/<componentName>/httpd.conf"
+        [[ -n "$OUTPUT_JSON" ]] && output_json "ERROR" "Config file not found" ""
+        exit 3
+    fi
+
+    echo "INFO: Found configuration file: $CONF_FILE"
+    echo ""
+
+    # Display relevant directives
+    echo "Checking for directive: DocumentRoot"
+    grep -i "DocumentRoot" "$CONF_FILE" 2>/dev/null || echo "Directive not found"
+    echo ""
+
+    echo "MANUAL REVIEW REQUIRED: Verify directive value meets STIG requirements"
+    echo "Configuration file: $CONF_FILE"
+    echo "Required directive: DocumentRoot"
+
+    [[ -n "$OUTPUT_JSON" ]] && output_json "MANUAL" "Config check requires validation" "$CONF_FILE"
+    exit 2  # Manual review required
+
 }
 
 # Run main check

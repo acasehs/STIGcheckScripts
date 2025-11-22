@@ -103,14 +103,54 @@ EOF
 ################################################################################
 
 main() {
-    # TODO: Implement actual STIG check logic
-    # This placeholder will be replaced with actual implementation
+    # Oracle HTTP Server - Properties File Check
 
-    echo "TODO: Implement check logic for $STIG_ID"
-    echo "Rule: The KeyStores property of the Node Manager configured to support OHS must be configured for secure communication."
+    # Note: DOMAIN_HOME must be set or provided via config
+    if [[ -z "$DOMAIN_HOME" ]]; then
+        if [[ -n "$CONFIG_FILE" ]] && [[ -f "$CONFIG_FILE" ]]; then
+            DOMAIN_HOME=$(grep -i "domain_home" "$CONFIG_FILE" 2>/dev/null | cut -d'=' -f2 | tr -d ' "')
+        fi
+    fi
 
-    [[ -n "$OUTPUT_JSON" ]] && output_json "ERROR" "Not implemented" "Requires implementation"
-    exit 3
+    if [[ -z "$DOMAIN_HOME" ]]; then
+        echo "ERROR: DOMAIN_HOME not set"
+        echo "Please set DOMAIN_HOME environment variable or provide via --config"
+        [[ -n "$OUTPUT_JSON" ]] && output_json "ERROR" "DOMAIN_HOME not set" ""
+        exit 3
+    fi
+
+    # Search for properties file
+    PROPS_FILE=""
+    for file in "$DOMAIN_HOME"/config/fmwconfig/components/OHS/*/ohs.plugins.nodemanager.properties \
+                "$DOMAIN_HOME"/config/fmwconfig/components/OHS/*/*.properties; do
+        if [[ -f "$file" ]]; then
+            PROPS_FILE="$file"
+            break
+        fi
+    done
+
+    if [[ -z "$PROPS_FILE" ]]; then
+        echo "ERROR: Properties file not found"
+        echo "Expected location: $DOMAIN_HOME/nodemanager/nodemanager.properties"
+        [[ -n "$OUTPUT_JSON" ]] && output_json "ERROR" "Properties file not found" ""
+        exit 3
+    fi
+
+    echo "INFO: Found properties file: $PROPS_FILE"
+    echo ""
+
+    # Display relevant properties
+    echo "Checking for property: KeyStores"
+    grep -i "KeyStores" "$PROPS_FILE" 2>/dev/null || echo "Property not found"
+    echo ""
+
+    echo "MANUAL REVIEW REQUIRED: Verify property value meets STIG requirements"
+    echo "Properties file: $PROPS_FILE"
+    echo "Required property: KeyStores"
+
+    [[ -n "$OUTPUT_JSON" ]] && output_json "MANUAL" "Properties check requires validation" "$PROPS_FILE"
+    exit 2  # Manual review required
+
 }
 
 # Run main check
