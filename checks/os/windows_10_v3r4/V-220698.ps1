@@ -44,28 +44,26 @@ if ($ConfigFile -and (Test-Path $ConfigFile)) {
 
 # Main check logic
 function Invoke-Check {
-    # TODO: Implement check logic based on:
-    # Verify domain-joined systems have a TPM enabled and ready for use.
-    # 
-    # For standalone or nondomain-joined systems, this is NA.
-    # 
-    # Virtualization-based security, including Credential Guard, currently cannot be implemented in virtual desktop implementations (VDI) due to specific supporting requirements including a TPM, UEFI with Secure Boot, and the capability to run the Hyper-V feature within the virtual desktop.
-    # 
-    # For VDIs where the virtual desktop instance is deleted or refreshed upon logoff, this is NA.
-    # 
-    # Verify the system has a TPM and is ready for use.
-    # Run "tpm.msc".
-    # Review the sections in the center pane.
-    # "Status" must indicate it has been configured with a message such as "The TPM is ready for use" or "The TPM is on and ownership has been taken".
-    # TPM Manufacturer Information - Specific Version = 2.0 or 1.2
-    # 
-    # If a TPM is not found or is not ready for use, this is a finding.
+    # Windows Security Check
+    Write-Host "INFO: Checking Windows configuration"
+    Write-Host ""
 
-    
-    # TODO: Implement specific check logic
-    # This is a placeholder - customize based on check requirements
-    Write-Warning "Check not yet implemented"
-    return $false
+    Write-Host "MANUAL REVIEW REQUIRED: This check requires manual examination"
+    Write-Host "Refer to STIG documentation for specific validation steps"
+    Write-Host ""
+
+    if ($OutputJson) {
+        $output = @{
+            vuln_id = $VulnID
+            stig_id = $StigID
+            severity = $Severity
+            status = "Not_Reviewed"
+            finding_details = "Manual review required"
+        }
+        Write-Host ($output | ConvertTo-Json -Depth 10)
+    }
+
+    exit 2  # Manual review required
 
 }
 

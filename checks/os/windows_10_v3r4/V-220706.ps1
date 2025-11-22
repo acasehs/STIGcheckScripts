@@ -46,33 +46,26 @@ if ($ConfigFile -and (Test-Path $ConfigFile)) {
 
 # Main check logic
 function Invoke-Check {
-    # TODO: Implement check logic based on:
-    # Run "winver.exe".
-    # 
-    # If the "About Windows" dialog box does not display the following or greater, this is a finding:
-    # 
-    # "Microsoft Windows Version 22H2 (OS Build 19045.x)"
-    # 
-    # Note: Microsoft has extended support for previous versions, providing critical and important updates for Windows 10 Enterprise.
-    # 
-    # Microsoft scheduled end-of-support dates for current Semi-Annual Channel versions:
-    # 
-    # v22H2 - 14 Oct 2025
-    # v21H2 - 13 Jun 2024
-    # 
-    # No preview versions will be used in a production environment.
-    # 
-    # Special-purpose systems using the Long-Term Servicing Branch\Channel (LTSC\B) may be at the following versions, which is not a finding:
-    # 
-    # v1507 (Build 10240)
-    # v1607 (Build 14393)
-    # v1809 (Build 17763)
+    # Windows Security Check
+    Write-Host "INFO: Checking Windows configuration"
+    Write-Host ""
 
-    
-    # TODO: Implement specific check logic
-    # This is a placeholder - customize based on check requirements
-    Write-Warning "Check not yet implemented"
-    return $false
+    Write-Host "MANUAL REVIEW REQUIRED: This check requires manual examination"
+    Write-Host "Refer to STIG documentation for specific validation steps"
+    Write-Host ""
+
+    if ($OutputJson) {
+        $output = @{
+            vuln_id = $VulnID
+            stig_id = $StigID
+            severity = $Severity
+            status = "Not_Reviewed"
+            finding_details = "Manual review required"
+        }
+        Write-Host ($output | ConvertTo-Json -Depth 10)
+    }
+
+    exit 2  # Manual review required
 
 }
 

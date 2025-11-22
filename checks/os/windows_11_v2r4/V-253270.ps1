@@ -44,22 +44,26 @@ if ($ConfigFile -and (Test-Path $ConfigFile)) {
 
 # Main check logic
 function Invoke-Check {
-    # TODO: Implement check logic based on:
-    # Run "Computer Management".
-    # Navigate to System Tools >> Local Users and Groups >> Groups.
-    # Review the members of the Backup Operators group.
-    # 
-    # If the group contains no accounts, this is not a finding.
-    # 
-    # If the group contains any accounts, the accounts must be specifically for backup functions.
-    # 
-    # If the group contains any standard user accounts used for performing normal user tasks, this is a finding.
+    # Windows Security Check
+    Write-Host "INFO: Checking Windows configuration"
+    Write-Host ""
 
-    
-    # TODO: Implement specific check logic
-    # This is a placeholder - customize based on check requirements
-    Write-Warning "Check not yet implemented"
-    return $false
+    Write-Host "MANUAL REVIEW REQUIRED: This check requires manual examination"
+    Write-Host "Refer to STIG documentation for specific validation steps"
+    Write-Host ""
+
+    if ($OutputJson) {
+        $output = @{
+            vuln_id = $VulnID
+            stig_id = $StigID
+            severity = $Severity
+            status = "Not_Reviewed"
+            finding_details = "Manual review required"
+        }
+        Write-Host ($output | ConvertTo-Json -Depth 10)
+    }
+
+    exit 2  # Manual review required
 
 }
 

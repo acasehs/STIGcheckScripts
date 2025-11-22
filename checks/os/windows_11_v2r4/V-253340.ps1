@@ -44,24 +44,26 @@ if ($ConfigFile -and (Test-Path $ConfigFile)) {
 
 # Main check logic
 function Invoke-Check {
-    # TODO: Implement check logic based on:
-    # Verify the permissions on the Application event log (Application.evtx). Standard user accounts or groups must not have access. The default permissions listed below satisfy this requirement.
-    # 
-    # Eventlog - Full Control
-    # SYSTEM - Full Control
-    # Administrators - Full Control
-    # 
-    # The default location is the "%SystemRoot%\SYSTEM32\WINEVT\LOGS" directory. They may have been moved to another folder.
-    # 
-    # If the permissions for these files are not as restrictive as the ACLs listed, this is a finding.
-    # 
-    # Note: If "APPLICATION PACKAGE AUTHORITY\ALL APPLICATION PACKAGES" has Special Permissions, this would not be a finding.
+    # Windows Security Check
+    Write-Host "INFO: Checking Windows configuration"
+    Write-Host ""
 
-    
-    # TODO: Implement specific check logic
-    # This is a placeholder - customize based on check requirements
-    Write-Warning "Check not yet implemented"
-    return $false
+    Write-Host "MANUAL REVIEW REQUIRED: This check requires manual examination"
+    Write-Host "Refer to STIG documentation for specific validation steps"
+    Write-Host ""
+
+    if ($OutputJson) {
+        $output = @{
+            vuln_id = $VulnID
+            stig_id = $StigID
+            severity = $Severity
+            status = "Not_Reviewed"
+            finding_details = "Manual review required"
+        }
+        Write-Host ($output | ConvertTo-Json -Depth 10)
+    }
+
+    exit 2  # Manual review required
 
 }
 

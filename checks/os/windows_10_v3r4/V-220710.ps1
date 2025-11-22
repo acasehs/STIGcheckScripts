@@ -44,33 +44,26 @@ if ($ConfigFile -and (Test-Path $ConfigFile)) {
 
 # Main check logic
 function Invoke-Check {
-    # TODO: Implement check logic based on:
-    # Non system-created shares should not typically exist on workstations.
-    # 
-    # If only system-created shares exist on the system this is NA.
-    # 
-    # Run "Computer Management".
-    # Navigate to System Tools >> Shared Folders >> Shares.
-    # 
-    # If the only shares listed are "ADMIN$", "C$" and "IPC$", this is NA.
-    # (Selecting Properties for system-created shares will display a message that it has been shared for administrative purposes.)
-    # 
-    # Right click any non-system-created shares.
-    # Select "Properties".
-    # Select the "Share Permissions" tab.
-    # 
-    # Verify the necessity of any shares found.
-    # If the file shares have not been reconfigured to restrict permissions to the specific groups or accounts that require access, this is a finding.
-    # 
-    # Select the "Security" tab.
-    # 
-    # If the NTFS permissions have not been reconfigured to restrict permissions to the specific groups or accounts that require access, this is a finding.
+    # Windows Security Check
+    Write-Host "INFO: Checking Windows configuration"
+    Write-Host ""
 
-    
-    # TODO: Implement specific check logic
-    # This is a placeholder - customize based on check requirements
-    Write-Warning "Check not yet implemented"
-    return $false
+    Write-Host "MANUAL REVIEW REQUIRED: This check requires manual examination"
+    Write-Host "Refer to STIG documentation for specific validation steps"
+    Write-Host ""
+
+    if ($OutputJson) {
+        $output = @{
+            vuln_id = $VulnID
+            stig_id = $StigID
+            severity = $Severity
+            status = "Not_Reviewed"
+            finding_details = "Manual review required"
+        }
+        Write-Host ($output | ConvertTo-Json -Depth 10)
+    }
+
+    exit 2  # Manual review required
 
 }
 

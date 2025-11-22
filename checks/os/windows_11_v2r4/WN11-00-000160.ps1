@@ -51,50 +51,36 @@ if ($Config -and (Test-Path $Config)) {
 ################################################################################
 
 try {
-if ! command -v sqlplus &>/dev/null; then
-        echo "ERROR: Oracle client not found"
-        [[ -n "$OUTPUT_JSON" ]] && output_json "ERROR" "sqlplus not installed" ""
-        exit 3
-    fi
-
-    if [[ -z "$ORACLE_USER" ]] || [[ -z "$ORACLE_SID" ]]; then
-        echo "ERROR: Oracle credentials not configured"
-        [[ -n "$OUTPUT_JSON" ]] && output_json "ERROR" "Credentials missing" ""
-        exit 3
-    fi
-
-    # Execute SQL query (customize based on specific check)
-    output=$(sqlplus -S "$ORACLE_USER"@"$ORACLE_SID" <<EOF
-SET PAGESIZE 0 FEEDBACK OFF VERIFY OFF HEADING OFF
--- Add specific query here
-EXIT;
-EOF
-)
-
-    if [[ -n "$output" ]]; then
-        echo "PASS: Query executed successfully"
-        echo "$output"
-        [[ -n "$OUTPUT_JSON" ]] && output_json "PASS" "Query passed" "$output"
-        exit 0
-    else
-        echo "FAIL: No results or query failed"
-        [[ -n "$OUTPUT_JSON" ]] && output_json "FAIL" "Query failed" ""
-        exit 1
-    fi
-
-
-} catch {
-    Write-Error $_.Exception.Message
+    # TODO: Implement Windows STIG check logic
+    # This check requires implementation based on STIG requirements
+    Write-Host "INFO: Check not yet implemented"
+    Write-Host "MANUAL REVIEW REQUIRED"
 
     if ($OutputJson) {
-        @{
+        $output = @{
             vuln_id = $VULN_ID
             stig_id = $STIG_ID
             severity = $SEVERITY
-            status = "ERROR"
-            message = $_.Exception.Message
-            timestamp = $TIMESTAMP
-        } | ConvertTo-Json | Out-File $OutputJson
+            status = "Not_Reviewed"
+            finding_details = "Check logic not yet implemented"
+        }
+        Write-Host ($output | ConvertTo-Json -Depth 10)
+    }
+
+    exit 2  # Manual review required
+
+} catch {
+    if ($OutputJson) {
+        $output = @{
+            vuln_id = $VULN_ID
+            stig_id = $STIG_ID
+            severity = $SEVERITY
+            status = "Error"
+            finding_details = $_.Exception.Message
+        }
+        Write-Host ($output | ConvertTo-Json -Depth 10)
+    } else {
+        Write-Host "ERROR: $($_.Exception.Message)"
     }
 
     exit 3

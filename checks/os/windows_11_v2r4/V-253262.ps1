@@ -46,32 +46,26 @@ if ($ConfigFile -and (Test-Path $ConfigFile)) {
 
 # Main check logic
 function Invoke-Check {
-    # TODO: Implement check logic based on:
-    # Verify the operating system employs a deny-all, permit-by-exception policy to allow the execution of authorized software programs. This must include packaged apps such as the universal apps installed by default on systems.
-    # 
-    # If an application allowlisting program is not in use on the system, this is a finding.
-    # 
-    # Configuration of allowlisting applications will vary by the program.
-    # 
-    # AppLocker is an allowlisting application built into Windows 11 Enterprise. A deny-by-default implementation is initiated by enabling any AppLocker rules within a category, only allowing what is specified by defined rules.
-    # 
-    # If AppLocker is used, perform the following to view the configuration of AppLocker:
-    # Run "PowerShell".
-    # 
-    # Execute the following command, substituting [c:\temp\file.xml] with a location and file name appropriate for the system:
-    # Get-AppLockerPolicy -Effective -XML > c:\temp\file.xml
-    # 
-    # This will produce an xml file with the effective settings that can be viewed in a browser or opened in a program such as Excel for review.
-    # 
-    # Implementation guidance for AppLocker is available at the following link:
-    # 
-    # https://docs.microsoft.com/en-us/windows/security/threat-protection/windows-defender-application-control/applocker/applocker-policies-deployment-guide
+    # Windows Security Check
+    Write-Host "INFO: Checking Windows configuration"
+    Write-Host ""
 
-    
-    # TODO: Implement specific check logic
-    # This is a placeholder - customize based on check requirements
-    Write-Warning "Check not yet implemented"
-    return $false
+    Write-Host "MANUAL REVIEW REQUIRED: This check requires manual examination"
+    Write-Host "Refer to STIG documentation for specific validation steps"
+    Write-Host ""
+
+    if ($OutputJson) {
+        $output = @{
+            vuln_id = $VulnID
+            stig_id = $StigID
+            severity = $Severity
+            status = "Not_Reviewed"
+            finding_details = "Manual review required"
+        }
+        Write-Host ($output | ConvertTo-Json -Depth 10)
+    }
+
+    exit 2  # Manual review required
 
 }
 

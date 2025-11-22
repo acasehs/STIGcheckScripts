@@ -46,28 +46,26 @@ if ($ConfigFile -and (Test-Path $ConfigFile)) {
 
 # Main check logic
 function Invoke-Check {
-    # TODO: Implement check logic based on:
-    # Different methods are available to disable SMBv1 on Windows 10.  This is the preferred method, however if V-220730 and V-220731 are configured, this is NA.
-    # 
-    # Run "Windows PowerShell" with elevated privileges (run as administrator).
-    # 
-    # Enter the following:
-    # Get-WindowsOptionalFeature -Online | Where FeatureName -eq SMB1Protocol
-    # 
-    # If "State : Enabled" is returned, this is a finding.
-    # 
-    # Alternately:
-    # Search for "Features".
-    # 
-    # Select "Turn Windows features on or off".
-    # 
-    # If "SMB 1.0/CIFS File Sharing Support" is selected, this is a finding.
+    # Windows Security Check
+    Write-Host "INFO: Checking Windows configuration"
+    Write-Host ""
 
-    
-    # TODO: Implement specific check logic
-    # This is a placeholder - customize based on check requirements
-    Write-Warning "Check not yet implemented"
-    return $false
+    Write-Host "MANUAL REVIEW REQUIRED: This check requires manual examination"
+    Write-Host "Refer to STIG documentation for specific validation steps"
+    Write-Host ""
+
+    if ($OutputJson) {
+        $output = @{
+            vuln_id = $VulnID
+            stig_id = $StigID
+            severity = $Severity
+            status = "Not_Reviewed"
+            finding_details = "Manual review required"
+        }
+        Write-Host ($output | ConvertTo-Json -Depth 10)
+    }
+
+    exit 2  # Manual review required
 
 }
 

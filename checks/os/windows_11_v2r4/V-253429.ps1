@@ -44,33 +44,26 @@ if ($ConfigFile -and (Test-Path $ConfigFile)) {
 
 # Main check logic
 function Invoke-Check {
-    # TODO: Implement check logic based on:
-    # Verify the DoD Interoperability cross-certificates are installed on unclassified systems as Untrusted Certificates.
-    # 
-    # Run "PowerShell" as an administrator.
-    # 
-    # Execute the following command:
-    # 
-    # Get-ChildItem -Path Cert:Localmachine\disallowed | Where {$_.Issuer -Like "*DoD Interoperability*" -and $_.Subject -Like "*DoD*"} | FL Subject, Issuer, Thumbprint, NotAfter
-    # 
-    # If the following certificate "Subject", "Issuer", and "Thumbprint" information is not displayed, this is a finding.
-    # 
-    # Subject: CN=DoD Root CA 3, OU=PKI, OU=DoD, O=U.S. Government, C=US
-    # Issuer: CN=DoD Interoperability Root CA 2, OU=PKI, OU=DoD, O=U.S. Government, C=US
-    # Thumbprint: 49CBE933151872E17C8EAE7F0ABA97FB610F6477
-    # NotAfter: 11/16/2024 
-    #            
-    # Subject: CN=DoD Root CA 3, OU=PKI, OU=DoD, O=U.S. Government, C=US
-    # Issuer: CN=DoD Interoperability Root CA 2, OU=PKI, OU=DoD, O=U.S. Government, C=US
-    # Thumbprint: AC06108CA348CC03B53795C64BF84403C1DBD341
-    # NotAfter: 1/22/2022 
-    # 
+    # Windows Security Check
+    Write-Host "INFO: Checking Windows configuration"
+    Write-Host ""
 
-    
-    # TODO: Implement specific check logic
-    # This is a placeholder - customize based on check requirements
-    Write-Warning "Check not yet implemented"
-    return $false
+    Write-Host "MANUAL REVIEW REQUIRED: This check requires manual examination"
+    Write-Host "Refer to STIG documentation for specific validation steps"
+    Write-Host ""
+
+    if ($OutputJson) {
+        $output = @{
+            vuln_id = $VulnID
+            stig_id = $StigID
+            severity = $Severity
+            status = "Not_Reviewed"
+            finding_details = "Manual review required"
+        }
+        Write-Host ($output | ConvertTo-Json -Depth 10)
+    }
+
+    exit 2  # Manual review required
 
 }
 

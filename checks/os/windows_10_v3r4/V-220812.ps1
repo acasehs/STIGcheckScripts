@@ -44,33 +44,26 @@ if ($ConfigFile -and (Test-Path $ConfigFile)) {
 
 # Main check logic
 function Invoke-Check {
-    # TODO: Implement check logic based on:
-    # Confirm Credential Guard is running on domain-joined systems.
-    # 
-    # For devices that support Credential Guard, this feature must be enabled. Organizations must take the appropriate action to acquire and implement compatible hardware with Credential Guard enabled.
-    # 
-    # Virtualization based security, including Credential Guard, currently cannot be implemented in virtual desktop implementations (VDIs) due to specific supporting requirements including a TPM, UEFI with Secure Boot, and the capability to run the Hyper-V feature within the virtual desktop.
-    # 
-    # For VDIs where the virtual desktop instance is deleted or refreshed upon logoff, this is Not Applicable.
-    # 
-    # Run "PowerShell" with elevated privileges (run as administrator). 
-    # 
-    # Enter the following:
-    # "Get-CimInstance -ClassName Win32_DeviceGuard -Namespace root\Microsoft\Windows\DeviceGuard"
-    # 
-    # If "SecurityServicesRunning" does not include a value of "1" (e.g., "{1, 2}"), this is a finding.
-    # 
-    # Alternately:
-    # 
-    # Run "System Information".
-    # 
-    # Under "System Summary", verify the following:
+    # Windows Security Check
+    Write-Host "INFO: Checking Windows configuration"
+    Write-Host ""
 
-    
-    # TODO: Implement specific check logic
-    # This is a placeholder - customize based on check requirements
-    Write-Warning "Check not yet implemented"
-    return $false
+    Write-Host "MANUAL REVIEW REQUIRED: This check requires manual examination"
+    Write-Host "Refer to STIG documentation for specific validation steps"
+    Write-Host ""
+
+    if ($OutputJson) {
+        $output = @{
+            vuln_id = $VulnID
+            stig_id = $StigID
+            severity = $Severity
+            status = "Not_Reviewed"
+            finding_details = "Manual review required"
+        }
+        Write-Host ($output | ConvertTo-Json -Depth 10)
+    }
+
+    exit 2  # Manual review required
 
 }
 

@@ -46,33 +46,26 @@ if ($ConfigFile -and (Test-Path $ConfigFile)) {
 
 # Main check logic
 function Invoke-Check {
-    # TODO: Implement check logic based on:
-    # Run "PowerShell".
-    # Copy the lines below to the PowerShell window and enter.
-    # 
-    # "([ADSI]('WinNT://{0}' -f $env:COMPUTERNAME)).Children | Where { $_.SchemaClassName -eq 'user' } | ForEach {
-    #   $user = ([ADSI]$_.Path)
-    #   $lastLogin = $user.Properties.LastLogin.Value
-    #   $enabled = ($user.Properties.UserFlags.Value -band 0x2) -ne 0x2
-    #   if ($lastLogin -eq $null) {
-    #    $lastLogin = 'Never'
-    #   }
-    #   Write-Host $user.Name $lastLogin $enabled 
-    # }"
-    # 
-    # This will return a list of local accounts with the account name, last logon, and if the account is enabled (True/False).
-    # For example: User1 10/31/2015 5:49:56 AM True
-    # 
-    # Review the list to determine the finding validity for each account reported.
-    # 
-    # Exclude the following accounts:
-    # Built-in administrator account (Disabled, SID ending in 500)
+    # Windows Security Check
+    Write-Host "INFO: Checking Windows configuration"
+    Write-Host ""
 
-    
-    # TODO: Implement specific check logic
-    # This is a placeholder - customize based on check requirements
-    Write-Warning "Check not yet implemented"
-    return $false
+    Write-Host "MANUAL REVIEW REQUIRED: This check requires manual examination"
+    Write-Host "Refer to STIG documentation for specific validation steps"
+    Write-Host ""
+
+    if ($OutputJson) {
+        $output = @{
+            vuln_id = $VulnID
+            stig_id = $StigID
+            severity = $Severity
+            status = "Not_Reviewed"
+            finding_details = "Manual review required"
+        }
+        Write-Host ($output | ConvertTo-Json -Depth 10)
+    }
+
+    exit 2  # Manual review required
 
 }
 

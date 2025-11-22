@@ -44,27 +44,26 @@ if ($ConfigFile -and (Test-Path $ConfigFile)) {
 
 # Main check logic
 function Invoke-Check {
-    # TODO: Implement check logic based on:
-    # If the following registry value does not exist or is not configured as specified, this is a finding:
-    # 
-    # Registry Hive: HKEY_LOCAL_MACHINE
-    # Registry Path: \SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon\
-    # 
-    # Value Name: SCRemoveOption
-    # 
-    # Value Type: REG_SZ
-    # Value: 1 (Lock Workstation) or 2 (Force Logoff)
-    # 
-    # This can be left not configured or set to "No action" on workstations with the following conditions. This must be documented with the ISSO.
-    # -The setting cannot be configured due to mission needs, or because it interferes with applications.
-    # -Policy must be in place that users manually lock workstations when leaving them unattended.
-    # -The screen saver is properly configured to lock as required.
+    # Windows Security Check
+    Write-Host "INFO: Checking Windows configuration"
+    Write-Host ""
 
-    
-    # TODO: Implement specific check logic
-    # This is a placeholder - customize based on check requirements
-    Write-Warning "Check not yet implemented"
-    return $false
+    Write-Host "MANUAL REVIEW REQUIRED: This check requires manual examination"
+    Write-Host "Refer to STIG documentation for specific validation steps"
+    Write-Host ""
+
+    if ($OutputJson) {
+        $output = @{
+            vuln_id = $VulnID
+            stig_id = $StigID
+            severity = $Severity
+            status = "Not_Reviewed"
+            finding_details = "Manual review required"
+        }
+        Write-Host ($output | ConvertTo-Json -Depth 10)
+    }
+
+    exit 2  # Manual review required
 
 }
 

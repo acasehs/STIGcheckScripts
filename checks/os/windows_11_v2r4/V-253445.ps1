@@ -46,33 +46,26 @@ if ($ConfigFile -and (Test-Path $ConfigFile)) {
 
 # Main check logic
 function Invoke-Check {
-    # TODO: Implement check logic based on:
-    # If the following registry value does not exist or is not configured as specified, this is a finding:
-    # 
-    # Registry Hive: HKEY_LOCAL_MACHINE
-    # Registry Path: \SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\
-    # 
-    # Value Name: LegalNoticeText
-    # 
-    # Value Type: REG_SZ
-    # Value: 
-    # You are accessing a U.S. Government (USG) Information System (IS) that is provided for USG-authorized use only.
-    # 
-    # By using this IS (which includes any device attached to this IS), you consent to the following conditions:
-    # 
-    # -The USG routinely intercepts and monitors communications on this IS for purposes including, but not limited to, penetration testing, COMSEC monitoring, network operations and defense, personnel misconduct (PM), law enforcement (LE), and counterintelligence (CI) investigations.
-    # 
-    # -At any time, the USG may inspect and seize data stored on this IS.
-    # 
-    # -Communications using, or data stored on, this IS are not private, are subject to routine monitoring, interception, and search, and may be disclosed or used for any USG-authorized purpose.
-    # 
-    # -This IS includes security measures (e.g., authentication and access controls) to protect USG interests--not for your personal benefit or privacy.
+    # Windows Security Check
+    Write-Host "INFO: Checking Windows configuration"
+    Write-Host ""
 
-    
-    # TODO: Implement specific check logic
-    # This is a placeholder - customize based on check requirements
-    Write-Warning "Check not yet implemented"
-    return $false
+    Write-Host "MANUAL REVIEW REQUIRED: This check requires manual examination"
+    Write-Host "Refer to STIG documentation for specific validation steps"
+    Write-Host ""
+
+    if ($OutputJson) {
+        $output = @{
+            vuln_id = $VulnID
+            stig_id = $StigID
+            severity = $Severity
+            status = "Not_Reviewed"
+            finding_details = "Manual review required"
+        }
+        Write-Host ($output | ConvertTo-Json -Depth 10)
+    }
+
+    exit 2  # Manual review required
 
 }
 

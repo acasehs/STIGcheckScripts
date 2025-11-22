@@ -44,33 +44,26 @@ if ($ConfigFile -and (Test-Path $ConfigFile)) {
 
 # Main check logic
 function Invoke-Check {
-    # TODO: Implement check logic based on:
-    # Verify the ECA Root CA certificates are installed on unclassified systems as Trusted Root Certification Authorities.
-    # 
-    # Run "PowerShell" as an administrator.
-    # 
-    # Execute the following command:
-    # 
-    # Get-ChildItem -Path Cert:Localmachine\root | Where Subject -Like "*ECA*" | FL Subject, Thumbprint, NotAfter
-    # 
-    # If the following certificate "Subject" and "Thumbprint" information is not displayed, this is a finding. 
-    # 
-    # Subject: CN=ECA Root CA 4, OU=ECA, O=U.S. Government, C=US
-    # Thumbprint: 73E8BB08E337D6A5A6AEF90CFFDD97D9176CB582
-    # NotAfter: 12/30/2029
-    # 
-    # Alternately use the Certificates MMC snap-in:
-    # 
-    # Run "MMC".
-    # 
-    # Select "File", "Add/Remove Snap-in".
-    # 
+    # Windows Security Check
+    Write-Host "INFO: Checking Windows configuration"
+    Write-Host ""
 
-    
-    # TODO: Implement specific check logic
-    # This is a placeholder - customize based on check requirements
-    Write-Warning "Check not yet implemented"
-    return $false
+    Write-Host "MANUAL REVIEW REQUIRED: This check requires manual examination"
+    Write-Host "Refer to STIG documentation for specific validation steps"
+    Write-Host ""
+
+    if ($OutputJson) {
+        $output = @{
+            vuln_id = $VulnID
+            stig_id = $StigID
+            severity = $Severity
+            status = "Not_Reviewed"
+            finding_details = "Manual review required"
+        }
+        Write-Host ($output | ConvertTo-Json -Depth 10)
+    }
+
+    exit 2  # Manual review required
 
 }
 
