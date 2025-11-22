@@ -196,18 +196,71 @@ class STIGCheck:
                     'ssl_port': ssl_port
                 }
 
-                # Check compliance
+                # Check compliance with detailed evidence
+                finding['check_details'] = {
+                    'what_was_checked': 'SSL/TLS configuration for server',
+                    'requirement': 'SSL must be enabled AND non-SSL listen port must be disabled',
+                    'actual_configuration': {
+                        'listen_port_enabled': listen_enabled.lower(),
+                        'ssl_enabled': ssl_enabled.lower(),
+                        'ssl_port': ssl_port
+                    },
+                    'expected_configuration': {
+                        'listen_port_enabled': 'false',
+                        'ssl_enabled': 'true',
+                        'ssl_port': 'Valid port number (e.g., 7002, 9002)'
+                    }
+                }
+
+                # Detailed compliance check with audit evidence
+                compliance_issues = []
+
                 if listen_enabled.lower() == 'true':
-                    finding['status'] = 'FAIL'
-                    finding['reason'] = 'Listen Port Enabled is set to true (should be false)'
+                    compliance_issues.append({
+                        'issue': 'Non-SSL listen port is enabled',
+                        'evidence': f'listen-port-enabled = {listen_enabled}',
+                        'expected': 'listen-port-enabled = false',
+                        'risk': 'Allows unencrypted administrative connections',
+                        'remediation': 'Disable non-SSL listen port in WebLogic config'
+                    })
                     has_findings = True
-                elif ssl_enabled.lower() != 'true':
-                    finding['status'] = 'FAIL'
-                    finding['reason'] = 'SSL is not enabled'
+
+                if ssl_enabled.lower() != 'true':
+                    compliance_issues.append({
+                        'issue': 'SSL is not enabled for this server',
+                        'evidence': f'SSL enabled = {ssl_enabled}',
+                        'expected': 'SSL enabled = true',
+                        'risk': 'Server cannot accept encrypted connections',
+                        'remediation': 'Enable SSL and configure keystore/truststore'
+                    })
                     has_findings = True
+
+                if not ssl_port or ssl_port == 'N/A':
+                    if ssl_enabled.lower() == 'true':
+                        compliance_issues.append({
+                            'issue': 'SSL is enabled but no SSL port configured',
+                            'evidence': f'SSL port = {ssl_port}',
+                            'expected': 'SSL port = valid port number',
+                            'risk': 'SSL configuration incomplete',
+                            'remediation': 'Configure SSL listen port'
+                        })
+                        has_findings = True
+
+                # Set status based on findings
+                if compliance_issues:
+                    finding['status'] = 'FAIL'
+                    finding['reason'] = f"Found {len(compliance_issues)} compliance issue(s)"
+                    finding['compliance_issues'] = compliance_issues
+                    finding['recommendation'] = 'Configure SSL properly and disable non-SSL listen port'
                 else:
                     finding['status'] = 'PASS'
-                    finding['reason'] = 'SSL enabled and non-SSL port disabled'
+                    finding['reason'] = 'SSL enabled and properly configured, non-SSL port disabled'
+                    finding['evidence'] = {
+                        'ssl_enabled': f'SSL is enabled (ssl.enabled = {ssl_enabled})',
+                        'ssl_port': f'SSL port configured: {ssl_port}',
+                        'non_ssl_disabled': f'Non-SSL port disabled (listen-port-enabled = {listen_enabled})',
+                        'conclusion': 'Server meets cryptographic protection requirements'
+                    }
 
                 findings.append(finding)
 
@@ -252,11 +305,52 @@ class STIGCheck:
             if isinstance(detail, dict):
                 if 'server' in detail:
                     print(f"\nServer: {detail['server']}")
-                    print(f"  Listen Port Enabled: {detail.get('listen_port_enabled', 'N/A')}")
-                    print(f"  SSL Enabled: {detail.get('ssl_enabled', 'N/A')}")
-                    print(f"  SSL Port: {detail.get('ssl_port', 'N/A')}")
                     print(f"  Status: {detail.get('status', 'N/A')}")
                     print(f"  Reason: {detail.get('reason', 'N/A')}")
+
+                    # Show check details
+                    if 'check_details' in detail:
+                        check_info = detail['check_details']
+                        print(f"\n  What Was Checked:")
+                        print(f"    {check_info.get('what_was_checked', 'N/A')}")
+                        print(f"  Requirement:")
+                        print(f"    {check_info.get('requirement', 'N/A')}")
+
+                    # Show compliance issues for FAIL status
+                    if detail.get('status') == 'FAIL' and 'compliance_issues' in detail:
+                        print(f"\n  Compliance Issues ({len(detail['compliance_issues'])}):")
+                        for i, issue in enumerate(detail['compliance_issues'], 1):
+                            print(f"\n    Issue #{i}: {issue.get('issue', 'N/A')}")
+                            print(f"      Evidence Found: {issue.get('evidence', 'N/A')}")
+                            print(f"      Expected: {issue.get('expected', 'N/A')}")
+                            print(f"      Risk: {issue.get('risk', 'N/A')}")
+                            print(f"      Remediation: {issue.get('remediation', 'N/A')}")
+
+                        if 'recommendation' in detail:
+                            print(f"\n  Recommendation: {detail['recommendation']}")
+
+                    # Show evidence for PASS status
+                    elif detail.get('status') == 'PASS' and 'evidence' in detail:
+                        print(f"\n  Evidence Supporting PASS:")
+                        evidence = detail['evidence']
+                        for key, value in evidence.items():
+                            if key != 'conclusion':
+                                print(f"    ✓ {value}")
+                        if 'conclusion' in evidence:
+                            print(f"\n  Conclusion: {evidence['conclusion']}")
+
+                    # Show actual vs expected configuration
+                    if 'check_details' in detail:
+                        check_info = detail['check_details']
+                        if 'actual_configuration' in check_info:
+                            print(f"\n  Actual Configuration:")
+                            for key, value in check_info['actual_configuration'].items():
+                                print(f"    - {key}: {value}")
+                        if 'expected_configuration' in check_info:
+                            print(f"  Expected Configuration:")
+                            for key, value in check_info['expected_configuration'].items():
+                                print(f"    - {key}: {value}")
+
                 elif 'error' in detail:
                     print(f"\nError: {detail['error']}")
                     if 'message' in detail:

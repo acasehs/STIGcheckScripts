@@ -1,0 +1,380 @@
+{
+  "_comment": "STIG Check Configuration File - Oracle Linux 8",
+  "_instructions": "Customize this file for your organization's approved values and security requirements",
+  "_version": "1.0",
+  "_usage": "Use with checks: --config stig-config.json",
+
+  "organization": {
+    "_comment": "Update with your organization information",
+    "name": "Your Organization Name",
+    "environment": "Production",
+    "_allowed_environments": ["Production", "Development", "Test", "QA"],
+    "_instructions": "Set 'environment' to match your deployment type"
+  },
+
+  "operating_system": {
+    "_comment": "Operating system configuration and security settings",
+
+    "required_packages": {
+      "_comment": "Packages that must be installed for security compliance",
+      "_examples": ["audit", "firewalld", "aide", "usbguard", "fapolicyd"],
+      "values": [
+        "audit",
+        "firewalld",
+        "rsyslog",
+        "chrony",
+        "tmux"
+      ]
+    },
+
+    "prohibited_packages": {
+      "_comment": "Packages that must NOT be installed (security risks)",
+      "_examples": ["telnet-server", "rsh-server", "ypserv", "tftp-server"],
+      "values": [
+        "telnet-server",
+        "rsh-server",
+        "ypserv",
+        "tftp-server",
+        "vsftpd"
+      ]
+    },
+
+    "authorized_users": {
+      "_comment": "All user accounts authorized on this system",
+      "_instructions": "Include service accounts and human users. Review quarterly.",
+      "_note": "Default system accounts (root, bin, daemon, etc.) are automatically excluded from violations",
+      "values": [
+        "oracle",
+        "admin",
+        "appuser",
+        "backup"
+      ]
+    },
+
+    "privileged_users": {
+      "_comment": "Users with sudo/root privileges (subset of authorized_users)",
+      "_instructions": "Only include accounts that require administrative access",
+      "values": [
+        "oracle",
+        "admin"
+      ]
+    },
+
+    "service_accounts": {
+      "_comment": "Non-human service accounts",
+      "_instructions": "Accounts used for application/service operation",
+      "values": [
+        "appuser",
+        "backup"
+      ]
+    },
+
+    "firewall_settings": {
+      "_comment": "Firewall configuration requirements",
+      "firewall_enabled": {
+        "_comment": "Firewall must be active (true/false)",
+        "value": true
+      },
+      "approved_services": {
+        "_comment": "Firewall services allowed to be enabled",
+        "_examples": ["ssh", "https", "ntp"],
+        "_instructions": "Only list services required for operation",
+        "values": [
+          "ssh",
+          "https"
+        ]
+      },
+      "approved_ports": {
+        "_comment": "Specific ports allowed to be open",
+        "_examples": [22, 443, 8080],
+        "_instructions": "Document business justification for each port",
+        "values": [
+          22,
+          443
+        ]
+      }
+    },
+
+    "selinux_settings": {
+      "_comment": "SELinux configuration requirements",
+      "selinux_mode": {
+        "_comment": "Required SELinux mode",
+        "_allowed_values": ["Enforcing", "Permissive", "Disabled"],
+        "_requirement": "Must be 'Enforcing' for STIG compliance",
+        "value": "Enforcing"
+      },
+      "selinux_policy": {
+        "_comment": "Required SELinux policy type",
+        "_allowed_values": ["targeted", "mls", "minimum"],
+        "_recommendation": "Use 'targeted' for most deployments",
+        "value": "targeted"
+      }
+    },
+
+    "audit_settings": {
+      "_comment": "Audit daemon (auditd) configuration requirements",
+      "audit_enabled": {
+        "_comment": "Audit service must be running (true/false)",
+        "value": true
+      },
+      "audit_log_max_size": {
+        "_comment": "Maximum audit log size in MB (STIG recommends 6 MB minimum)",
+        "_recommendation": "Set based on audit volume and retention requirements",
+        "value": 6
+      },
+      "audit_log_retention_days": {
+        "_comment": "Number of days to retain audit logs",
+        "_requirement": "NIST recommends 90+ days for compliance",
+        "value": 90
+      },
+      "space_left_action": {
+        "_comment": "Action when disk space is low",
+        "_allowed_values": ["email", "syslog", "exec", "suspend", "single", "halt"],
+        "_requirement": "Must be 'email' or 'syslog' per STIG",
+        "value": "email"
+      },
+      "admin_space_left_action": {
+        "_comment": "Action when disk space is critically low",
+        "_allowed_values": ["email", "syslog", "exec", "suspend", "single", "halt"],
+        "_requirement": "Must be 'single' or 'halt' per STIG",
+        "value": "single"
+      }
+    },
+
+    "ssh_settings": {
+      "_comment": "SSH daemon configuration requirements",
+      "approved_ciphers": {
+        "_comment": "SSH ciphers approved by your organization (FIPS 140-2 compliant)",
+        "_reference": "NIST SP 800-52 Rev 2",
+        "_examples": [
+          "aes256-ctr",
+          "aes192-ctr",
+          "aes128-ctr",
+          "aes256-gcm@openssh.com",
+          "aes128-gcm@openssh.com"
+        ],
+        "values": [
+          "aes256-ctr",
+          "aes192-ctr",
+          "aes128-ctr"
+        ]
+      },
+      "approved_macs": {
+        "_comment": "SSH MACs (Message Authentication Codes) approved by your organization",
+        "_examples": [
+          "hmac-sha2-512",
+          "hmac-sha2-256",
+          "hmac-sha2-512-etm@openssh.com",
+          "hmac-sha2-256-etm@openssh.com"
+        ],
+        "values": [
+          "hmac-sha2-512",
+          "hmac-sha2-256"
+        ]
+      },
+      "approved_kex_algorithms": {
+        "_comment": "SSH key exchange algorithms approved by your organization",
+        "_examples": [
+          "ecdh-sha2-nistp256",
+          "ecdh-sha2-nistp384",
+          "ecdh-sha2-nistp521",
+          "diffie-hellman-group-exchange-sha256"
+        ],
+        "values": [
+          "ecdh-sha2-nistp256",
+          "ecdh-sha2-nistp384",
+          "ecdh-sha2-nistp521"
+        ]
+      },
+      "max_auth_tries": {
+        "_comment": "Maximum authentication attempts before disconnect",
+        "_requirement": "STIG requires 3 or less",
+        "value": 3
+      },
+      "client_alive_interval": {
+        "_comment": "Interval in seconds for SSH keepalive messages",
+        "_requirement": "STIG requires 600 (10 minutes) or less",
+        "value": 600
+      },
+      "client_alive_count_max": {
+        "_comment": "Maximum keepalive messages before disconnect",
+        "_requirement": "STIG requires 0 (immediate disconnect)",
+        "value": 0
+      }
+    },
+
+    "password_settings": {
+      "_comment": "Password policy requirements",
+      "min_length": {
+        "_comment": "Minimum password length",
+        "_requirement": "STIG requires 15 characters minimum",
+        "value": 15
+      },
+      "min_class_requirements": {
+        "_comment": "Minimum character classes (upper, lower, digit, special)",
+        "_requirement": "STIG requires at least 4",
+        "value": 4
+      },
+      "max_repeating_chars": {
+        "_comment": "Maximum consecutive repeating characters",
+        "_requirement": "STIG requires 3 or less",
+        "value": 3
+      },
+      "password_reuse_limit": {
+        "_comment": "Number of previous passwords to remember",
+        "_requirement": "STIG requires 5 or more",
+        "value": 5
+      },
+      "password_max_age_days": {
+        "_comment": "Maximum password age in days",
+        "_requirement": "STIG requires 60 days or less",
+        "value": 60
+      },
+      "password_min_age_days": {
+        "_comment": "Minimum days between password changes",
+        "_requirement": "STIG requires 1 day minimum",
+        "value": 1
+      }
+    },
+
+    "login_settings": {
+      "_comment": "Login and session management settings",
+      "session_timeout_seconds": {
+        "_comment": "Idle session timeout in seconds",
+        "_requirement": "STIG requires 900 seconds (15 minutes) or less",
+        "value": 900
+      },
+      "max_login_attempts": {
+        "_comment": "Maximum failed login attempts before account lockout",
+        "_requirement": "STIG requires 3 or less",
+        "value": 3
+      },
+      "lockout_duration_seconds": {
+        "_comment": "Account lockout duration in seconds after max failed attempts",
+        "_requirement": "STIG requires 900 seconds (15 minutes) or more",
+        "_note": "0 means manual unlock required",
+        "value": 900
+      },
+      "root_login_allowed": {
+        "_comment": "Allow direct root login",
+        "_requirement": "STIG requires false (use sudo instead)",
+        "value": false
+      }
+    },
+
+    "kernel_parameters": {
+      "_comment": "Required kernel sysctl parameters",
+      "_instructions": "These are security-related kernel settings",
+      "net.ipv4.conf.all.accept_source_route": {
+        "_comment": "Disable source routing",
+        "_requirement": "Must be 0",
+        "value": 0
+      },
+      "net.ipv4.conf.default.accept_source_route": {
+        "_comment": "Disable source routing (default)",
+        "_requirement": "Must be 0",
+        "value": 0
+      },
+      "net.ipv4.icmp_echo_ignore_broadcasts": {
+        "_comment": "Ignore ICMP broadcast requests",
+        "_requirement": "Must be 1",
+        "value": 1
+      },
+      "net.ipv4.conf.all.send_redirects": {
+        "_comment": "Disable sending ICMP redirects",
+        "_requirement": "Must be 0",
+        "value": 0
+      },
+      "kernel.randomize_va_space": {
+        "_comment": "Enable ASLR (Address Space Layout Randomization)",
+        "_requirement": "Must be 2",
+        "value": 2
+      }
+    },
+
+    "fips_mode": {
+      "_comment": "FIPS 140-2 cryptographic mode",
+      "fips_enabled": {
+        "_comment": "System must operate in FIPS mode",
+        "_requirement": "STIG requires true for DoD systems",
+        "_note": "Enabling FIPS requires system reboot",
+        "value": true
+      },
+      "approved_crypto_policies": {
+        "_comment": "Approved system-wide crypto policies",
+        "_allowed_values": ["FIPS", "FIPS:OSPP"],
+        "_instructions": "Use 'FIPS' for standard compliance, 'FIPS:OSPP' for Common Criteria",
+        "value": "FIPS"
+      }
+    },
+
+    "banner_text": {
+      "_comment": "Login banner text (DoD Standard Mandatory Notice)",
+      "_instructions": "Customize with your organization's warning banner",
+      "_requirement": "Must display before granting access",
+      "pre_login": "You are accessing a U.S. Government (USG) Information System (IS) that is provided for USG-authorized use only.\n\nBy using this IS (which includes any device attached to this IS), you consent to the following conditions:\n\n-The USG routinely intercepts and monitors communications on this IS for purposes including, but not limited to, penetration testing, COMSEC monitoring, network operations and defense, personnel misconduct (PM), law enforcement (LE), and counterintelligence (CI) investigations.\n\n-At any time, the USG may inspect and seize data stored on this IS.\n\n-Communications using, or data stored on, this IS are not private, are subject to routine monitoring, interception, and search, and may be disclosed or used for any USG-authorized purpose.\n\n-This IS includes security measures (e.g., authentication and access controls) to protect USG interests--not for your personal benefit or privacy.\n\n-Notwithstanding the above, using this IS does not constitute consent to PM, LE or CI investigative searching or monitoring of the content of privileged communications, or work product, related to personal representation or services by attorneys, psychotherapists, or clergy, and their assistants. Such communications and work product are private and confidential. See User Agreement for details.",
+      "post_login": "You are accessing a U.S. Government (USG) Information System (IS)."
+    },
+
+    "file_integrity": {
+      "_comment": "File integrity monitoring settings",
+      "aide_enabled": {
+        "_comment": "AIDE (Advanced Intrusion Detection Environment) must be configured",
+        "_requirement": "STIG requires file integrity monitoring",
+        "_note": "AIDE must be initialized and configured to run periodically",
+        "value": true
+      },
+      "aide_check_frequency": {
+        "_comment": "How often to run AIDE checks",
+        "_allowed_values": ["daily", "weekly"],
+        "_requirement": "STIG requires at least weekly",
+        "value": "weekly"
+      }
+    },
+
+    "usb_restrictions": {
+      "_comment": "USB device usage restrictions",
+      "usbguard_enabled": {
+        "_comment": "USBGuard must be enabled",
+        "_requirement": "STIG requires USB device authorization",
+        "_note": "May not be applicable in all environments",
+        "value": false
+      },
+      "authorized_usb_devices": {
+        "_comment": "List of authorized USB device IDs",
+        "_format": "vendor_id:product_id",
+        "_examples": ["0781:5567", "1234:5678"],
+        "values": []
+      }
+    }
+  },
+
+  "_customization_instructions": {
+    "step1": "Review your organization's security policies and STIG requirements",
+    "step2": "Update 'organization' section with your org name and environment type",
+    "step3": "Review and update authorized/privileged user lists",
+    "step4": "Configure firewall approved services and ports for your environment",
+    "step5": "Verify SELinux mode is set to 'Enforcing' (required for STIG compliance)",
+    "step6": "Review SSH cipher suites and ensure FIPS 140-2 compliance",
+    "step7": "Update password and login policies per organizational requirements",
+    "step8": "Configure kernel parameters (defaults should be acceptable)",
+    "step9": "Customize banner text with your organization's warning message",
+    "step10": "Enable FIPS mode if required for your environment (DoD requires this)",
+    "step11": "Save and validate: python3 -m json.tool stig-config.json",
+    "step12": "Test with checks: bash V-248519.sh --config stig-config.json"
+  },
+
+  "_validation": {
+    "test_command": "python3 -m json.tool stig-config.json",
+    "expected_result": "Valid JSON output without errors",
+    "usage_example": "bash V-248519.sh --config stig-config.json --output-json results.json"
+  },
+
+  "_references": {
+    "STIG": "Oracle Linux 8 Security Technical Implementation Guide v1r7",
+    "NIST_SP_800-53": "https://csrc.nist.gov/publications/detail/sp/800-53/rev-5/final",
+    "NIST_SP_800-52": "https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-52r2.pdf",
+    "FIPS_140-2": "https://csrc.nist.gov/publications/detail/fips/140/2/final",
+    "Oracle_Linux_8_Docs": "https://docs.oracle.com/en/operating-systems/oracle-linux/8/"
+  }
+}
