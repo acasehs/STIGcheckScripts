@@ -25,17 +25,17 @@ Based on user requirements, STIGs are prioritized as follows:
 
 **Priority 1 Total**: 1,524 automated checks across 6 Oracle products
 
-### Priority 2: Windows Operating Systems (Partially Complete)
+### Priority 2: Windows Operating Systems ⭐ **COMPLETE**
 - [x] Windows Server 2022 v1r3 - **COMPLETE** (273 checks - PowerShell + python - from previous work)
 - [x] Windows Server 2019 v2r7 - **COMPLETE** (273 checks - PowerShell + python - from previous work)
-- [ ] Windows Server 2016 v2r9 (266 checks)
-- [ ] Windows Server 2012/2012 R2 v3r7 (252 checks)
-- [ ] Windows 11 v1r5 (271 checks)
-- [ ] Windows 10 v2r8 (271 checks)
+- [ ] Windows Server 2016 v2r9 - Not in AllSTIGS2.json
+- [ ] Windows Server 2012/2012 R2 v3r7 - Not in AllSTIGS2.json
+- [x] Windows 11 v2r4 - **COMPLETE** (258 checks - PowerShell + python)
+- [x] Windows 10 v3r4 - **COMPLETE** (261 checks - PowerShell + python)
 
-**Priority 2 Completed**: 546 checks across 2 Windows Server versions
+**Priority 2 Completed**: 1,065 checks across 4 Windows OS versions (all available in AllSTIGS2.json)
 
-### Priority 3: Linux Operating Systems ⭐ **NEARLY COMPLETE**
+### Priority 3: Linux Operating Systems ⭐ **COMPLETE**
 - [x] Red Hat Enterprise Linux 8 v2r4 - **COMPLETE** (369 checks - bash + python)
 - [x] Red Hat Enterprise Linux 9 v2r5 - **COMPLETE** (450 checks - bash + python)
 - [ ] Red Hat Enterprise Linux 7 v3r14 (257 checks) - Not in AllSTIGS2.json
