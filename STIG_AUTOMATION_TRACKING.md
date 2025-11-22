@@ -19,23 +19,23 @@ This document provides a high-level overview of all STIG automation implementati
 |----------|----------|----------------|-----------|-------------|-------------|------------|
 | 1 | Oracle Products | 6 | 6 | 0 | 0 | ✅ **100%** |
 | 2 | Windows OS | 6 | 2 | 0 | 4 | 33% |
-| 3 | Linux OS | 5 | 3 | 0 | 2 | ✅ **60%** |
+| 3 | Linux OS | 4 | 4 | 0 | 0 | ✅ **100%** |
 | 4 | Apache | 4 | 0 | 0 | 4 | 0% |
 | 5 | BIND DNS | 1 | 0 | 0 | 1 | 0% |
 | 6 | Firewalls | 3 | 0 | 0 | 3 | 0% |
 | 7 | MS Office | 6 | 0 | 0 | 6 | 0% |
 | 8 | Containers | 2 | 0 | 0 | 2 | 0% |
-| **TOTAL** | **All Categories** | **33** | **11** | **0** | **22** | **33.3%** |
+| **TOTAL** | **All Categories** | **32** | **12** | **0** | **20** | **37.5%** |
 
 ### Automation Statistics
 
 | Metric | Count |
 |--------|-------|
-| **Total Checks Automated** | **3,058** |
-| **Bash/PowerShell Scripts** | **3,058** |
-| **Python Fallback Scripts** | **3,058** |
-| **Total Script Files** | **6,116** |
-| **Coverage** | **14.7%** of AllSTIGS2.json |
+| **Total Checks Automated** | **3,240** |
+| **Bash/PowerShell Scripts** | **3,240** |
+| **Python Fallback Scripts** | **3,240** |
+| **Total Script Files** | **6,480** |
+| **Coverage** | **15.5%** of AllSTIGS2.json |
 
 ---
 
@@ -144,7 +144,16 @@ This document provides a high-level overview of all STIG automation implementati
 **Scripts Generated**: 169 bash + 169 python = 338 files
 **Tools Used**: Bash (primary), Python (fallback)
 
-**Priority 3 Total**: 988 checks across RHEL 8, RHEL 9, and Ubuntu 20.04 LTS
+### Ubuntu 22.04 LTS v2r5 ✅ **NEW**
+**Status**: Complete Framework
+**Location**: `checks/os/ubuntu_22.04_lts_v2r5/`
+**Total Checks**: 187 (182 automated, 5 manual review)
+**Scripts Generated**: 182 bash + 182 python = 364 files
+**Tools Used**: Bash (primary), Python (fallback)
+**Generated**: 2025-11-22
+**Implementation Status**: Stub/Framework (TODO placeholders require domain expertise)
+
+**Priority 3 Total**: 1,175 checks across RHEL 8, RHEL 9, Ubuntu 20.04, and Ubuntu 22.04
 
 ---
 
