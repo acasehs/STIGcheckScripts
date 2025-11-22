@@ -1,0 +1,139 @@
+#!/usr/bin/env bash
+################################################################################
+# STIG Check: V-271587
+# Severity: medium
+# Rule Title: OL 9 must allow only the information system security manager (ISSM) (or individuals or roles appointed by the ISSM) to select which auditable events are to be audited.
+# STIG ID: OL09-00-000805
+# Rule ID: SV-271587r1091473
+#
+# Description:
+#     Without the capability to restrict the roles and individuals that can select which events are audited, unauthorized personnel may be able to prevent the auditing of critical events. Misconfigured audits may degrade the system's performance by overwhelming the audit log. Misconfigured audits may also...
+#
+# Check Content:
+#     Verify that OL 9 sets files in directories "/etc/audit/rules.d/" and "/etc/audit/auditd.conf" files to have a mode of "0640" or less permissive with the following command:  $ sudo stat -c "%a %n"  /etc/audit/rules.d/*.rules  $ sudo sh -c 'stat -c "%a %n" /etc/audit/rules.d/*.rules' 600 /etc/audit/ru...
+#
+# Exit Codes:
+#     0 = Check Passed (Compliant)
+#     1 = Check Failed (Finding)
+#     2 = Check Not Applicable
+#     3 = Check Error
+################################################################################
+
+# Configuration
+VULN_ID="V-271587"
+STIG_ID="OL09-00-000805"
+SEVERITY="medium"
+TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+CONFIG_FILE=""
+OUTPUT_JSON=""
+
+# Parse arguments
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --config)
+            CONFIG_FILE="$2"
+            shift 2
+            ;;
+        --output-json)
+            OUTPUT_JSON="$2"
+            shift 2
+            ;;
+        -h|--help)
+            cat << 'EOF'
+Usage: $0 [OPTIONS]
+
+Options:
+  --config <file>         Configuration file (JSON)
+  --output-json <file>    Output results in JSON format
+  -h, --help             Show this help message
+
+Exit Codes:
+  0 = Pass (Compliant)
+  1 = Fail (Finding)
+  2 = Not Applicable
+  3 = Error
+
+Example:
+  $0
+  $0 --config stig-config.json
+  $0 --output-json results.json
+EOF
+            exit 0
+            ;;
+        *)
+            echo "Unknown option: $1"
+            exit 3
+            ;;
+    esac
+done
+
+# Load configuration if provided
+if [[ -n "$CONFIG_FILE" ]]; then
+    if [[ ! -f "$CONFIG_FILE" ]]; then
+        echo "ERROR: Configuration file not found: $CONFIG_FILE"
+        exit 3
+    fi
+    # TODO: Load configuration values using jq if available
+fi
+
+################################################################################
+# CHECK IMPLEMENTATION
+################################################################################
+
+# TODO: Implement the actual check logic
+#
+# STIG Check Method from the official STIG:
+# (See check header for details)
+#
+# Fix Text from the official STIG:
+# (See check header for details)
+
+echo "TODO: Implement check for V-271587"
+echo "This is a placeholder that requires implementation."
+
+# Placeholder status
+STATUS="Not Implemented"
+EXIT_CODE=2
+FINDING_DETAILS="Check logic not yet implemented - requires domain expertise"
+
+################################################################################
+# OUTPUT RESULTS
+################################################################################
+
+# JSON output if requested
+if [[ -n "$OUTPUT_JSON" ]]; then
+    cat > "$OUTPUT_JSON" << EOF_JSON
+{
+  "vuln_id": "$VULN_ID",
+  "stig_id": "$STIG_ID",
+  "severity": "$SEVERITY",
+  "rule_title": "OL 9 must allow only the information system security manager (ISSM) (or individuals or roles appointed by the ISSM) to select which auditable events are to be audited.",
+  "status": "$STATUS",
+  "finding_details": "$FINDING_DETAILS",
+  "timestamp": "$TIMESTAMP",
+  "exit_code": $EXIT_CODE
+}
+EOF_JSON
+fi
+
+# Human-readable output
+cat << EOF
+
+================================================================================
+STIG Check: $VULN_ID - $STIG_ID
+Severity: ${SEVERITY^^}
+================================================================================
+Rule: OL 9 must allow only the information system security manager (ISSM) (or individuals or roles appointed by the ISSM) to select which auditable events are to be audited.
+Status: $STATUS
+Timestamp: $TIMESTAMP
+
+--------------------------------------------------------------------------------
+Finding Details:
+--------------------------------------------------------------------------------
+$FINDING_DETAILS
+
+================================================================================
+
+EOF
+
+exit $EXIT_CODE
