@@ -36,12 +36,13 @@ Based on user requirements, STIGs are prioritized as follows:
 **Priority 2 Completed**: 546 checks across 2 Windows Server versions
 
 ### Priority 3: Linux Operating Systems (Partially Complete)
-- [ ] Red Hat Enterprise Linux 8 v1r13 (378 checks)
+- [x] Red Hat Enterprise Linux 8 v2r4 - **COMPLETE** (369 checks - bash + python)
+- [x] Red Hat Enterprise Linux 9 v2r5 - **COMPLETE** (450 checks - bash + python)
 - [ ] Red Hat Enterprise Linux 7 v3r14 (257 checks)
 - [x] Ubuntu 20.04 LTS v1r9 - **COMPLETE** (169 checks - bash + python - from previous work)
 - [ ] Ubuntu 22.04 LTS v1r2 (239 checks)
 
-**Priority 3 Completed**: 169 checks for Ubuntu 20.04 LTS
+**Priority 3 Completed**: 988 checks across RHEL 8, RHEL 9, and Ubuntu 20.04 LTS
 
 ### Priority 4: Apache Web Server
 - [ ] Apache Server 2.4 UNIX Site v2r5 (181 checks)
