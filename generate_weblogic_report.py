@@ -8,10 +8,15 @@ import re
 from datetime import datetime
 
 def analyze_check_automation(check):
-    """Determine if a check can be automated"""
+    """Determine if a check can be automated and what tools are needed"""
     check_content = check.get('Check Content', '').lower()
     fix_text = check.get('Fix Text', '').lower()
     discussion = check.get('Discussion', '').lower()
+
+    # Tool preference order: bash > powershell > python > third-party
+    preferred_tool = 'Unknown'
+    third_party_required = False
+    third_party_tools = []
 
     # Keywords that indicate manual review required
     manual_keywords = [
@@ -110,39 +115,57 @@ def analyze_check_automation(check):
         if keyword in check_content or keyword in discussion:
             automation_status = 'Manual'
             automation_method = 'Manual review required'
+            preferred_tool = 'N/A (manual)'
             notes.append(f'Contains keyword: "{keyword}"')
-            return automation_status, automation_method, requires_elevation, notes, is_environment_specific, is_system_specific, environment_notes
+            return automation_status, automation_method, requires_elevation, notes, is_environment_specific, is_system_specific, environment_notes, preferred_tool, third_party_required, third_party_tools
 
-    # Check for GUI-based checks (can be automated via WLST)
+    # Check for GUI-based checks (can be automated via WLST or native tools)
     for keyword in gui_keywords:
         if keyword in check_content:
             automation_status = 'Automatable'
-            automation_method = 'WLST (WebLogic Scripting Tool)'
-            notes.append('Admin Console/EM check - can be automated via WLST/JMX')
-            return automation_status, automation_method, requires_elevation, notes, is_environment_specific, is_system_specific, environment_notes
+            # Determine if we can use native tools or need WLST
+            # For config checks, prefer bash/python parsing config.xml
+            if 'config' in check_content or 'configuration' in check_content:
+                automation_method = 'Bash/Python (config.xml parsing)'
+                preferred_tool = 'Bash (primary), Python (fallback)'
+                third_party_required = False
+                notes.append('Admin Console check - can be automated via native tools (bash/python parsing config.xml)')
+            else:
+                automation_method = 'WLST (WebLogic Scripting Tool) or Bash/Python'
+                preferred_tool = 'Bash/Python (preferred), WLST (fallback)'
+                third_party_required = True
+                third_party_tools.append('WLST - Oracle WebLogic Scripting Tool (optional if bash/python can check)')
+                notes.append('Admin Console/EM check - prefer native tools, use WLST if needed')
+            return automation_status, automation_method, requires_elevation, notes, is_environment_specific, is_system_specific, environment_notes, preferred_tool, third_party_required, third_party_tools
 
     # Check for config file checks
     for keyword in config_keywords:
         if keyword in check_content or keyword in fix_text:
             automation_status = 'Automatable'
-            automation_method = 'XML/Config file parsing'
-            notes.append('Configuration file check - can be automated')
-            return automation_status, automation_method, requires_elevation, notes, is_environment_specific, is_system_specific, environment_notes
+            automation_method = 'Bash/Python (config file parsing)'
+            preferred_tool = 'Bash (primary), Python (fallback)'
+            third_party_required = False
+            notes.append('Configuration file check - can be automated with native tools')
+            return automation_status, automation_method, requires_elevation, notes, is_environment_specific, is_system_specific, environment_notes, preferred_tool, third_party_required, third_party_tools
 
     # Default: if it mentions servers/configuration, likely automatable
     for keyword in wlst_keywords:
         if keyword in check_content:
             automation_status = 'Partially Automatable'
-            automation_method = 'WLST or manual verification'
-            notes.append('May require WLST scripting with manual validation')
-            return automation_status, automation_method, requires_elevation, notes, is_environment_specific, is_system_specific, environment_notes
+            automation_method = 'Bash/Python or WLST'
+            preferred_tool = 'Bash/Python (preferred), WLST (if needed)'
+            third_party_required = False  # Can often be done without WLST
+            third_party_tools.append('WLST - WebLogic Scripting Tool (optional)')
+            notes.append('May require bash/python scripting or WLST with manual validation')
+            return automation_status, automation_method, requires_elevation, notes, is_environment_specific, is_system_specific, environment_notes, preferred_tool, third_party_required, third_party_tools
 
     # If we get here, mark as needs analysis
     automation_status = 'Needs Analysis'
     automation_method = 'Review required'
+    preferred_tool = 'TBD'
     notes.append('Automation feasibility needs detailed analysis')
 
-    return automation_status, automation_method, requires_elevation, notes, is_environment_specific, is_system_specific, environment_notes
+    return automation_status, automation_method, requires_elevation, notes, is_environment_specific, is_system_specific, environment_notes, preferred_tool, third_party_required, third_party_tools
 
 
 def generate_markdown_report(checks):
@@ -173,7 +196,7 @@ def generate_markdown_report(checks):
     }
 
     for check in checks:
-        auto_status, _, _, _, is_env, is_sys, _ = analyze_check_automation(check)
+        auto_status, _, _, _, is_env, is_sys, _, _, third_party_req, _ = analyze_check_automation(check)
         severity = check.get('Severity', 'medium').lower()
 
         if auto_status == 'Automatable':
@@ -237,6 +260,20 @@ def generate_markdown_report(checks):
     report.append(f"| 🟢 LOW | {severity_counts.get('low', 0)} | {severity_counts.get('low', 0)/len(checks)*100:.1f}% |\n")
     report.append(f"| **TOTAL** | **{len(checks)}** | **100.0%** |\n")
 
+    # Add tool preference summary
+    report.append("\n### Tool Preference (Priority: Bash > PowerShell > Python > Third-Party)\n\n")
+    report.append("| Tool Type | Count | Notes |\n")
+    report.append("|-----------|-------|-------|\n")
+
+    bash_count = sum(1 for c in checks if 'bash' in analyze_check_automation(c)[7].lower())
+    python_count = sum(1 for c in checks if 'python' in analyze_check_automation(c)[7].lower() and 'bash' not in analyze_check_automation(c)[7].lower())
+    third_party_count = sum(1 for c in checks if analyze_check_automation(c)[8])
+
+    report.append(f"| Bash (Native) | {bash_count} | Primary method - no dependencies |\n")
+    report.append(f"| Python (Native) | {python_count} | Fallback - uses stdlib only |\n")
+    report.append(f"| Third-Party Optional | {third_party_count} | Can use WLST if needed |\n")
+    report.append(f"| **Minimal Third-Party** | **{len(checks) - third_party_count}** | **{(len(checks) - third_party_count)/len(checks)*100:.1f}% can run without third-party tools** |\n")
+
     # Keep old summary for compatibility
     report.append("\n## Summary\n")
     report.append(f"- **Automatable Checks:** {automatable} ({automatable/len(checks)*100:.1f}%)\n")
@@ -267,7 +304,7 @@ def generate_markdown_report(checks):
     }
 
     for check in checks:
-        auto_status, auto_method, requires_elev, notes, is_env, is_sys, env_notes = analyze_check_automation(check)
+        auto_status, auto_method, requires_elev, notes, is_env, is_sys, env_notes, pref_tool, third_party_req, third_party_tools_list = analyze_check_automation(check)
         check_info = {
             'check': check,
             'auto_method': auto_method,
@@ -275,7 +312,10 @@ def generate_markdown_report(checks):
             'notes': notes,
             'is_environment_specific': is_env,
             'is_system_specific': is_sys,
-            'environment_notes': env_notes
+            'environment_notes': env_notes,
+            'preferred_tool': pref_tool,
+            'third_party_required': third_party_req,
+            'third_party_tools': third_party_tools_list
         }
         grouped_checks[auto_status].append(check_info)
 
@@ -299,6 +339,22 @@ def generate_markdown_report(checks):
             report.append(f"**Rule Title:** {title}\n\n")
             report.append(f"**Automation Status:** {group_name}\n\n")
             report.append(f"**Automation Method:** {item['auto_method']}\n\n")
+            report.append(f"**Preferred Tool:** {item['preferred_tool']}\n\n")
+
+            # Third-party tool requirements
+            if item['third_party_required'] and item['third_party_tools']:
+                report.append(f"**⚠️ Third-Party Tools Required:**\n")
+                for tool in item['third_party_tools']:
+                    report.append(f"- {tool}\n")
+                report.append("\n")
+            elif item['third_party_tools']:
+                report.append(f"**Third-Party Tools (Optional):**\n")
+                for tool in item['third_party_tools']:
+                    report.append(f"- {tool}\n")
+                report.append("\n")
+            else:
+                report.append(f"**Third-Party Tools:** None (uses native bash/python/powershell)\n\n")
+
             report.append(f"**Requires Elevation:** {'Yes (WebLogic Admin credentials)' if item['requires_elev'] else 'No'}\n\n")
 
             # Add environment/system specific indicators
@@ -332,26 +388,35 @@ def generate_markdown_report(checks):
 
             # Execution command for automatable checks
             if group_name == 'Automatable' or group_name == 'Partially Automatable':
-                script_name = f"V-{vuln_id.split('-')[1]}.py"
+                script_base = f"V-{vuln_id.split('-')[1]}"
                 report.append(f"**Execution Command:**\n")
                 report.append(f"```bash\n")
-                report.append(f"# Standard execution\n")
-                report.append(f"python3 checks/application/oracle_weblogic_server_12c/{script_name} \\\n")
-                report.append(f"  --admin-url t3://localhost:7001 \\\n")
-                report.append(f"  --username weblogic \\\n")
-                report.append(f"  --password <password>\n\n")
+
+                # Show bash as primary option
+                report.append(f"# Option 1: Bash (Preferred - No third-party tools)\n")
+                report.append(f"bash checks/application/Test-Weblogic-3/{script_base}.sh \\\n")
+                report.append(f"  --domain-home /u01/oracle/user_projects/domains/base_domain\n\n")
+
+                # Show Python as fallback
+                report.append(f"# Option 2: Python (Fallback - No third-party tools)\n")
+                report.append(f"python3 checks/application/Test-Weblogic-3/{script_base}.py \\\n")
+                report.append(f"  --domain-home /u01/oracle/user_projects/domains/base_domain\n\n")
+
+                # Show with JSON output
                 report.append(f"# With JSON output\n")
-                report.append(f"python3 checks/application/oracle_weblogic_server_12c/{script_name} \\\n")
-                report.append(f"  --admin-url t3://localhost:7001 \\\n")
-                report.append(f"  --username weblogic \\\n")
-                report.append(f"  --password <password> \\\n")
+                report.append(f"bash checks/application/Test-Weblogic-3/{script_base}.sh \\\n")
+                report.append(f"  --domain-home /u01/oracle/user_projects/domains/base_domain \\\n")
                 report.append(f"  --output-json results/{vuln_id}.json\n\n")
-                report.append(f"# Force execution without elevation check\n")
-                report.append(f"python3 checks/application/oracle_weblogic_server_12c/{script_name} \\\n")
-                report.append(f"  --admin-url t3://localhost:7001 \\\n")
-                report.append(f"  --username weblogic \\\n")
-                report.append(f"  --password <password> \\\n")
-                report.append(f"  --force\n")
+
+                # Show WLST option if needed
+                if item['third_party_tools']:
+                    report.append(f"# Option 3: WLST (Third-party - use if native tools insufficient)\n")
+                    report.append(f"# Requires: Oracle WebLogic Scripting Tool (WLST)\n")
+                    report.append(f"wlst.sh checks/application/Test-Weblogic-1/{script_base}.py \\\n")
+                    report.append(f"  --admin-url t3://localhost:7001 \\\n")
+                    report.append(f"  --username weblogic \\\n")
+                    report.append(f"  --password <password>\n")
+
                 report.append(f"```\n")
 
             # NIST references
@@ -410,7 +475,11 @@ def main():
     import sys
 
     # Determine which version to use
-    if len(sys.argv) > 1 and sys.argv[1] == 'v2':
+    if len(sys.argv) > 1 and sys.argv[1] == 'v3':
+        json_file = 'weblogic_checks_v2.json'
+        report_file = 'reports/Oracle_WebLogic_Server_12c_STIG_Analysis_v3.md'
+        version_label = 'v3 (Native Tools Priority)'
+    elif len(sys.argv) > 1 and sys.argv[1] == 'v2':
         json_file = 'weblogic_checks_v2.json'
         report_file = 'reports/Oracle_WebLogic_Server_12c_STIG_Analysis_v2.md'
         version_label = 'v2'

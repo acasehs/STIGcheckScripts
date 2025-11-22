@@ -1,0 +1,265 @@
+#!/usr/bin/env python3
+"""
+STIG Check: V-235928
+Severity: medium
+Rule Title: Oracle WebLogic must utilize cryptography to protect the confidentiality of remote access management sessions.
+STIG ID: WBLC-01-000009
+Requires Elevation: Yes (Read access to WebLogic domain directory)
+Third-Party Tools: None (uses Python stdlib - xml.etree.ElementTree)
+
+Description:
+    Checks if Oracle WebLogic servers have SSL Listen Port enabled and
+    non-SSL Listen Port disabled for all servers in the domain by parsing
+    config.xml files directly using Python's built-in XML parser.
+
+Execution:
+    python3 V-235928.py --domain-home /u01/oracle/user_projects/domains/base_domain
+    python3 V-235928.py --domain-home /u01/oracle/user_projects/domains/base_domain --output-json results.json
+    python3 V-235928.py --domain-home /u01/oracle/user_projects/domains/base_domain --force
+
+Output Formats:
+    - Exit Code: 0 (Pass), 1 (Fail), 2 (Not Applicable), 3 (Error)
+    - JSON: --output-json results.json
+    - Human Readable: Default to stdout
+"""
+
+import sys
+import os
+import json
+import argparse
+import xml.etree.ElementTree as ET
+from datetime import datetime
+from pathlib import Path
+
+
+class STIGCheck:
+    def __init__(self, domain_home, force=False):
+        self.domain_home = Path(domain_home)
+        self.force = force
+        self.results = {
+            'vuln_id': 'V-235928',
+            'severity': 'medium',
+            'stig_id': 'WBLC-01-000009',
+            'rule_title': 'Oracle WebLogic must utilize cryptography to protect the confidentiality of remote access management sessions.',
+            'status': 'Not Checked',
+            'finding_details': [],
+            'timestamp': datetime.utcnow().isoformat() + 'Z',
+            'requires_elevation': True,
+            'third_party_tools': 'None (uses Python stdlib)',
+            'check_method': 'Python - Direct config.xml parsing'
+        }
+
+    def check_elevation(self):
+        """Check if we have necessary read access"""
+        config_file = self.domain_home / 'config' / 'config.xml'
+
+        if not self.domain_home.exists():
+            return False, f"Domain home directory does not exist: {self.domain_home}"
+
+        if not config_file.exists():
+            return False, f"config.xml not found at: {config_file}"
+
+        if not os.access(config_file, os.R_OK):
+            return False, f"Cannot read {config_file} - insufficient permissions"
+
+        return True, "Access verified"
+
+    def parse_weblogic_config(self):
+        """Parse WebLogic config.xml and extract server configurations"""
+        config_file = self.domain_home / 'config' / 'config.xml'
+
+        try:
+            tree = ET.parse(config_file)
+            root = tree.getroot()
+
+            # WebLogic config.xml uses a namespace
+            # Try to detect namespace
+            namespace = ''
+            if root.tag.startswith('{'):
+                namespace = root.tag[root.tag.find('{')+1:root.tag.find('}')]
+                ns = {'wls': namespace}
+            else:
+                ns = {}
+
+            # Find all server elements
+            if ns:
+                servers = root.findall('.//wls:server', ns)
+            else:
+                servers = root.findall('.//server')
+
+            return servers, ns
+
+        except ET.ParseError as e:
+            raise Exception(f"Failed to parse config.xml: {e}")
+        except Exception as e:
+            raise Exception(f"Error reading config.xml: {e}")
+
+    def get_element_text(self, element, tag, ns, default=''):
+        """Safely get text from an XML element"""
+        if ns:
+            child = element.find(f'wls:{tag}', ns)
+        else:
+            child = element.find(tag)
+
+        if child is not None and child.text:
+            return child.text.strip()
+        return default
+
+    def run_check(self):
+        """Execute the STIG check"""
+        # Check elevation first
+        has_elevation, msg = self.check_elevation()
+        if not has_elevation and not self.force:
+            self.results['status'] = 'Error'
+            self.results['finding_details'].append({
+                'error': msg,
+                'message': 'Use --force to attempt execution anyway'
+            })
+            return 3
+
+        try:
+            servers, ns = self.parse_weblogic_config()
+
+            if not servers:
+                self.results['status'] = 'Not Applicable'
+                self.results['finding_details'].append({
+                    'info': 'No servers found in config.xml'
+                })
+                return 2
+
+            findings = []
+            has_findings = False
+
+            for server in servers:
+                server_name = self.get_element_text(server, 'name', ns, 'Unknown')
+
+                # Check listen-port-enabled (default is true if not specified)
+                listen_enabled = self.get_element_text(server, 'listen-port-enabled', ns, 'true')
+
+                # Check SSL configuration
+                if ns:
+                    ssl_elem = server.find('wls:ssl', ns)
+                else:
+                    ssl_elem = server.find('ssl')
+
+                if ssl_elem is not None:
+                    ssl_enabled = self.get_element_text(ssl_elem, 'enabled', ns, 'false')
+                    ssl_port = self.get_element_text(ssl_elem, 'listen-port', ns, 'N/A')
+                else:
+                    ssl_enabled = 'false'
+                    ssl_port = 'N/A'
+
+                finding = {
+                    'server': server_name,
+                    'listen_port_enabled': listen_enabled.lower() == 'true',
+                    'ssl_enabled': ssl_enabled.lower() == 'true',
+                    'ssl_port': ssl_port
+                }
+
+                # Check compliance
+                if listen_enabled.lower() == 'true':
+                    finding['status'] = 'FAIL'
+                    finding['reason'] = 'Listen Port Enabled is set to true (should be false)'
+                    has_findings = True
+                elif ssl_enabled.lower() != 'true':
+                    finding['status'] = 'FAIL'
+                    finding['reason'] = 'SSL is not enabled'
+                    has_findings = True
+                else:
+                    finding['status'] = 'PASS'
+                    finding['reason'] = 'SSL enabled and non-SSL port disabled'
+
+                findings.append(finding)
+
+            self.results['finding_details'] = findings
+
+            if has_findings:
+                self.results['status'] = 'Open'
+                return 1  # FAIL
+            else:
+                self.results['status'] = 'NotAFinding'
+                return 0  # PASS
+
+        except Exception as e:
+            self.results['status'] = 'Error'
+            self.results['finding_details'].append({
+                'error': str(e),
+                'message': 'Failed to parse WebLogic configuration'
+            })
+            return 3
+
+    def get_results(self):
+        """Return results dictionary"""
+        return self.results
+
+    def print_results(self):
+        """Print human-readable results"""
+        print(f"\n{'='*80}")
+        print(f"STIG Check: {self.results['vuln_id']} - {self.results['stig_id']}")
+        print(f"Severity: {self.results['severity'].upper()}")
+        print(f"{'='*80}")
+        print(f"Rule: {self.results['rule_title']}")
+        print(f"Status: {self.results['status']}")
+        print(f"Timestamp: {self.results['timestamp']}")
+        print(f"Requires Elevation: {self.results['requires_elevation']}")
+        print(f"Third-Party Tools: {self.results['third_party_tools']}")
+        print(f"Check Method: {self.results['check_method']}")
+        print(f"\n{'-'*80}")
+        print("Finding Details:")
+        print(f"{'-'*80}")
+
+        for detail in self.results['finding_details']:
+            if isinstance(detail, dict):
+                if 'server' in detail:
+                    print(f"\nServer: {detail['server']}")
+                    print(f"  Listen Port Enabled: {detail.get('listen_port_enabled', 'N/A')}")
+                    print(f"  SSL Enabled: {detail.get('ssl_enabled', 'N/A')}")
+                    print(f"  SSL Port: {detail.get('ssl_port', 'N/A')}")
+                    print(f"  Status: {detail.get('status', 'N/A')}")
+                    print(f"  Reason: {detail.get('reason', 'N/A')}")
+                elif 'error' in detail:
+                    print(f"\nError: {detail['error']}")
+                    if 'message' in detail:
+                        print(f"Message: {detail['message']}")
+                elif 'info' in detail:
+                    print(f"\nInfo: {detail['info']}")
+            else:
+                print(f"  {detail}")
+
+        print(f"\n{'='*80}\n")
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        description='V-235928: Check WebLogic SSL configuration',
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=__doc__
+    )
+    parser.add_argument('--domain-home', required=True,
+                       help='WebLogic domain home directory (e.g., /u01/oracle/user_projects/domains/base_domain)')
+    parser.add_argument('--force', action='store_true',
+                       help='Force execution even without proper elevation')
+    parser.add_argument('--output-json', metavar='FILE',
+                       help='Output results to JSON file')
+
+    args = parser.parse_args()
+
+    # Run the check
+    check = STIGCheck(args.domain_home, args.force)
+    exit_code = check.run_check()
+
+    # Output results
+    if args.output_json:
+        results = check.get_results()
+        results['exit_code'] = exit_code
+        with open(args.output_json, 'w') as f:
+            json.dump(results, f, indent=2)
+        print(f"Results written to: {args.output_json}")
+
+    check.print_results()
+
+    sys.exit(exit_code)
+
+
+if __name__ == '__main__':
+    main()
