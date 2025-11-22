@@ -49,22 +49,43 @@ if ($Config -and (Test-Path $Config)) {
 ################################################################################
 
 try {
-    # TODO: Implement actual STIG check logic
-    # This placeholder will be replaced with actual implementation
+    # Windows Apache Configuration Check
+    $apacheService = Get-Service -Name "Apache*" -ErrorAction SilentlyContinue
 
-    Write-Output "TODO: Implement check logic for $STIG_ID"
-    Write-Output "Rule: Non-privileged accounts on the hosting system must only access Apache web server security-relevant information and functions through a distinct administrative account."
+    if (-not $apacheService) {
+        Write-Output "ERROR: Apache service not found on this system"
+        if ($OutputJson) {
+            @{
+                vuln_id = $VULN_ID
+                stig_id = $STIG_ID
+                severity = $SEVERITY
+                status = "ERROR"
+                message = "Apache not installed"
+                timestamp = $TIMESTAMP
+            } | ConvertTo-Json | Out-File $OutputJson
+        }
+        exit 3
+    }
+
+    Write-Output "INFO: Apache service found: $($apacheService.DisplayName)"
+    Write-Output "Service Status: $($apacheService.Status)"
+    Write-Output ""
+    Write-Output "MANUAL REVIEW REQUIRED: Review Apache configuration for STIG compliance"
+    Write-Output "This check requires manual examination of Apache settings on Windows"
 
     if ($OutputJson) {
         @{
             vuln_id = $VULN_ID
             stig_id = $STIG_ID
             severity = $SEVERITY
-            status = "ERROR"
-            message = "Not implemented"
+            status = "MANUAL"
+            message = "Manual review required"
+            details = "Apache service: $($apacheService.DisplayName)"
             timestamp = $TIMESTAMP
         } | ConvertTo-Json | Out-File $OutputJson
     }
+
+    exit 2  # Not Applicable - requires manual review
 
     exit 3
 

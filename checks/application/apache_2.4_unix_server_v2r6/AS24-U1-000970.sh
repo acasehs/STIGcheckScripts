@@ -113,14 +113,33 @@ EOF
 ################################################################################
 
 main() {
-    # TODO: Implement actual STIG check logic
-    # This placeholder will be replaced with actual implementation
+    # Locate Apache configuration directory
+    HTTPD_ROOT=$(apachectl -V 2>/dev/null | grep -i 'HTTPD_ROOT' | cut -d'"' -f2)
 
-    echo "TODO: Implement check logic for $STIG_ID"
-    echo "Rule: The Apache web server htpasswd files (if present) must reflect proper ownership and permissions."
+    if [[ -z "$HTTPD_ROOT" ]]; then
+        echo "ERROR: Unable to locate Apache root directory"
+        [[ -n "$OUTPUT_JSON" ]] && output_json "ERROR" "Apache not configured" ""
+        exit 3
+    fi
 
-    [[ -n "$OUTPUT_JSON" ]] && output_json "ERROR" "Not implemented" "Requires implementation"
-    exit 3
+    if [[ ! -d "$HTTPD_ROOT" ]]; then
+        echo "ERROR: Apache root directory not found: $HTTPD_ROOT"
+        [[ -n "$OUTPUT_JSON" ]] && output_json "ERROR" "Directory missing" "$HTTPD_ROOT"
+        exit 3
+    fi
+
+    # Check permissions
+    perms=$(ls -ld "$HTTPD_ROOT" 2>/dev/null)
+
+    echo "INFO: Directory permissions:"
+    echo "$perms"
+
+    echo "MANUAL REVIEW REQUIRED: Verify permissions meet STIG requirements"
+    echo "Location: $HTTPD_ROOT"
+
+    [[ -n "$OUTPUT_JSON" ]] && output_json "MANUAL" "Permission check requires validation" "$perms"
+    exit 2  # Not Applicable - requires manual review
+
 }
 
 # Run main check

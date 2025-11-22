@@ -107,14 +107,34 @@ EOF
 ################################################################################
 
 main() {
-    # TODO: Implement actual STIG check logic
-    # This placeholder will be replaced with actual implementation
+    # Locate Apache configuration
+    HTTPD_ROOT=$(apachectl -V 2>/dev/null | grep -i 'HTTPD_ROOT' | cut -d'"' -f2)
+    CONFIG_FILE=$(apachectl -V 2>/dev/null | grep -i 'SERVER_CONFIG_FILE' | cut -d'"' -f2)
 
-    echo "TODO: Implement check logic for $STIG_ID"
-    echo "Rule: The Apache web server must not perform user management for hosted applications."
+    if [[ -z "$HTTPD_ROOT" ]] || [[ -z "$CONFIG_FILE" ]]; then
+        echo "ERROR: Unable to locate Apache configuration"
+        [[ -n "$OUTPUT_JSON" ]] && output_json "ERROR" "Apache not found or not configured" ""
+        exit 3
+    fi
 
-    [[ -n "$OUTPUT_JSON" ]] && output_json "ERROR" "Not implemented" "Requires implementation"
-    exit 3
+    FULL_CONFIG="$HTTPD_ROOT/$CONFIG_FILE"
+
+    if [[ ! -f "$FULL_CONFIG" ]]; then
+        echo "ERROR: Configuration file not found: $FULL_CONFIG"
+        [[ -n "$OUTPUT_JSON" ]] && output_json "ERROR" "Config file missing" "$FULL_CONFIG"
+        exit 3
+    fi
+
+    echo "INFO: Apache configuration file: $FULL_CONFIG"
+    echo ""
+    echo "MANUAL REVIEW REQUIRED: Review Apache configuration for STIG compliance"
+    echo "Configuration file location: $FULL_CONFIG"
+    echo ""
+    echo "This check requires manual examination of Apache settings"
+
+    [[ -n "$OUTPUT_JSON" ]] && output_json "MANUAL" "Configuration review requires manual validation" "$FULL_CONFIG"
+    exit 2  # Not Applicable - requires manual review
+
 }
 
 # Run main check

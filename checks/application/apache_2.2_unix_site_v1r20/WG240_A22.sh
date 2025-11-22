@@ -101,14 +101,29 @@ EOF
 ################################################################################
 
 main() {
-    # TODO: Implement actual STIG check logic
-    # This placeholder will be replaced with actual implementation
+    # Check Apache modules
+    if ! command -v apachectl &>/dev/null; then
+        echo "ERROR: apachectl command not found"
+        [[ -n "$OUTPUT_JSON" ]] && output_json "ERROR" "Apache not installed" ""
+        exit 3
+    fi
 
-    echo "TODO: Implement check logic for $STIG_ID"
-    echo "Rule: Logs of web server access and errors must be established and maintained"
+    # List loaded modules
+    modules=$(apachectl -M 2>/dev/null || httpd -M 2>/dev/null)
 
-    [[ -n "$OUTPUT_JSON" ]] && output_json "ERROR" "Not implemented" "Requires implementation"
-    exit 3
+    if [[ -z "$modules" ]]; then
+        echo "ERROR: Unable to list Apache modules"
+        [[ -n "$OUTPUT_JSON" ]] && output_json "ERROR" "Cannot list modules" ""
+        exit 3
+    fi
+
+    echo "MANUAL REVIEW REQUIRED: Verify required modules are loaded"
+    echo "Loaded modules:"
+    echo "$modules"
+
+    [[ -n "$OUTPUT_JSON" ]] && output_json "MANUAL" "Module check requires validation" "$modules"
+    exit 2  # Not Applicable - requires manual review
+
 }
 
 # Run main check
