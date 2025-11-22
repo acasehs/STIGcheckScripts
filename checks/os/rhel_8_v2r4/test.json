@@ -1,0 +1,10 @@
+{
+  "vuln_id": "V-230221",
+  "stig_id": "RHEL-08-010000",
+  "severity": "high",
+  "rule_title": "RHEL 8 must be a vendor-supported release.",
+  "status": "Not Implemented",
+  "finding_details": "Check logic not yet implemented - requires domain expertise",
+  "timestamp": "2025-11-22T05:44:04Z",
+  "exit_code": 2
+}
