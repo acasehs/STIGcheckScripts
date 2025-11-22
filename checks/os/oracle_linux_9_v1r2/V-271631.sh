@@ -1,0 +1,139 @@
+#!/usr/bin/env bash
+################################################################################
+# STIG Check: V-271631
+# Severity: medium
+# Rule Title: OL 9 user account passwords for new users or password changes must have a 60-day maximum password lifetime restriction in /etc/login.defs.
+# STIG ID: OL09-00-001095
+# Rule ID: SV-271631r1091605
+#
+# Description:
+#     Any password, no matter how complex, can eventually be cracked; therefore, passwords need to be changed periodically. If the operating system does not limit the lifetime of passwords and force users to change their passwords, there is the risk that the operating system passwords could be compromised...
+#
+# Check Content:
+#     Verify that OL 9 enforces a 60-day maximum password lifetime for new user accounts by running the following command:  $ grep -i pass_max_days /etc/login.defs PASS_MAX_DAYS 60  If the "PASS_MAX_DAYS" parameter value is greater than "60", or commented out, this is a finding.
+#
+# Exit Codes:
+#     0 = Check Passed (Compliant)
+#     1 = Check Failed (Finding)
+#     2 = Check Not Applicable
+#     3 = Check Error
+################################################################################
+
+# Configuration
+VULN_ID="V-271631"
+STIG_ID="OL09-00-001095"
+SEVERITY="medium"
+TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+CONFIG_FILE=""
+OUTPUT_JSON=""
+
+# Parse arguments
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --config)
+            CONFIG_FILE="$2"
+            shift 2
+            ;;
+        --output-json)
+            OUTPUT_JSON="$2"
+            shift 2
+            ;;
+        -h|--help)
+            cat << 'EOF'
+Usage: $0 [OPTIONS]
+
+Options:
+  --config <file>         Configuration file (JSON)
+  --output-json <file>    Output results in JSON format
+  -h, --help             Show this help message
+
+Exit Codes:
+  0 = Pass (Compliant)
+  1 = Fail (Finding)
+  2 = Not Applicable
+  3 = Error
+
+Example:
+  $0
+  $0 --config stig-config.json
+  $0 --output-json results.json
+EOF
+            exit 0
+            ;;
+        *)
+            echo "Unknown option: $1"
+            exit 3
+            ;;
+    esac
+done
+
+# Load configuration if provided
+if [[ -n "$CONFIG_FILE" ]]; then
+    if [[ ! -f "$CONFIG_FILE" ]]; then
+        echo "ERROR: Configuration file not found: $CONFIG_FILE"
+        exit 3
+    fi
+    # TODO: Load configuration values using jq if available
+fi
+
+################################################################################
+# CHECK IMPLEMENTATION
+################################################################################
+
+# TODO: Implement the actual check logic
+#
+# STIG Check Method from the official STIG:
+# (See check header for details)
+#
+# Fix Text from the official STIG:
+# (See check header for details)
+
+echo "TODO: Implement check for V-271631"
+echo "This is a placeholder that requires implementation."
+
+# Placeholder status
+STATUS="Not Implemented"
+EXIT_CODE=2
+FINDING_DETAILS="Check logic not yet implemented - requires domain expertise"
+
+################################################################################
+# OUTPUT RESULTS
+################################################################################
+
+# JSON output if requested
+if [[ -n "$OUTPUT_JSON" ]]; then
+    cat > "$OUTPUT_JSON" << EOF_JSON
+{
+  "vuln_id": "$VULN_ID",
+  "stig_id": "$STIG_ID",
+  "severity": "$SEVERITY",
+  "rule_title": "OL 9 user account passwords for new users or password changes must have a 60-day maximum password lifetime restriction in /etc/login.defs.",
+  "status": "$STATUS",
+  "finding_details": "$FINDING_DETAILS",
+  "timestamp": "$TIMESTAMP",
+  "exit_code": $EXIT_CODE
+}
+EOF_JSON
+fi
+
+# Human-readable output
+cat << EOF
+
+================================================================================
+STIG Check: $VULN_ID - $STIG_ID
+Severity: ${SEVERITY^^}
+================================================================================
+Rule: OL 9 user account passwords for new users or password changes must have a 60-day maximum password lifetime restriction in /etc/login.defs.
+Status: $STATUS
+Timestamp: $TIMESTAMP
+
+--------------------------------------------------------------------------------
+Finding Details:
+--------------------------------------------------------------------------------
+$FINDING_DETAILS
+
+================================================================================
+
+EOF
+
+exit $EXIT_CODE
