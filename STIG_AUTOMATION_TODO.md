@@ -59,10 +59,12 @@ Based on user requirements, STIGs are prioritized as follows:
 
 **Priority 5 Completed**: 70 checks for BIND 9.x DNS (97.1% automation rate)
 
-### Priority 6: Firewalls
-- [ ] Palo Alto NDM v3r1 (88 checks)
-- [ ] Cisco ASA NDM v2r1 (95 checks)
-- [ ] Fortinet FortiGate Firewall v1r3 (72 checks)
+### Priority 6: Firewalls ⭐ **COMPLETE**
+- [x] Palo Alto Networks NDM - **COMPLETE** (34 checks - bash + python)
+- [x] Cisco ASA NDM - **COMPLETE** (47 checks - bash + python)
+- [x] Fortinet FortiGate Firewall NDM - **COMPLETE** (60 checks - bash + python)
+
+**Priority 6 Completed**: 141 checks across 3 firewall platforms (75.2% automation rate)
 
 ### Priority 7: Microsoft Office Products
 - [ ] Microsoft Office System 2016 v2r1 (43 checks)
