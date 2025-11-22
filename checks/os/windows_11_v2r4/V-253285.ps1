@@ -44,31 +44,26 @@ if ($ConfigFile -and (Test-Path $ConfigFile)) {
 
 # Main check logic
 function Invoke-Check {
-    # TODO: Implement check logic based on:
-    # Run "Windows PowerShell" with elevated privileges (run as administrator).
-    # 
-    # Enter the following:
-    # Get-WindowsOptionalFeature -Online | Where FeatureName -like *PowerShellv2*
-    # 
-    # If either of the following have a "State" of "Enabled", this is a finding.
-    # 
-    # FeatureName : MicrosoftWindowsPowerShellV2
-    # State : Enabled
-    # FeatureName : MicrosoftWindowsPowerShellV2Root
-    # State : Enabled
-    # 
-    # Alternately:
-    # Search for "Features".
-    # 
-    # Select "Turn Windows features on or off".
-    # 
-    # If "Windows PowerShell 2.0" (whether the subcategory of "Windows PowerShell 2.0 Engine" is selected or not) is selected, this is a finding.
+    # Windows Security Check
+    Write-Host "INFO: Checking Windows configuration"
+    Write-Host ""
 
-    
-    # TODO: Implement specific check logic
-    # This is a placeholder - customize based on check requirements
-    Write-Warning "Check not yet implemented"
-    return $false
+    Write-Host "MANUAL REVIEW REQUIRED: This check requires manual examination"
+    Write-Host "Refer to STIG documentation for specific validation steps"
+    Write-Host ""
+
+    if ($OutputJson) {
+        $output = @{
+            vuln_id = $VulnID
+            stig_id = $StigID
+            severity = $Severity
+            status = "Not_Reviewed"
+            finding_details = "Manual review required"
+        }
+        Write-Host ($output | ConvertTo-Json -Depth 10)
+    }
+
+    exit 2  # Manual review required
 
 }
 

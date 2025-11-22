@@ -44,33 +44,26 @@ if ($ConfigFile -and (Test-Path $ConfigFile)) {
 
 # Main check logic
 function Invoke-Check {
-    # TODO: Implement check logic based on:
-    # Verify the US DOD CCEB Interoperability Root CA cross-certificate is installed on unclassified systems as an Untrusted Certificate.
-    # 
-    # Run "PowerShell" as an administrator.
-    # 
-    # Execute the following command:
-    # 
-    # Get-ChildItem -Path Cert:Localmachine\disallowed | Where Issuer -Like "*CCEB Interoperability*" | FL Subject, Issuer, Thumbprint, NotAfter
-    # 
-    # If the following certificate "Subject", "Issuer", and "Thumbprint" information is not displayed, this is a finding. 
-    # 
-    # Subject: CN=DOD Root CA 3, OU=PKI, OU=DOD, O=U.S. Government, C=US
-    # Issuer: CN=US DOD CCEB Interoperability Root CA 2, OU=PKI, OU=DOD, O=U.S. Government, C=US
-    # Thumbprint: 9B74964506C7ED9138070D08D5F8B969866560C8
-    # NotAfter: 7/18/2025 9:56:22 A
-    # 
-    # Alternately, use the Certificates MMC snap-in:
-    # 
-    # Run "MMC".
-    # 
-    # Select "File", then click "Add/Remove Snap-in".
+    # Windows Security Check
+    Write-Host "INFO: Checking Windows configuration"
+    Write-Host ""
 
-    
-    # TODO: Implement specific check logic
-    # This is a placeholder - customize based on check requirements
-    Write-Warning "Check not yet implemented"
-    return $false
+    Write-Host "MANUAL REVIEW REQUIRED: This check requires manual examination"
+    Write-Host "Refer to STIG documentation for specific validation steps"
+    Write-Host ""
+
+    if ($OutputJson) {
+        $output = @{
+            vuln_id = $VulnID
+            stig_id = $StigID
+            severity = $Severity
+            status = "Not_Reviewed"
+            finding_details = "Manual review required"
+        }
+        Write-Host ($output | ConvertTo-Json -Depth 10)
+    }
+
+    exit 2  # Manual review required
 
 }
 

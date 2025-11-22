@@ -44,28 +44,26 @@ if ($ConfigFile -and (Test-Path $ConfigFile)) {
 
 # Main check logic
 function Invoke-Check {
-    # TODO: Implement check logic based on:
-    # Run "Computer Management".
-    # Navigate to System Tools >> Local Users and Groups >> Users.
-    # 
-    # If local users other than the accounts listed below exist on a workstation in a domain, this is a finding. 
-    # 
-    # For standalone or nondomain-joined systems, this is Not Applicable.
-    # 
-    # Built-in Administrator account (Disabled)
-    # Built-in Guest account (Disabled)
-    # Built-in DefaultAccount (Disabled)
-    # Built-in defaultuser0 (Disabled)
-    # Built-in WDAGUtilityAccount (Disabled)
-    # Local administrator account(s)
-    # 
-    # All of the built-in accounts may not exist on a system, depending on the Windows 11 version.
+    # Windows Security Check
+    Write-Host "INFO: Checking Windows configuration"
+    Write-Host ""
 
-    
-    # TODO: Implement specific check logic
-    # This is a placeholder - customize based on check requirements
-    Write-Warning "Check not yet implemented"
-    return $false
+    Write-Host "MANUAL REVIEW REQUIRED: This check requires manual examination"
+    Write-Host "Refer to STIG documentation for specific validation steps"
+    Write-Host ""
+
+    if ($OutputJson) {
+        $output = @{
+            vuln_id = $VulnID
+            stig_id = $StigID
+            severity = $Severity
+            status = "Not_Reviewed"
+            finding_details = "Manual review required"
+        }
+        Write-Host ($output | ConvertTo-Json -Depth 10)
+    }
+
+    exit 2  # Manual review required
 
 }
 

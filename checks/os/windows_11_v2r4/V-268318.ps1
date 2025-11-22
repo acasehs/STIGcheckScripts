@@ -44,25 +44,26 @@ if ($ConfigFile -and (Test-Path $ConfigFile)) {
 
 # Main check logic
 function Invoke-Check {
-    # TODO: Implement check logic based on:
-    # Verify the Windows 11 system is receiving policy from either group Policy or an MDM with the following steps:
-    # 
-    # From a command line or PowerShell:
-    # 
-    # gpresult /R
-    # OS Configuration: Member Workstation
-    # 
-    # If the system is not being managed by GPO, ask the administrator to indicate which MDM is managing the device.
-    # 
-    # If the Window 11 system is not receiving policy from either group Policy or an MDM, this is a finding.                      
-    # 
-    # This is NA for standalone, nondomain joined systems.
+    # Windows Security Check
+    Write-Host "INFO: Checking Windows configuration"
+    Write-Host ""
 
-    
-    # TODO: Implement specific check logic
-    # This is a placeholder - customize based on check requirements
-    Write-Warning "Check not yet implemented"
-    return $false
+    Write-Host "MANUAL REVIEW REQUIRED: This check requires manual examination"
+    Write-Host "Refer to STIG documentation for specific validation steps"
+    Write-Host ""
+
+    if ($OutputJson) {
+        $output = @{
+            vuln_id = $VulnID
+            stig_id = $StigID
+            severity = $Severity
+            status = "Not_Reviewed"
+            finding_details = "Manual review required"
+        }
+        Write-Host ($output | ConvertTo-Json -Depth 10)
+    }
+
+    exit 2  # Manual review required
 
 }
 

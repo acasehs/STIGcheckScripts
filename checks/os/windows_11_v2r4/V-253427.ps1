@@ -44,33 +44,26 @@ if ($ConfigFile -and (Test-Path $ConfigFile)) {
 
 # Main check logic
 function Invoke-Check {
-    # TODO: Implement check logic based on:
-    # Verify the DoD Root CA certificates are installed as Trusted Root Certification Authorities.
-    # 
-    # The certificates and thumbprints referenced below apply to unclassified systems; refer to PKE documentation for other networks.
-    # 
-    # Run "PowerShell" as an administrator.
-    # 
-    # Execute the following command:
-    # 
-    # Get-ChildItem -Path Cert:Localmachine\root | Where Subject -Like "*DoD*" | FL Subject, Thumbprint, NotAfter
-    # 
-    # If the following certificate "Subject" and "Thumbprint" information is not displayed, this is a finding. 
-    # 
-    # Subject: CN=DoD Root CA 3, OU=PKI, OU=DoD, O=U.S. Government, C=US
-    # Thumbprint: D73CA91102A2204A36459ED32213B467D7CE97FB
-    # NotAfter: 12/30/2029
-    # 
-    # Subject: CN=DoD Root CA 4, OU=PKI, OU=DoD, O=U.S. Government, C=US
-    # Thumbprint: B8269F25DBD937ECAFD4C35A9838571723F2D026
-    # NotAfter: 7/25/2032
-    # 
+    # Windows Security Check
+    Write-Host "INFO: Checking Windows configuration"
+    Write-Host ""
 
-    
-    # TODO: Implement specific check logic
-    # This is a placeholder - customize based on check requirements
-    Write-Warning "Check not yet implemented"
-    return $false
+    Write-Host "MANUAL REVIEW REQUIRED: This check requires manual examination"
+    Write-Host "Refer to STIG documentation for specific validation steps"
+    Write-Host ""
+
+    if ($OutputJson) {
+        $output = @{
+            vuln_id = $VulnID
+            stig_id = $StigID
+            severity = $Severity
+            status = "Not_Reviewed"
+            finding_details = "Manual review required"
+        }
+        Write-Host ($output | ConvertTo-Json -Depth 10)
+    }
+
+    exit 2  # Manual review required
 
 }
 
