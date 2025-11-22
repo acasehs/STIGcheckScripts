@@ -102,36 +102,70 @@ EOF
 ################################################################################
 
 main() {
+    # Oracle Database SQL Check
+
+    # Check for Oracle client
     if ! command -v sqlplus &>/dev/null; then
-        echo "ERROR: Oracle client not found"
+        echo "ERROR: Oracle client (sqlplus) not found"
         [[ -n "$OUTPUT_JSON" ]] && output_json "ERROR" "sqlplus not installed" ""
         exit 3
     fi
 
-    if [[ -z "$ORACLE_USER" ]] || [[ -z "$ORACLE_SID" ]]; then
-        echo "ERROR: Oracle credentials not configured"
-        [[ -n "$OUTPUT_JSON" ]] && output_json "ERROR" "Credentials missing" ""
+    # Check for required environment variables
+    if [[ -z "$ORACLE_USER" ]]; then
+        echo "ERROR: ORACLE_USER environment variable not set"
+        [[ -n "$OUTPUT_JSON" ]] && output_json "ERROR" "ORACLE_USER not configured" ""
         exit 3
     fi
 
-    # Execute SQL query (customize based on specific check)
-    output=$(sqlplus -S "$ORACLE_USER"@"$ORACLE_SID" <<EOF
-SET PAGESIZE 0 FEEDBACK OFF VERIFY OFF HEADING OFF
--- Add specific query here
+    if [[ -z "$ORACLE_SID" ]] && [[ -z "$ORACLE_CONNECT" ]]; then
+        echo "ERROR: ORACLE_SID or ORACLE_CONNECT must be set"
+        [[ -n "$OUTPUT_JSON" ]] && output_json "ERROR" "Oracle connection not configured" ""
+        exit 3
+    fi
+
+    # Build connection string
+    if [[ -n "$ORACLE_CONNECT" ]]; then
+        CONNECT_STRING="$ORACLE_USER@$ORACLE_CONNECT"
+    else
+        CONNECT_STRING="$ORACLE_USER@$ORACLE_SID"
+    fi
+
+    echo "INFO: Executing Oracle Database check"
+    echo "Connection: $CONNECT_STRING"
+    echo ""
+
+    # Execute SQL query
+    query_result=$(sqlplus -S "$CONNECT_STRING" <<'EOSQL'
+SET PAGESIZE 0 FEEDBACK OFF VERIFY OFF HEADING ON ECHO OFF
+SET LINESIZE 200
+WHENEVER SQLERROR EXIT SQL.SQLCODE
+SELECT * FROM SYS.DBA_PROFILES WHERE RESOURCE_NAME = \\'SESSIONS_PER_USER\\';
 EXIT;
-EOF
+EOSQL
 )
 
-    if [[ -n "$output" ]]; then
-        echo "PASS: Query executed successfully"
-        echo "$output"
-        [[ -n "$OUTPUT_JSON" ]] && output_json "PASS" "Query passed" "$output"
-        exit 0
-    else
-        echo "FAIL: No results or query failed"
-        [[ -n "$OUTPUT_JSON" ]] && output_json "FAIL" "Query failed" ""
-        exit 1
+    query_exit=$?
+
+    if [[ $query_exit -ne 0 ]]; then
+        echo "ERROR: SQL query failed with exit code $query_exit"
+        echo "$query_result"
+        [[ -n "$OUTPUT_JSON" ]] && output_json "ERROR" "Query execution failed" "$query_result"
+        exit 3
     fi
+
+    echo "Query Results:"
+    echo "$query_result"
+    echo ""
+
+    # Manual review required to determine compliance
+    echo "MANUAL REVIEW REQUIRED: Analyze query results for STIG compliance"
+    echo "Finding Condition: If the DBMS settings for concurrent sessions for each profile are greater than the site-specific maximum number of sessions, this is a finding."
+    echo ""
+    echo "Review the query results above and verify compliance with STIG requirements"
+
+    [[ -n "$OUTPUT_JSON" ]] && output_json "MANUAL" "Manual review required" "$query_result"
+    exit 2  # Manual review required
 
 }
 

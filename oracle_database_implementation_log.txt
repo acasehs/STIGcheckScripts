@@ -1,0 +1,27 @@
+================================================================================
+ORACLE DATABASE IMPLEMENTATION ENGINE
+Implementing check logic for Oracle Database 19c STIG
+================================================================================
+
+  Found Oracle Database scripts in: checks/database/oracle_database_19c_v1r2
+  ✓ oracle_database_19c: 10/96
+  ✓ oracle_database_19c: 10/96
+  ✓ oracle_database_19c: 10/96
+  ✓ oracle_database_19c: 20/96
+  ✓ oracle_database_19c: 20/96
+  ✓ oracle_database_19c: 20/96
+  ✓ oracle_database_19c: 20/96
+  ✓ oracle_database_19c: 30/96
+  ✓ oracle_database_19c: 40/96
+  ✓ oracle_database_19c: 40/96
+  ✓ oracle_database_19c: 40/96
+  ✓ oracle_database_19c: 40/96
+  ✓ oracle_database_19c: 46/96
+
+================================================================================
+IMPLEMENTATION COMPLETE
+================================================================================
+
+TOTAL: 46/96 (47.9%) implemented
+
+  oracle_database_19c                          :   46/  96 ( 47.9%)

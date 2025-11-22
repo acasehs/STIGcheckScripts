@@ -1,0 +1,18 @@
+================================================================================
+WINDOWS OS IMPLEMENTATION ENGINE
+Implementing check logic for Windows 10/11 STIGs
+================================================================================
+
+  Found windows_10 scripts in: checks/os/windows_10_v3r4
+  ✓ windows_10: 0/261
+  Found windows_11 scripts in: checks/os/windows_11_v2r4
+  ✓ windows_11: 0/258
+
+================================================================================
+IMPLEMENTATION COMPLETE
+================================================================================
+
+TOTAL: 0/519 (0.0%) implemented
+
+  windows_10                                   :    0/ 261 (  0.0%)
+  windows_11                                   :    0/ 258 (  0.0%)
