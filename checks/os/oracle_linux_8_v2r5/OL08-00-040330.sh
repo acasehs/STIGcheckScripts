@@ -1,0 +1,119 @@
+#!/usr/bin/env bash
+################################################################################
+# STIG Check: V-248899
+# Severity: medium
+# Rule Title: OL 8 network interfaces must not be in promiscuous mode.
+# STIG ID: OL08-00-040330
+# Rule ID: SV-248899r991589
+#
+# Description:
+#     Network interfaces in promiscuous mode allow for the capture of all network traffic visible to the system. If unauthorized individuals can access these applications, it may allow them to collect information such as logon IDs, passwords, and key exchanges between systems. 
+ 
+If the system is being used to perform a network troubleshooting function, the use of these tools must be documented with the Information System Security Officer (ISSO) and restricted to only authorized personnel.
+#
+# Check Content:
+#     Verify network interfaces are not in promiscuous mode unless approved by the ISSO and documented. 
+ 
+Check for the status with the following command: 
+ 
+$ sudo ip link | grep -i promisc 
+ 
+If network interfaces are found on the system in promiscuous mode and their use has not been approved by the ISSO and documented, this is a finding.
+#
+# Exit Codes:
+#     0 = Check Passed (Compliant)
+#     1 = Check Failed (Finding)
+#     2 = Check Not Applicable
+#     3 = Check Error
+################################################################################
+
+# Configuration
+VULN_ID="V-248899"
+STIG_ID="OL08-00-040330"
+SEVERITY="medium"
+TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+CONFIG_FILE=""
+OUTPUT_JSON=""
+
+# Parse arguments
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --config)
+            CONFIG_FILE="$2"
+            shift 2
+            ;;
+        --output-json)
+            OUTPUT_JSON="$2"
+            shift 2
+            ;;
+        -h|--help)
+            cat << 'EOF'
+Usage: $0 [OPTIONS]
+
+Options:
+  --config <file>         Configuration file (JSON)
+  --output-json <file>    Output results in JSON format
+  -h, --help             Show this help message
+
+Exit Codes:
+  0 = Pass (Compliant)
+  1 = Fail (Finding)
+  2 = Not Applicable
+  3 = Error
+
+EOF
+            exit 0
+            ;;
+        *)
+            echo "Unknown option: $1"
+            exit 3
+            ;;
+    esac
+done
+
+# Load configuration if provided
+if [[ -n "$CONFIG_FILE" ]] && [[ -f "$CONFIG_FILE" ]]; then
+    # Source configuration or parse JSON as needed
+    :
+fi
+
+################################################################################
+# HELPER FUNCTIONS
+################################################################################
+
+# Output results in JSON format
+output_json() {
+    local status="$1"
+    local message="$2"
+    local details="$3"
+
+    cat > "$OUTPUT_JSON" << EOF
+{
+  "vuln_id": "$VULN_ID",
+  "stig_id": "$STIG_ID",
+  "severity": "$SEVERITY",
+  "status": "$status",
+  "message": "$message",
+  "details": "$details",
+  "timestamp": "$TIMESTAMP"
+}
+EOF
+}
+
+################################################################################
+# MAIN CHECK LOGIC
+################################################################################
+
+main() {
+    # TODO: Implement actual STIG check logic
+    # This placeholder will be replaced with actual implementation
+
+    echo "TODO: Implement check logic for $STIG_ID"
+    echo "Rule: OL 8 network interfaces must not be in promiscuous mode."
+
+    [[ -n "$OUTPUT_JSON" ]] && output_json "ERROR" "Not implemented" "Requires implementation"
+    exit 3
+}
+
+# Run main check
+main "$@"

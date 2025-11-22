@@ -1,0 +1,132 @@
+#!/usr/bin/env bash
+################################################################################
+# STIG Check: V-271741
+# Severity: medium
+# Rule Title: OL 9 must enable kernel parameters to enforce discretionary access control on symlinks.
+# STIG ID: OL09-00-002402
+# Rule ID: SV-271741r1091935
+#
+# Description:
+#     By enabling the fs.protected_symlinks kernel parameter, symbolic links are permitted to be followed only when outside a sticky world-writable directory, or when the user identifier (UID) of the link and follower match, or when the directory owner matches the symlink'\''s owner. Disallowing such symlinks helps mitigate vulnerabilities based on insecure file system accessed by privileged programs, avoiding an exploitation vector exploiting unsafe use of open() or creat().
+
+Satisfies: SRG-OS-000312
+#
+# Check Content:
+#     Verify that OL 9 is configured to enable DAC on symlinks.
+
+Check the status of the fs.protected_symlinks kernel parameter with the following command:
+
+$ sudo sysctl fs.protected_symlinks
+fs.protected_symlinks = 1
+
+If \"fs.protected_symlinks \" is not set to \"1\" or is missing, this is a finding.
+#
+# Exit Codes:
+#     0 = Check Passed (Compliant)
+#     1 = Check Failed (Finding)
+#     2 = Check Not Applicable
+#     3 = Check Error
+################################################################################
+
+# Configuration
+VULN_ID="V-271741"
+STIG_ID="OL09-00-002402"
+SEVERITY="medium"
+TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+CONFIG_FILE=""
+OUTPUT_JSON=""
+
+# Parse arguments
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --config)
+            CONFIG_FILE="$2"
+            shift 2
+            ;;
+        --output-json)
+            OUTPUT_JSON="$2"
+            shift 2
+            ;;
+        -h|--help)
+            cat << 'EOF'
+Usage: $0 [OPTIONS]
+
+Options:
+  --config <file>         Configuration file (JSON)
+  --output-json <file>    Output results in JSON format
+  -h, --help             Show this help message
+
+Exit Codes:
+  0 = Pass (Compliant)
+  1 = Fail (Finding)
+  2 = Not Applicable
+  3 = Error
+
+EOF
+            exit 0
+            ;;
+        *)
+            echo "Unknown option: $1"
+            exit 3
+            ;;
+    esac
+done
+
+# Load configuration if provided
+if [[ -n "$CONFIG_FILE" ]] && [[ -f "$CONFIG_FILE" ]]; then
+    # Source configuration or parse JSON as needed
+    :
+fi
+
+################################################################################
+# HELPER FUNCTIONS
+################################################################################
+
+# Output results in JSON format
+output_json() {
+    local status="$1"
+    local message="$2"
+    local details="$3"
+
+    cat > "$OUTPUT_JSON" << EOF
+{
+  "vuln_id": "$VULN_ID",
+  "stig_id": "$STIG_ID",
+  "severity": "$SEVERITY",
+  "status": "$status",
+  "message": "$message",
+  "details": "$details",
+  "timestamp": "$TIMESTAMP"
+}
+EOF
+}
+
+################################################################################
+# MAIN CHECK LOGIC
+################################################################################
+
+main() {
+    PARAM="fs.protected_symlinks"
+    EXPECTED="1"
+
+    actual=$(sysctl -n "$PARAM" 2>/dev/null)
+    if [[ -z "$actual" ]]; then
+        echo "ERROR: Parameter not found"
+        [[ -n "$OUTPUT_JSON" ]] && output_json "ERROR" "Not found" "$PARAM"
+        exit 3
+    fi
+
+    if [[ "$actual" == "$EXPECTED" ]]; then
+        echo "PASS: $PARAM = $actual (compliant)"
+        [[ -n "$OUTPUT_JSON" ]] && output_json "PASS" "Compliant" "$PARAM=$actual"
+        exit 0
+    else
+        echo "FAIL: $PARAM = $actual (expected: $EXPECTED)"
+        [[ -n "$OUTPUT_JSON" ]] && output_json "FAIL" "Mismatch" "Expected: $EXPECTED"
+        exit 1
+    fi
+
+}
+
+# Run main check
+main "$@"

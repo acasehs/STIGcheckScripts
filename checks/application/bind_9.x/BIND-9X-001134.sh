@@ -2,15 +2,25 @@
 ################################################################################
 # STIG Check: V-207572
 # Severity: medium
-# Rule Title: On the BIND 9.x server the private keys corresponding to both the ZSK and the KSK must not be kept on the BIND 9.x DNSSEC-aware primary authoritative name server when the name server does not support dynamic updates.
+# Rule Title: On the BIND 9.x server the private keys corresponding to both the ZSK and the KSK must not be kept on the BIND 9.x DNSSEC-aware primary authoritative name server when the name server does not support 
 # STIG ID: BIND-9X-001134
 # Rule ID: SV-207572r879887
 #
 # Description:
-#     The private keys in the KSK and ZSK key pairs must be protected from unauthorized access. If possible, the private keys should be stored off-line (with respect to the Internet-facing, DNSSEC-aware name server) in a physically secure, non-network-accessible machine along with the zone file master cop...
+#     The private keys in the KSK and ZSK key pairs must be protected from unauthorized access. If possible, the private keys should be stored off-line (with respect to the Internet-facing, DNSSEC-aware name server) in a physically secure, non-network-accessible machine along with the zone file master copy. 
+
+This strategy is not feasible in situations in which the DNSSEC-aware name server has to support dynamic updates. To support dynamic update transactions, the DNSSEC-aware name server (which usual
 #
 # Check Content:
-#     If the server is in a classified network, this is Not Applicable.  Determine if the BIND 9.x server is configured to allow dynamic updates.  Review the "named.conf" file for any instance of the "allow-update" statement. The following example disables dynamic updates:  allow-update {none;};  If the B...
+#     If the server is in a classified network, this is Not Applicable.
+
+Determine if the BIND 9.x server is configured to allow dynamic updates.
+
+Review the \"named.conf\" file for any instance of the \"allow-update\" statement. The following example disables dynamic updates:
+
+allow-update {none;};
+
+If the BIND 9.x implementation is not configured to allow dynamic updates, verify with the SA that the private ZSKs and private KSKs are stored offline, if not, this is a finding.
 #
 # Exit Codes:
 #     0 = Check Passed (Compliant)
@@ -53,10 +63,6 @@ Exit Codes:
   2 = Not Applicable
   3 = Error
 
-Example:
-  $0
-  $0 --config bind-config.json
-  $0 --output-json results.json
 EOF
             exit 0
             ;;
@@ -68,109 +74,48 @@ EOF
 done
 
 # Load configuration if provided
-if [[ -n "$CONFIG_FILE" ]]; then
-    if [[ ! -f "$CONFIG_FILE" ]]; then
-        echo "ERROR: Configuration file not found: $CONFIG_FILE"
-        exit 3
-    fi
-    # TODO: Load configuration values using jq if available
+if [[ -n "$CONFIG_FILE" ]] && [[ -f "$CONFIG_FILE" ]]; then
+    # Source configuration or parse JSON as needed
+    :
 fi
 
 ################################################################################
-# BIND 9.x HELPER FUNCTIONS
+# HELPER FUNCTIONS
 ################################################################################
 
-# Get BIND version
-get_bind_version() {
-    if command -v named &> /dev/null; then
-        named -v 2>&1 | head -1
-    else
-        echo "ERROR: named not found"
-        return 1
-    fi
-}
+# Output results in JSON format
+output_json() {
+    local status="$1"
+    local message="$2"
+    local details="$3"
 
-# Check if BIND is running in chroot
-check_chroot() {
-    ps -ef | grep named | grep -v grep
-}
-
-# Get BIND config file location
-get_bind_config() {
-    # Common locations
-    local config_locations=(
-        "/etc/named.conf"
-        "/etc/bind/named.conf"
-        "/var/named/chroot/etc/named.conf"
-        "/usr/local/etc/namedb/named.conf"
-    )
-
-    for config in "${config_locations[@]}"; do
-        if [[ -f "$config" ]]; then
-            echo "$config"
-            return 0
-        fi
-    done
-
-    echo "ERROR: BIND config file not found"
-    return 1
-}
-
-################################################################################
-# CHECK IMPLEMENTATION
-################################################################################
-
-# TODO: Implement the actual check logic
-#
-# This is a placeholder that requires BIND domain expertise.
-# Review the official STIG documentation for detailed check and fix procedures.
-
-echo "TODO: Implement BIND 9.x check for BIND-9X-001134"
-echo "This is a placeholder that requires implementation."
-
-# Placeholder status
-STATUS="Not Implemented"
-EXIT_CODE=2
-FINDING_DETAILS="Check logic not yet implemented - requires BIND domain expertise"
-
-################################################################################
-# OUTPUT RESULTS
-################################################################################
-
-# JSON output if requested
-if [[ -n "$OUTPUT_JSON" ]]; then
-    cat > "$OUTPUT_JSON" << EOF_JSON
+    cat > "$OUTPUT_JSON" << EOF
 {
   "vuln_id": "$VULN_ID",
   "stig_id": "$STIG_ID",
   "severity": "$SEVERITY",
-  "rule_title": "On the BIND 9.x server the private keys corresponding to both the ZSK and the KSK must not be kept on the BIND 9.x DNSSEC-aware primary authoritative name server when the name server does not support dynamic updates.",
-  "status": "$STATUS",
-  "finding_details": "$FINDING_DETAILS",
-  "timestamp": "$TIMESTAMP",
-  "exit_code": $EXIT_CODE
+  "status": "$status",
+  "message": "$message",
+  "details": "$details",
+  "timestamp": "$TIMESTAMP"
 }
-EOF_JSON
-fi
-
-# Human-readable output
-cat << EOF
-
-================================================================================
-STIG Check: $VULN_ID - $STIG_ID
-Severity: ${SEVERITY^^}
-================================================================================
-Rule: On the BIND 9.x server the private keys corresponding to both the ZSK and the KSK must not be kept on the BIND 9.x DNSSEC-aware primary authoritative name server when the name server does not support dynamic updates.
-Status: $STATUS
-Timestamp: $TIMESTAMP
-
---------------------------------------------------------------------------------
-Finding Details:
---------------------------------------------------------------------------------
-$FINDING_DETAILS
-
-================================================================================
-
 EOF
+}
 
-exit $EXIT_CODE
+################################################################################
+# MAIN CHECK LOGIC
+################################################################################
+
+main() {
+    # TODO: Implement actual STIG check logic
+    # This placeholder will be replaced with actual implementation
+
+    echo "TODO: Implement check logic for $STIG_ID"
+    echo "Rule: On the BIND 9.x server the private keys corresponding to both the ZSK and the KSK must not be kept on the BIND 9.x DNSSEC-aware primary authoritative name server when the name server does not support "
+
+    [[ -n "$OUTPUT_JSON" ]] && output_json "ERROR" "Not implemented" "Requires implementation"
+    exit 3
+}
+
+# Run main check
+main "$@"

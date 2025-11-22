@@ -1,0 +1,119 @@
+#!/usr/bin/env bash
+################################################################################
+# STIG Check: V-230426
+# Severity: medium
+# Rule Title: Successful/unsuccessful uses of the unix_update in RHEL 8 must generate an audit record.
+# STIG ID: RHEL-08-030310
+# Rule ID: SV-230426r1017227
+#
+# Description:
+#     Reconstruction of harmful events or forensic analysis is not possible if audit records do not contain enough information.
+
+At a minimum, the organization must audit the full-text recording of privileged commands. The organization must maintain audit trails in sufficient detail to reconstruct events to determine the cause and impact of compromise. \"Unix_update\" is a helper program for the \"pam_unix\" module that updates the password for a given user. It is not intended to be run directly from 
+#
+# Check Content:
+#     Verify that an audit event is generated for any successful/unsuccessful use of the \"unix_update\" by performing the following command to check the file system rules in \"/etc/audit/audit.rules\":
+
+$ sudo grep -w \"unix_update\" /etc/audit/audit.rules
+
+-a always,exit -F path=/usr/sbin/unix_update -F perm=x -F auid>=1000 -F auid!=unset -k privileged-unix-update
+
+If the command does not return a line, or the line is commented out, this is a finding.
+#
+# Exit Codes:
+#     0 = Check Passed (Compliant)
+#     1 = Check Failed (Finding)
+#     2 = Check Not Applicable
+#     3 = Check Error
+################################################################################
+
+# Configuration
+VULN_ID="V-230426"
+STIG_ID="RHEL-08-030310"
+SEVERITY="medium"
+TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+CONFIG_FILE=""
+OUTPUT_JSON=""
+
+# Parse arguments
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --config)
+            CONFIG_FILE="$2"
+            shift 2
+            ;;
+        --output-json)
+            OUTPUT_JSON="$2"
+            shift 2
+            ;;
+        -h|--help)
+            cat << 'EOF'
+Usage: $0 [OPTIONS]
+
+Options:
+  --config <file>         Configuration file (JSON)
+  --output-json <file>    Output results in JSON format
+  -h, --help             Show this help message
+
+Exit Codes:
+  0 = Pass (Compliant)
+  1 = Fail (Finding)
+  2 = Not Applicable
+  3 = Error
+
+EOF
+            exit 0
+            ;;
+        *)
+            echo "Unknown option: $1"
+            exit 3
+            ;;
+    esac
+done
+
+# Load configuration if provided
+if [[ -n "$CONFIG_FILE" ]] && [[ -f "$CONFIG_FILE" ]]; then
+    # Source configuration or parse JSON as needed
+    :
+fi
+
+################################################################################
+# HELPER FUNCTIONS
+################################################################################
+
+# Output results in JSON format
+output_json() {
+    local status="$1"
+    local message="$2"
+    local details="$3"
+
+    cat > "$OUTPUT_JSON" << EOF
+{
+  "vuln_id": "$VULN_ID",
+  "stig_id": "$STIG_ID",
+  "severity": "$SEVERITY",
+  "status": "$status",
+  "message": "$message",
+  "details": "$details",
+  "timestamp": "$TIMESTAMP"
+}
+EOF
+}
+
+################################################################################
+# MAIN CHECK LOGIC
+################################################################################
+
+main() {
+    # TODO: Implement actual STIG check logic
+    # This placeholder will be replaced with actual implementation
+
+    echo "TODO: Implement check logic for $STIG_ID"
+    echo "Rule: Successful/unsuccessful uses of the unix_update in RHEL 8 must generate an audit record."
+
+    [[ -n "$OUTPUT_JSON" ]] && output_json "ERROR" "Not implemented" "Requires implementation"
+    exit 3
+}
+
+# Run main check
+main "$@"

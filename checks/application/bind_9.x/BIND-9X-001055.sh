@@ -7,10 +7,40 @@
 # Rule ID: SV-207554r879650
 #
 # Description:
-#     A potential vulnerability of DNS is that an attacker can poison a name server's cache by sending queries that will cause the server to obtain host-to-IP address mappings from bogus name servers that respond with incorrect information. Once a name server has been poisoned, legitimate clients may be d...
+#     A potential vulnerability of DNS is that an attacker can poison a name server'\''s cache by sending queries that will cause the server to obtain host-to-IP address mappings from bogus name servers that respond with incorrect information. Once a name server has been poisoned, legitimate clients may be directed to non-existent hosts (which constitutes a denial of service), or, worse, hosts that masquerade as legitimate ones to obtain sensitive data or passwords. 
+
+To guard against poisoning, name 
 #
 # Check Content:
-#     If this is a recursive name server, this is not applicable.  Note: A recursive name server should NOT be configured as an authoritative name server for any zone.  Verify that the BIND 9.x server is configured to prohibit recursion on authoritative name servers.  Inspect the "named.conf" file for the...
+#     If this is a recursive name server, this is not applicable.
+
+Note: A recursive name server should NOT be configured as an authoritative name server for any zone.
+
+Verify that the BIND 9.x server is configured to prohibit recursion on authoritative name servers.
+
+Inspect the \"named.conf\" file for the following:
+
+options {
+recursion no;
+allow-recursion {none;};
+allow-query {none;};
+};
+
+If the \"recursion\" sub statement is missing, or set to \"yes\", this is a finding.
+
+If the â€œallow-recursionâ€ sub statement is missing or is not set to â€œnoneâ€, this is a finding.
+
+If the \"allow-query\" sub statement under the \"options statement\" is missing or is not set to \"none\", this is a finding.
+
+Verify that an \"allow-query\" sub statement under each zone statement is configured to authorized hosts:
+
+zone \"example.com\" {
+type master;
+file \"db.example.com\";
+allow-query { (address_match_list | <ip_address>) };
+};
+
+If the \"allow-query\" sub statement under each zone statement is not 
 #
 # Exit Codes:
 #     0 = Check Passed (Compliant)
@@ -53,10 +83,6 @@ Exit Codes:
   2 = Not Applicable
   3 = Error
 
-Example:
-  $0
-  $0 --config bind-config.json
-  $0 --output-json results.json
 EOF
             exit 0
             ;;
@@ -68,109 +94,48 @@ EOF
 done
 
 # Load configuration if provided
-if [[ -n "$CONFIG_FILE" ]]; then
-    if [[ ! -f "$CONFIG_FILE" ]]; then
-        echo "ERROR: Configuration file not found: $CONFIG_FILE"
-        exit 3
-    fi
-    # TODO: Load configuration values using jq if available
+if [[ -n "$CONFIG_FILE" ]] && [[ -f "$CONFIG_FILE" ]]; then
+    # Source configuration or parse JSON as needed
+    :
 fi
 
 ################################################################################
-# BIND 9.x HELPER FUNCTIONS
+# HELPER FUNCTIONS
 ################################################################################
 
-# Get BIND version
-get_bind_version() {
-    if command -v named &> /dev/null; then
-        named -v 2>&1 | head -1
-    else
-        echo "ERROR: named not found"
-        return 1
-    fi
-}
+# Output results in JSON format
+output_json() {
+    local status="$1"
+    local message="$2"
+    local details="$3"
 
-# Check if BIND is running in chroot
-check_chroot() {
-    ps -ef | grep named | grep -v grep
-}
-
-# Get BIND config file location
-get_bind_config() {
-    # Common locations
-    local config_locations=(
-        "/etc/named.conf"
-        "/etc/bind/named.conf"
-        "/var/named/chroot/etc/named.conf"
-        "/usr/local/etc/namedb/named.conf"
-    )
-
-    for config in "${config_locations[@]}"; do
-        if [[ -f "$config" ]]; then
-            echo "$config"
-            return 0
-        fi
-    done
-
-    echo "ERROR: BIND config file not found"
-    return 1
-}
-
-################################################################################
-# CHECK IMPLEMENTATION
-################################################################################
-
-# TODO: Implement the actual check logic
-#
-# This is a placeholder that requires BIND domain expertise.
-# Review the official STIG documentation for detailed check and fix procedures.
-
-echo "TODO: Implement BIND 9.x check for BIND-9X-001055"
-echo "This is a placeholder that requires implementation."
-
-# Placeholder status
-STATUS="Not Implemented"
-EXIT_CODE=2
-FINDING_DETAILS="Check logic not yet implemented - requires BIND domain expertise"
-
-################################################################################
-# OUTPUT RESULTS
-################################################################################
-
-# JSON output if requested
-if [[ -n "$OUTPUT_JSON" ]]; then
-    cat > "$OUTPUT_JSON" << EOF_JSON
+    cat > "$OUTPUT_JSON" << EOF
 {
   "vuln_id": "$VULN_ID",
   "stig_id": "$STIG_ID",
   "severity": "$SEVERITY",
-  "rule_title": "A BIND 9.x server implementation must prohibit recursion on authoritative name servers.",
-  "status": "$STATUS",
-  "finding_details": "$FINDING_DETAILS",
-  "timestamp": "$TIMESTAMP",
-  "exit_code": $EXIT_CODE
+  "status": "$status",
+  "message": "$message",
+  "details": "$details",
+  "timestamp": "$TIMESTAMP"
 }
-EOF_JSON
-fi
-
-# Human-readable output
-cat << EOF
-
-================================================================================
-STIG Check: $VULN_ID - $STIG_ID
-Severity: ${SEVERITY^^}
-================================================================================
-Rule: A BIND 9.x server implementation must prohibit recursion on authoritative name servers.
-Status: $STATUS
-Timestamp: $TIMESTAMP
-
---------------------------------------------------------------------------------
-Finding Details:
---------------------------------------------------------------------------------
-$FINDING_DETAILS
-
-================================================================================
-
 EOF
+}
 
-exit $EXIT_CODE
+################################################################################
+# MAIN CHECK LOGIC
+################################################################################
+
+main() {
+    # TODO: Implement actual STIG check logic
+    # This placeholder will be replaced with actual implementation
+
+    echo "TODO: Implement check logic for $STIG_ID"
+    echo "Rule: A BIND 9.x server implementation must prohibit recursion on authoritative name servers."
+
+    [[ -n "$OUTPUT_JSON" ]] && output_json "ERROR" "Not implemented" "Requires implementation"
+    exit 3
+}
+
+# Run main check
+main "$@"

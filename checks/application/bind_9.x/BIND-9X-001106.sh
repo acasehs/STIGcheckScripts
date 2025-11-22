@@ -7,10 +7,48 @@
 # Rule ID: SV-207562r879599
 #
 # Description:
-#     Server-to-server (zone transfer) transactions are provided by TSIG, which enforces mutual server authentication using a key that is unique to each server pair (TSIG), thus uniquely identifying the other server.  Enforcing separate TSIG key-pairs provides another layer of protection for the BIND impl...
+#     Server-to-server (zone transfer) transactions are provided by TSIG, which enforces mutual server authentication using a key that is unique to each server pair (TSIG), thus uniquely identifying the other server.
+
+Enforcing separate TSIG key-pairs provides another layer of protection for the BIND implementation in the event that a TSIG key is compromised. This additional layer of security provides the DNS administrators with the ability to change a compromised TSIG key with a minimal disruption to
 #
 # Check Content:
-#     Verify that the BIND 9.x server is configured to utilize separate TSIG key-pairs when securing server-to-server transactions. Inspect the "named.conf" file for the presence of TSIG key statements:  On the master name server, this is an example of a configured key statement:  key tsig_example. { algo...
+#     Verify that the BIND 9.x server is configured to utilize separate TSIG key-pairs when securing server-to-server transactions.
+Inspect the \"named.conf\" file for the presence of TSIG key statements:
+
+On the master name server, this is an example of a configured key statement:
+
+key tsig_example. {
+algorithm hmac-SHA1;
+include \"tsig-example.key\";
+};
+
+zone \"disa.mil\" {
+type master;
+file \"db.disa.mil\";
+allow-transfer { key tsig_example.; };
+};
+
+On the slave name server, this is an example of a configured key statement:
+
+key tsig_example. {
+algorithm hmac-SHA1;
+include \"tsig-example.key\";
+};
+
+server <ip_address> {
+keys { tsig_example };
+};
+
+zone \"disa.mil\" {
+type slave;
+masters { <ip_address>; };
+file \"db.disa.mil\";
+};
+
+Verify that each TSIG key-pair listed is only used by a single key statement:
+# cat <tsig_key_file>
+
+If any TSIG key-pair is being used by more than one key statement, this is a finding.
 #
 # Exit Codes:
 #     0 = Check Passed (Compliant)
@@ -53,10 +91,6 @@ Exit Codes:
   2 = Not Applicable
   3 = Error
 
-Example:
-  $0
-  $0 --config bind-config.json
-  $0 --output-json results.json
 EOF
             exit 0
             ;;
@@ -68,109 +102,48 @@ EOF
 done
 
 # Load configuration if provided
-if [[ -n "$CONFIG_FILE" ]]; then
-    if [[ ! -f "$CONFIG_FILE" ]]; then
-        echo "ERROR: Configuration file not found: $CONFIG_FILE"
-        exit 3
-    fi
-    # TODO: Load configuration values using jq if available
+if [[ -n "$CONFIG_FILE" ]] && [[ -f "$CONFIG_FILE" ]]; then
+    # Source configuration or parse JSON as needed
+    :
 fi
 
 ################################################################################
-# BIND 9.x HELPER FUNCTIONS
+# HELPER FUNCTIONS
 ################################################################################
 
-# Get BIND version
-get_bind_version() {
-    if command -v named &> /dev/null; then
-        named -v 2>&1 | head -1
-    else
-        echo "ERROR: named not found"
-        return 1
-    fi
-}
+# Output results in JSON format
+output_json() {
+    local status="$1"
+    local message="$2"
+    local details="$3"
 
-# Check if BIND is running in chroot
-check_chroot() {
-    ps -ef | grep named | grep -v grep
-}
-
-# Get BIND config file location
-get_bind_config() {
-    # Common locations
-    local config_locations=(
-        "/etc/named.conf"
-        "/etc/bind/named.conf"
-        "/var/named/chroot/etc/named.conf"
-        "/usr/local/etc/namedb/named.conf"
-    )
-
-    for config in "${config_locations[@]}"; do
-        if [[ -f "$config" ]]; then
-            echo "$config"
-            return 0
-        fi
-    done
-
-    echo "ERROR: BIND config file not found"
-    return 1
-}
-
-################################################################################
-# CHECK IMPLEMENTATION
-################################################################################
-
-# TODO: Implement the actual check logic
-#
-# This is a placeholder that requires BIND domain expertise.
-# Review the official STIG documentation for detailed check and fix procedures.
-
-echo "TODO: Implement BIND 9.x check for BIND-9X-001106"
-echo "This is a placeholder that requires implementation."
-
-# Placeholder status
-STATUS="Not Implemented"
-EXIT_CODE=2
-FINDING_DETAILS="Check logic not yet implemented - requires BIND domain expertise"
-
-################################################################################
-# OUTPUT RESULTS
-################################################################################
-
-# JSON output if requested
-if [[ -n "$OUTPUT_JSON" ]]; then
-    cat > "$OUTPUT_JSON" << EOF_JSON
+    cat > "$OUTPUT_JSON" << EOF
 {
   "vuln_id": "$VULN_ID",
   "stig_id": "$STIG_ID",
   "severity": "$SEVERITY",
-  "rule_title": "The BIND 9.x server implementation must utilize separate TSIG key-pairs when securing server-to-server transactions.",
-  "status": "$STATUS",
-  "finding_details": "$FINDING_DETAILS",
-  "timestamp": "$TIMESTAMP",
-  "exit_code": $EXIT_CODE
+  "status": "$status",
+  "message": "$message",
+  "details": "$details",
+  "timestamp": "$TIMESTAMP"
 }
-EOF_JSON
-fi
-
-# Human-readable output
-cat << EOF
-
-================================================================================
-STIG Check: $VULN_ID - $STIG_ID
-Severity: ${SEVERITY^^}
-================================================================================
-Rule: The BIND 9.x server implementation must utilize separate TSIG key-pairs when securing server-to-server transactions.
-Status: $STATUS
-Timestamp: $TIMESTAMP
-
---------------------------------------------------------------------------------
-Finding Details:
---------------------------------------------------------------------------------
-$FINDING_DETAILS
-
-================================================================================
-
 EOF
+}
 
-exit $EXIT_CODE
+################################################################################
+# MAIN CHECK LOGIC
+################################################################################
+
+main() {
+    # TODO: Implement actual STIG check logic
+    # This placeholder will be replaced with actual implementation
+
+    echo "TODO: Implement check logic for $STIG_ID"
+    echo "Rule: The BIND 9.x server implementation must utilize separate TSIG key-pairs when securing server-to-server transactions."
+
+    [[ -n "$OUTPUT_JSON" ]] && output_json "ERROR" "Not implemented" "Requires implementation"
+    exit 3
+}
+
+# Run main check
+main "$@"

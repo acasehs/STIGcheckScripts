@@ -1,0 +1,16 @@
+{
+  "kubernetes": {
+    "kubeconfig": "/home/user/.kube/config",
+    "context": "production-cluster",
+    "namespace": "default"
+  },
+  "docker": {
+    "socket": "/var/run/docker.sock",
+    "tls_verify": true,
+    "cert_path": "/path/to/certs"
+  },
+  "output": {
+    "format": "json",
+    "directory": "./results"
+  }
+}

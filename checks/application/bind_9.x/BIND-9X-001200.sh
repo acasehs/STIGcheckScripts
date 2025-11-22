@@ -2,15 +2,40 @@
 ################################################################################
 # STIG Check: V-207577
 # Severity: high
-# Rule Title: A BIND 9.x server implementation must maintain the integrity and confidentiality of DNS information while it is being prepared for transmission, in transmission, and in use and t must perform integrity verification and data origin verification for all DNS information.
+# Rule Title: A BIND 9.x server implementation must maintain the integrity and confidentiality of DNS information while it is being prepared for transmission, in transmission, and in use and t must perform integrit
 # STIG ID: BIND-9X-001200
 # Rule ID: SV-207577r879633
 #
 # Description:
-#     DNSSEC is required for securing the DNS query/response transaction by providing data origin authentication and data integrity verification through signature verification and the chain of trust  Failure to accomplish data origin authentication and data integrity verification could have significant ef...
+#     DNSSEC is required for securing the DNS query/response transaction by providing data origin authentication and data integrity verification through signature verification and the chain of trust
+
+Failure to accomplish data origin authentication and data integrity verification could have significant effects on DNS Infrastructure. The resultant response could be forged, it may have come from a poisoned cache, the packets could have been intercepted without the resolver'\''s knowledge, or resource re
 #
 # Check Content:
-#     If the server is in a classified network, this is Not Applicable. If the server is forwarding all queries to the ERS, this is Not Applicable as the ERS validates.  Verify that DNSSEC is enabled.  Inspect the "named.conf" file for the following:  dnssec-enable yes;  If "dnssec-enable" does not exist ...
+#     If the server is in a classified network, this is Not Applicable.
+If the server is forwarding all queries to the ERS, this is Not Applicable as the ERS validates.
+
+Verify that DNSSEC is enabled.
+
+Inspect the \"named.conf\" file for the following:
+
+dnssec-enable yes;
+
+If \"dnssec-enable\" does not exist or is not set to \"yes\", this is a finding.
+
+Verify that each zone on the name server has been signed.
+
+Identify each zone file that the name sever is responsible for and search each file for the \"DNSKEY\" entries:
+
+# less <signed_zone_file>
+86400 DNSKEY 257 3 8 ( HASHED_KEY ) ; KSK; alg = ECDSAP256SHA256; key id = 31225
+86400 DNSKEY 256 3 8 ( HASHED_KEY ) ; ZSK; alg = ECDSAP256SHA256; key id = 52179
+
+Ensure that there are separate \"DNSKEY\" entries for the \"KSK\" and the \"ZSK\"
+
+If the \"DNSKEY\" entries are missing, the zone file is not signed.
+If the zone files are not signed, this is a finding.
+
 #
 # Exit Codes:
 #     0 = Check Passed (Compliant)
@@ -53,10 +78,6 @@ Exit Codes:
   2 = Not Applicable
   3 = Error
 
-Example:
-  $0
-  $0 --config bind-config.json
-  $0 --output-json results.json
 EOF
             exit 0
             ;;
@@ -68,109 +89,48 @@ EOF
 done
 
 # Load configuration if provided
-if [[ -n "$CONFIG_FILE" ]]; then
-    if [[ ! -f "$CONFIG_FILE" ]]; then
-        echo "ERROR: Configuration file not found: $CONFIG_FILE"
-        exit 3
-    fi
-    # TODO: Load configuration values using jq if available
+if [[ -n "$CONFIG_FILE" ]] && [[ -f "$CONFIG_FILE" ]]; then
+    # Source configuration or parse JSON as needed
+    :
 fi
 
 ################################################################################
-# BIND 9.x HELPER FUNCTIONS
+# HELPER FUNCTIONS
 ################################################################################
 
-# Get BIND version
-get_bind_version() {
-    if command -v named &> /dev/null; then
-        named -v 2>&1 | head -1
-    else
-        echo "ERROR: named not found"
-        return 1
-    fi
-}
+# Output results in JSON format
+output_json() {
+    local status="$1"
+    local message="$2"
+    local details="$3"
 
-# Check if BIND is running in chroot
-check_chroot() {
-    ps -ef | grep named | grep -v grep
-}
-
-# Get BIND config file location
-get_bind_config() {
-    # Common locations
-    local config_locations=(
-        "/etc/named.conf"
-        "/etc/bind/named.conf"
-        "/var/named/chroot/etc/named.conf"
-        "/usr/local/etc/namedb/named.conf"
-    )
-
-    for config in "${config_locations[@]}"; do
-        if [[ -f "$config" ]]; then
-            echo "$config"
-            return 0
-        fi
-    done
-
-    echo "ERROR: BIND config file not found"
-    return 1
-}
-
-################################################################################
-# CHECK IMPLEMENTATION
-################################################################################
-
-# TODO: Implement the actual check logic
-#
-# This is a placeholder that requires BIND domain expertise.
-# Review the official STIG documentation for detailed check and fix procedures.
-
-echo "TODO: Implement BIND 9.x check for BIND-9X-001200"
-echo "This is a placeholder that requires implementation."
-
-# Placeholder status
-STATUS="Not Implemented"
-EXIT_CODE=2
-FINDING_DETAILS="Check logic not yet implemented - requires BIND domain expertise"
-
-################################################################################
-# OUTPUT RESULTS
-################################################################################
-
-# JSON output if requested
-if [[ -n "$OUTPUT_JSON" ]]; then
-    cat > "$OUTPUT_JSON" << EOF_JSON
+    cat > "$OUTPUT_JSON" << EOF
 {
   "vuln_id": "$VULN_ID",
   "stig_id": "$STIG_ID",
   "severity": "$SEVERITY",
-  "rule_title": "A BIND 9.x server implementation must maintain the integrity and confidentiality of DNS information while it is being prepared for transmission, in transmission, and in use and t must perform integrity verification and data origin verification for all DNS information.",
-  "status": "$STATUS",
-  "finding_details": "$FINDING_DETAILS",
-  "timestamp": "$TIMESTAMP",
-  "exit_code": $EXIT_CODE
+  "status": "$status",
+  "message": "$message",
+  "details": "$details",
+  "timestamp": "$TIMESTAMP"
 }
-EOF_JSON
-fi
-
-# Human-readable output
-cat << EOF
-
-================================================================================
-STIG Check: $VULN_ID - $STIG_ID
-Severity: ${SEVERITY^^}
-================================================================================
-Rule: A BIND 9.x server implementation must maintain the integrity and confidentiality of DNS information while it is being prepared for transmission, in transmission, and in use and t must perform integrity verification and data origin verification for all DNS information.
-Status: $STATUS
-Timestamp: $TIMESTAMP
-
---------------------------------------------------------------------------------
-Finding Details:
---------------------------------------------------------------------------------
-$FINDING_DETAILS
-
-================================================================================
-
 EOF
+}
 
-exit $EXIT_CODE
+################################################################################
+# MAIN CHECK LOGIC
+################################################################################
+
+main() {
+    # TODO: Implement actual STIG check logic
+    # This placeholder will be replaced with actual implementation
+
+    echo "TODO: Implement check logic for $STIG_ID"
+    echo "Rule: A BIND 9.x server implementation must maintain the integrity and confidentiality of DNS information while it is being prepared for transmission, in transmission, and in use and t must perform integrit"
+
+    [[ -n "$OUTPUT_JSON" ]] && output_json "ERROR" "Not implemented" "Requires implementation"
+    exit 3
+}
+
+# Run main check
+main "$@"
