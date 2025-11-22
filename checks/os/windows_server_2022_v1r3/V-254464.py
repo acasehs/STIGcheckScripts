@@ -1,0 +1,65 @@
+#!/usr/bin/env python3
+"""
+STIG Check: V-254464
+Severity: medium
+Rule Title: Windows Server 2022 setting Microsoft network server: Digitally sign communications (if client agrees) must be configured to Enabled.
+STIG ID: WN22-SO-000200
+STIG Version: Windows Server 2022 v1r3
+
+AUTO-GENERATED: 2025-11-22 04:39:42
+Based on template: registry check
+
+NOTE: This script requires the winreg module (Windows only)
+"""
+
+import sys
+import argparse
+
+try:
+    import winreg
+except ImportError:
+    print("ERROR: This script requires Windows (winreg module)")
+    sys.exit(3)
+
+
+def check_registry_value(hive, key_path, value_name):
+    """Check if a registry value exists and return its value"""
+    try:
+        key = winreg.OpenKey(hive, key_path, 0, winreg.KEY_READ)
+        value, value_type = winreg.QueryValueEx(key, value_name)
+        winreg.CloseKey(key)
+        return {'exists': True, 'value': value, 'type': value_type}
+    except FileNotFoundError:
+        return {'exists': False, 'value': None, 'type': None}
+    except Exception as e:
+        return {'exists': False, 'value': None, 'type': None, 'error': str(e)}
+
+
+def main():
+    parser = argparse.ArgumentParser(description='STIG Check V-254464')
+    parser.add_argument('--config', help='Configuration file (JSON)')
+    parser.add_argument('--output-json', help='Output results to JSON file')
+    args = parser.parse_args()
+
+    # TODO: Extract actual registry path and value
+    hive = winreg.HKEY_LOCAL_MACHINE
+    key_path = r"SOFTWARE\Policies"
+    value_name = "ValueName"
+    expected_value = 1
+
+    result = check_registry_value(hive, key_path, value_name)
+
+    if result['exists']:
+        if result['value'] == expected_value:
+            print(f"PASS: Registry value matches expected ({expected_value})")
+            return 0
+        else:
+            print(f"FAIL: Registry value is {{result['value']}}, expected {expected_value}")
+            return 1
+    else:
+        print(f"FAIL: Registry value does not exist")
+        return 1
+
+
+if __name__ == '__main__':
+    sys.exit(main())
