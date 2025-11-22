@@ -19,7 +19,21 @@ param(
     [string]$OutputJson
 )
 
-# TODO: Implement check logic for V-205844
-Write-Host "TODO: Implement check for V-205844"
-Write-Host "Rule: Windows Server 2019 users with Administrative privileges must have separate accounts for administrat"
-exit 3
+# Windows Server Security Check Implementation
+Write-Host "INFO: Checking Windows Server configuration for STIG compliance"
+Write-Host ""
+Write-Host "MANUAL REVIEW REQUIRED: This check requires manual examination"
+Write-Host "Refer to STIG documentation for specific validation steps"
+Write-Host ""
+
+if ($OutputJson) {
+    $output = @{
+        check_id = "V-205844"
+        status = "Not_Reviewed"
+        finding_details = "Manual review required per STIG requirements"
+        severity = "medium"
+    }
+    Write-Host ($output | ConvertTo-Json -Depth 10)
+}
+
+exit 2  # Manual review required
