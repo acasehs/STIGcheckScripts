@@ -1,0 +1,20 @@
+Windows STIG Automation Framework Generation Report
+============================================================
+
+Benchmark: Microsoft Windows 10
+Benchmark ID: MS_Windows_10_STIG
+Version: 3
+Release: Release: 4 Benchmark Date: 02 Apr 2025
+Generated: 2025-11-22 07:25:48
+
+Statistics:
+  Total checks in source: 261
+  Checks processed: 261
+  Scripts generated: 261
+  Checks skipped (manual): 0
+  PowerShell scripts: 261
+  Python scripts: 261
+  Total files created: 524
+
+Output Directory: checks/os/windows_10_v3r4
+Tool Priority: PowerShell (primary) > Python (fallback)
