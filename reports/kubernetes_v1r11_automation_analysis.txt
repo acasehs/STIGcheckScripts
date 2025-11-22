@@ -1,0 +1,183 @@
+
+================================================================================
+Kubernetes STIG Automation Analysis
+================================================================================
+
+Report Generated: 2025-11-22 18:28:17
+Benchmark: Kubernetes_STIG
+Version: v1r11
+Platform: Linux
+Total Checks: 94
+
+================================================================================
+AUTOMATION FEASIBILITY SUMMARY
+================================================================================
+
+Total STIG Checks:            94
+├─ Fully Automatable:         94 (100.0%)
+├─ Partially Automatable:      0 (0.0%)
+└─ Manual Review Required:     0 (0.0%)
+
+================================================================================
+SEVERITY BREAKDOWN
+================================================================================
+HIGH    :  20 checks (21.3%)
+MEDIUM  :  74 checks (78.7%)
+
+================================================================================
+FRAMEWORK GENERATION DETAILS
+================================================================================
+
+Output Directory: checks/container/kubernetes_v1r11/
+Scripts Generated: 188 (94 bash + 94 Python)
+Primary Command: kubectl
+Tool Priority: bash > python > third-party
+
+================================================================================
+IMPLEMENTATION NOTES
+================================================================================
+
+All scripts are STUB/FRAMEWORK implementations with:
+  ✓ Complete argument parsing and configuration support
+  ✓ Command execution helper functions
+  ✓ JSON output formatting
+  ✓ Standardized exit codes (0=PASS, 1=FAIL, 2=N/A, 3=ERROR)
+  ✗ Actual check logic (TODO - requires container expertise)
+
+Platform Requirements:
+  - kubectl command-line tool installed
+  - Appropriate permissions to execute commands
+  - Platform-specific configuration (kubeconfig, docker socket, etc.)
+  - Network connectivity if required
+
+Security Considerations:
+  - Use minimal required permissions (read-only when possible)
+  - Secure configuration files (chmod 600)
+  - Never store credentials in scripts
+  - Use service accounts or IAM roles when available
+  - Implement logging and audit trails
+
+================================================================================
+CHECK DETAILS
+================================================================================
+
+  1. [MEDIUM] CNTR-K8-000150       - The Kubernetes Controller Manager must use TLS 1.2, at a minimum, t...
+  2. [MEDIUM] CNTR-K8-000160       - The Kubernetes Scheduler must use TLS 1.2, at a minimum, to protect...
+  3. [MEDIUM] CNTR-K8-000170       - The Kubernetes API Server must use TLS 1.2, at a minimum, to protec...
+  4. [MEDIUM] CNTR-K8-000180       - The Kubernetes etcd must use TLS to protect the confidentiality of ...
+  5. [MEDIUM] CNTR-K8-000190       - The Kubernetes etcd must use TLS to protect the confidentiality of ...
+  6. [HIGH  ] CNTR-K8-000220       - The Kubernetes Controller Manager must create unique service accoun...
+  7. [MEDIUM] CNTR-K8-000270       - The Kubernetes API Server must enable Node,RBAC as the authorizatio...
+  8. [HIGH  ] CNTR-K8-000290       - User-managed resources must be created in dedicated namespaces.
+  9. [MEDIUM] CNTR-K8-000300       - The Kubernetes Scheduler must have secure binding.
+ 10. [MEDIUM] CNTR-K8-000310       - The Kubernetes Controller Manager must have secure binding.
+ 11. [HIGH  ] CNTR-K8-000320       - The Kubernetes API server must have the insecure port flag disabled.
+ 12. [HIGH  ] CNTR-K8-000330       - The Kubernetes Kubelet must have the "readOnlyPort" flag disabled.
+ 13. [HIGH  ] CNTR-K8-000340       - The Kubernetes API server must have the insecure bind address not set.
+ 14. [MEDIUM] CNTR-K8-000350       - The Kubernetes API server must have the secure port set.
+ 15. [HIGH  ] CNTR-K8-000360       - The Kubernetes API server must have anonymous authentication disabled.
+ 16. [HIGH  ] CNTR-K8-000370       - The Kubernetes Kubelet must have anonymous authentication disabled.
+ 17. [HIGH  ] CNTR-K8-000380       - The Kubernetes kubelet must enable explicit authorization.
+ 18. [MEDIUM] CNTR-K8-000400       - Kubernetes Worker Nodes must not have sshd service running.
+ 19. [MEDIUM] CNTR-K8-000410       - Kubernetes Worker Nodes must not have the sshd service enabled.
+ 20. [MEDIUM] CNTR-K8-000420       - Kubernetes dashboard must not be enabled.
+ 21. [MEDIUM] CNTR-K8-000430       - Kubernetes Kubectl cp command must give expected access and results.
+ 22. [HIGH  ] CNTR-K8-000440       - The Kubernetes kubelet staticPodPath must not enable static pods.
+ 23. [MEDIUM] CNTR-K8-000450       - Kubernetes DynamicAuditing must not be enabled.
+ 24. [MEDIUM] CNTR-K8-000460       - Kubernetes DynamicKubeletConfig must not be enabled.
+ 25. [MEDIUM] CNTR-K8-000470       - The Kubernetes API server must have Alpha APIs disabled.
+ 26. [MEDIUM] CNTR-K8-000610       - The Kubernetes API Server must have an audit log path set.
+ 27. [MEDIUM] CNTR-K8-000700       - Kubernetes API Server must generate audit records that identify wha...
+ 28. [MEDIUM] CNTR-K8-000850       - Kubernetes Kubelet must deny hostname override.
+ 29. [MEDIUM] CNTR-K8-000860       - The Kubernetes manifests must be owned by root.
+ 30. [MEDIUM] CNTR-K8-000880       - The Kubernetes KubeletConfiguration file must be owned by root.
+ 31. [MEDIUM] CNTR-K8-000890       - The Kubernetes KubeletConfiguration files must have file permission...
+ 32. [MEDIUM] CNTR-K8-000900       - The Kubernetes manifest files must have least privileges.
+ 33. [MEDIUM] CNTR-K8-000910       - Kubernetes Controller Manager must disable profiling.
+ 34. [MEDIUM] CNTR-K8-000920       - The Kubernetes API Server must enforce ports, protocols, and servic...
+ 35. [MEDIUM] CNTR-K8-000930       - The Kubernetes Scheduler must enforce ports, protocols, and service...
+ 36. [MEDIUM] CNTR-K8-000940       - The Kubernetes Controllers must enforce ports, protocols, and servi...
+ 37. [MEDIUM] CNTR-K8-000950       - The Kubernetes etcd must enforce ports, protocols, and services (PP...
+ 38. [MEDIUM] CNTR-K8-000960       - The Kubernetes cluster must use non-privileged host ports for user ...
+ 39. [HIGH  ] CNTR-K8-001160       - Secrets in Kubernetes must not be stored as environment variables.
+ 40. [MEDIUM] CNTR-K8-001360       - Kubernetes must separate user functionality.
+ 41. [MEDIUM] CNTR-K8-001400       - The Kubernetes API server must use approved cipher suites.
+ 42. [MEDIUM] CNTR-K8-001410       - Kubernetes API Server must have the SSL Certificate Authority set.
+ 43. [MEDIUM] CNTR-K8-001420       - Kubernetes Kubelet must have the SSL Certificate Authority set.
+ 44. [MEDIUM] CNTR-K8-001430       - Kubernetes Controller Manager must have the SSL Certificate Authori...
+ 45. [MEDIUM] CNTR-K8-001440       - Kubernetes API Server must have a certificate for communication.
+ 46. [MEDIUM] CNTR-K8-001450       - Kubernetes etcd must enable client authentication to secure service.
+ 47. [MEDIUM] CNTR-K8-001460       - Kubernetes Kubelet must enable tlsPrivateKeyFile for client authent...
+ 48. [MEDIUM] CNTR-K8-001470       - Kubernetes Kubelet must enable tlsCertFile for client authenticatio...
+ 49. [MEDIUM] CNTR-K8-001480       - Kubernetes etcd must enable client authentication to secure service.
+ 50. [MEDIUM] CNTR-K8-001490       - Kubernetes etcd must have a key file for secure communication.
+ 51. [MEDIUM] CNTR-K8-001500       - Kubernetes etcd must have a certificate for communication.
+ 52. [MEDIUM] CNTR-K8-001510       - Kubernetes etcd must have the SSL Certificate Authority set.
+ 53. [MEDIUM] CNTR-K8-001520       - Kubernetes etcd must have a certificate for communication.
+ 54. [MEDIUM] CNTR-K8-001530       - Kubernetes etcd must have a key file for secure communication.
+ 55. [MEDIUM] CNTR-K8-001540       - Kubernetes etcd must have peer-cert-file set for secure communication.
+ 56. [MEDIUM] CNTR-K8-001550       - Kubernetes etcd must have a peer-key-file set for secure communicat...
+ 57. [HIGH  ] CNTR-K8-001620       - Kubernetes Kubelet must enable kernel protection.
+ 58. [HIGH  ] CNTR-K8-002000       - The Kubernetes API server must have the ValidatingAdmissionWebhook ...
+ 59. [HIGH  ] CNTR-K8-002010       - Kubernetes must have a pod security policy set.
+ 60. [MEDIUM] CNTR-K8-002600       - Kubernetes API Server must configure timeouts to limit attack surface.
+ 61. [MEDIUM] CNTR-K8-002700       - Kubernetes must remove old components after updated versions have b...
+ 62. [MEDIUM] CNTR-K8-002720       - Kubernetes must contain the latest updates as authorized by IAVMs, ...
+ 63. [MEDIUM] CNTR-K8-003110       - The Kubernetes component manifests must be owned by root.
+ 64. [MEDIUM] CNTR-K8-003120       - The Kubernetes component etcd must be owned by etcd.
+ 65. [MEDIUM] CNTR-K8-003130       - The Kubernetes conf files must be owned by root.
+ 66. [MEDIUM] CNTR-K8-003140       - The Kubernetes Kube Proxy kubeconfig must have file permissions set...
+ 67. [MEDIUM] CNTR-K8-003150       - The Kubernetes Kube Proxy kubeconfig must be owned by root.
+ 68. [MEDIUM] CNTR-K8-003160       - The Kubernetes Kubelet certificate authority file must have file pe...
+ 69. [MEDIUM] CNTR-K8-003170       - The Kubernetes Kubelet certificate authority must be owned by root.
+ 70. [MEDIUM] CNTR-K8-003180       - The Kubernetes component PKI must be owned by root.
+ 71. [MEDIUM] CNTR-K8-003190       - The Kubernetes kubelet KubeConfig must have file permissions set to...
+ 72. [MEDIUM] CNTR-K8-003200       - The Kubernetes kubelet KubeConfig file must be owned by root.
+ 73. [MEDIUM] CNTR-K8-003210       - The Kubernetes kubeadm.conf must be owned by root.
+ 74. [MEDIUM] CNTR-K8-003220       - The Kubernetes kubeadm.conf must have file permissions set to 644 o...
+ 75. [MEDIUM] CNTR-K8-003230       - The Kubernetes kubelet config must have file permissions set to 644...
+ 76. [MEDIUM] CNTR-K8-003240       - The Kubernetes kubelet config must be owned by root.
+ 77. [MEDIUM] CNTR-K8-003260       - The Kubernetes etcd must have file permissions set to 644 or more r...
+ 78. [MEDIUM] CNTR-K8-003270       - The Kubernetes admin kubeconfig must have file permissions set to 6...
+ 79. [MEDIUM] CNTR-K8-003280       - Kubernetes API Server audit logs must be enabled.
+ 80. [MEDIUM] CNTR-K8-003290       - The Kubernetes API Server must be set to audit log max size.
+ 81. [MEDIUM] CNTR-K8-003300       - The Kubernetes API Server must be set to audit log maximum backup.
+ 82. [MEDIUM] CNTR-K8-003310       - The Kubernetes API Server audit log retention must be set.
+ 83. [MEDIUM] CNTR-K8-003320       - The Kubernetes API Server audit log path must be set.
+ 84. [MEDIUM] CNTR-K8-003330       - The Kubernetes PKI CRT must have file permissions set to 644 or mor...
+ 85. [MEDIUM] CNTR-K8-003340       - The Kubernetes PKI keys must have file permissions set to 600 or mo...
+ 86. [MEDIUM] CNTR-K8-001300       - Kubernetes Kubelet must not disable timeouts.
+ 87. [HIGH  ] CNTR-K8-002620       - Kubernetes API Server must disable basic authentication to protect ...
+ 88. [HIGH  ] CNTR-K8-002630       - Kubernetes API Server must disable token authentication to protect ...
+ 89. [HIGH  ] CNTR-K8-002640       - Kubernetes endpoints must use approved organizational certificate a...
+ 90. [HIGH  ] CNTR-K8-002011       - Kubernetes must have aÂ Pod SecurityÂ Admission control file config...
+ 91. [HIGH  ] CNTR-K8-002001       - Kubernetes must enable PodSecurity admission controller on static p...
+ 92. [HIGH  ] CNTR-K8-001162       - Kubernetes Secrets must be encrypted at rest.
+ 93. [HIGH  ] CNTR-K8-001161       - Sensitive information must be stored using Kubernetes Secrets or an...
+ 94. [MEDIUM] CNTR-K8-001163       - Kubernetes must limit Secret access on a need-to-know basis.
+
+================================================================================
+AUTOMATION READINESS
+================================================================================
+
+Framework Status:     COMPLETE
+Implementation Status: STUB (requires domain expertise)
+Testing Status:       NOT TESTED (requires actual platforms)
+Production Ready:     NO (implementation incomplete)
+
+================================================================================
+NEXT STEPS
+================================================================================
+
+1. Review generated framework scripts
+2. Implement platform-specific check logic for each STIG
+3. Test in actual container environments
+4. Create platform configuration files (chmod 600)
+5. Validate all exit codes and error handling
+6. Document platform-specific requirements
+7. Implement batch execution scripts if needed
+8. Consider integration with compliance reporting tools
+
+================================================================================
+END OF REPORT
+================================================================================
