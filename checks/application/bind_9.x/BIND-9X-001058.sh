@@ -7,10 +7,35 @@
 # Rule ID: SV-207556r879887
 #
 # Description:
-#     It is important to maintain the integrity of a zone file. The serial number of the SOA record is used to indicate to secondary name server that a change to the zone has occurred and a zone transfer should be performed. The serial number used in the SOA record provides the DNS administrator a method ...
+#     It is important to maintain the integrity of a zone file. The serial number of the SOA record is used to indicate to secondary name server that a change to the zone has occurred and a zone transfer should be performed. The serial number used in the SOA record provides the DNS administrator a method to verify the integrity of the zone file based on the serial number of the last update and ensure that all slave servers are using the correct zone file.
+When a primary master name server notices that
 #
 # Check Content:
-#     If this is a master name server, this is Not Applicable.  On a secondary name server, verify that the global notify is disabled. The global entry for the name server is under the â€œOptionsâ€ section and notify should be disabled at this section.  Inspect the "named.conf" file for the following:  o...
+#     If this is a master name server, this is Not Applicable.
+
+On a secondary name server, verify that the global notify is disabled. The global entry for the name server is under the â€œOptionsâ€ section and notify should be disabled at this section.
+
+Inspect the \"named.conf\" file for the following:
+
+options {
+notify no;
+};
+
+If the \"notify\" statement is missing, this is a finding.
+If the \"notify\" statement is set to \"yes\", this is a finding.
+
+Verify that zones for which the secondary server is authoritative is configured to notify other authorized secondary name servers when a zone file update has been received from the master name server for the zone.
+Each zone has its own Zone section.
+
+Inspect the \"named.conf\" file for the following:
+
+zone example.com {
+notify explicit;
+also-notify { <ip_address>; | <address_match_list>; };
+
+If an \"address match list\" is used, verify that each ip address listed is an authorized secondary name server for that zone.
+
+If the â€œnotify explicit
 #
 # Exit Codes:
 #     0 = Check Passed (Compliant)
@@ -53,10 +78,6 @@ Exit Codes:
   2 = Not Applicable
   3 = Error
 
-Example:
-  $0
-  $0 --config bind-config.json
-  $0 --output-json results.json
 EOF
             exit 0
             ;;
@@ -68,109 +89,48 @@ EOF
 done
 
 # Load configuration if provided
-if [[ -n "$CONFIG_FILE" ]]; then
-    if [[ ! -f "$CONFIG_FILE" ]]; then
-        echo "ERROR: Configuration file not found: $CONFIG_FILE"
-        exit 3
-    fi
-    # TODO: Load configuration values using jq if available
+if [[ -n "$CONFIG_FILE" ]] && [[ -f "$CONFIG_FILE" ]]; then
+    # Source configuration or parse JSON as needed
+    :
 fi
 
 ################################################################################
-# BIND 9.x HELPER FUNCTIONS
+# HELPER FUNCTIONS
 ################################################################################
 
-# Get BIND version
-get_bind_version() {
-    if command -v named &> /dev/null; then
-        named -v 2>&1 | head -1
-    else
-        echo "ERROR: named not found"
-        return 1
-    fi
-}
+# Output results in JSON format
+output_json() {
+    local status="$1"
+    local message="$2"
+    local details="$3"
 
-# Check if BIND is running in chroot
-check_chroot() {
-    ps -ef | grep named | grep -v grep
-}
-
-# Get BIND config file location
-get_bind_config() {
-    # Common locations
-    local config_locations=(
-        "/etc/named.conf"
-        "/etc/bind/named.conf"
-        "/var/named/chroot/etc/named.conf"
-        "/usr/local/etc/namedb/named.conf"
-    )
-
-    for config in "${config_locations[@]}"; do
-        if [[ -f "$config" ]]; then
-            echo "$config"
-            return 0
-        fi
-    done
-
-    echo "ERROR: BIND config file not found"
-    return 1
-}
-
-################################################################################
-# CHECK IMPLEMENTATION
-################################################################################
-
-# TODO: Implement the actual check logic
-#
-# This is a placeholder that requires BIND domain expertise.
-# Review the official STIG documentation for detailed check and fix procedures.
-
-echo "TODO: Implement BIND 9.x check for BIND-9X-001058"
-echo "This is a placeholder that requires implementation."
-
-# Placeholder status
-STATUS="Not Implemented"
-EXIT_CODE=2
-FINDING_DETAILS="Check logic not yet implemented - requires BIND domain expertise"
-
-################################################################################
-# OUTPUT RESULTS
-################################################################################
-
-# JSON output if requested
-if [[ -n "$OUTPUT_JSON" ]]; then
-    cat > "$OUTPUT_JSON" << EOF_JSON
+    cat > "$OUTPUT_JSON" << EOF
 {
   "vuln_id": "$VULN_ID",
   "stig_id": "$STIG_ID",
   "severity": "$SEVERITY",
-  "rule_title": "The secondary name servers in a BIND 9.x implementation must be configured to initiate zone update notifications to other authoritative zone name servers.",
-  "status": "$STATUS",
-  "finding_details": "$FINDING_DETAILS",
-  "timestamp": "$TIMESTAMP",
-  "exit_code": $EXIT_CODE
+  "status": "$status",
+  "message": "$message",
+  "details": "$details",
+  "timestamp": "$TIMESTAMP"
 }
-EOF_JSON
-fi
-
-# Human-readable output
-cat << EOF
-
-================================================================================
-STIG Check: $VULN_ID - $STIG_ID
-Severity: ${SEVERITY^^}
-================================================================================
-Rule: The secondary name servers in a BIND 9.x implementation must be configured to initiate zone update notifications to other authoritative zone name servers.
-Status: $STATUS
-Timestamp: $TIMESTAMP
-
---------------------------------------------------------------------------------
-Finding Details:
---------------------------------------------------------------------------------
-$FINDING_DETAILS
-
-================================================================================
-
 EOF
+}
 
-exit $EXIT_CODE
+################################################################################
+# MAIN CHECK LOGIC
+################################################################################
+
+main() {
+    # TODO: Implement actual STIG check logic
+    # This placeholder will be replaced with actual implementation
+
+    echo "TODO: Implement check logic for $STIG_ID"
+    echo "Rule: The secondary name servers in a BIND 9.x implementation must be configured to initiate zone update notifications to other authoritative zone name servers."
+
+    [[ -n "$OUTPUT_JSON" ]] && output_json "ERROR" "Not implemented" "Requires implementation"
+    exit 3
+}
+
+# Run main check
+main "$@"

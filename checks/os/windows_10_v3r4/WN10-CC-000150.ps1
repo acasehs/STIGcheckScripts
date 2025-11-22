@@ -1,0 +1,86 @@
+<#
+.SYNOPSIS
+    STIG Check: V-220822
+    Severity: medium
+
+.DESCRIPTION
+    Rule Title: The user must be prompted for a password on resume from sleep (plugged in).
+    STIG ID: WN10-CC-000150
+    Rule ID: SV-220822r1051028
+
+    Authentication must always be required when accessing a system. This setting ensures the user is prompted for a password on resume from sleep (plugged in).
+
+.PARAMETER Config
+    Configuration file path (JSON)
+
+.PARAMETER OutputJson
+    Output results in JSON format to specified file
+
+.OUTPUTS
+    Exit Codes:
+        0 = Check Passed (Compliant)
+        1 = Check Failed (Finding)
+        2 = Check Not Applicable
+        3 = Check Error
+#>
+
+[CmdletBinding()]
+param(
+    [Parameter(Mandatory=$false)]
+    [string]$Config,
+
+    [Parameter(Mandatory=$false)]
+    [string]$OutputJson
+)
+
+# Configuration
+$VULN_ID = "V-220822"
+$STIG_ID = "WN10-CC-000150"
+$SEVERITY = "medium"
+$TIMESTAMP = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
+
+# Load configuration if provided
+if ($Config -and (Test-Path $Config)) {
+    $ConfigData = Get-Content $Config | ConvertFrom-Json
+}
+
+################################################################################
+# MAIN CHECK LOGIC
+################################################################################
+
+try {
+    # TODO: Implement actual STIG check logic
+    # This placeholder will be replaced with actual implementation
+
+    Write-Output "TODO: Implement check logic for $STIG_ID"
+    Write-Output "Rule: The user must be prompted for a password on resume from sleep (plugged in)."
+
+    if ($OutputJson) {
+        @{
+            vuln_id = $VULN_ID
+            stig_id = $STIG_ID
+            severity = $SEVERITY
+            status = "ERROR"
+            message = "Not implemented"
+            timestamp = $TIMESTAMP
+        } | ConvertTo-Json | Out-File $OutputJson
+    }
+
+    exit 3
+
+} catch {
+    Write-Error $_.Exception.Message
+
+    if ($OutputJson) {
+        @{
+            vuln_id = $VULN_ID
+            stig_id = $STIG_ID
+            severity = $SEVERITY
+            status = "ERROR"
+            message = $_.Exception.Message
+            timestamp = $TIMESTAMP
+        } | ConvertTo-Json | Out-File $OutputJson
+    }
+
+    exit 3
+}

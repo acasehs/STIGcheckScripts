@@ -1,0 +1,101 @@
+
+================================================================================
+UNIFIED SCRIPT REGENERATION SYSTEM
+Regenerating ALL 9,438 scripts with consistent format
+================================================================================
+
+Processing: apache_2.2_unix_site_checks.json
+  ✓ Regenerated 29/29 scripts
+
+Processing: apache_2.2_windows_site_checks.json
+  ✓ Regenerated 28/28 scripts
+
+Processing: apache_2.4_unix_server_checks.json
+  ✓ Regenerated 47/47 scripts
+
+Processing: apache_2.4_unix_site_checks.json
+  ✓ Regenerated 27/27 scripts
+
+Processing: apache_2.4_windows_server_checks.json
+  ✓ Regenerated 54/54 scripts
+
+Processing: apache_2.4_windows_site_checks.json
+  ✓ Regenerated 36/36 scripts
+
+Processing: bind_9.x_checks.json
+  ✓ Regenerated 70/70 scripts
+
+Processing: cisco_asa_ndm_checks.json
+  ✓ Regenerated 47/47 scripts
+
+Processing: docker_enterprise_2.x_linux_unix_v2r2_checks.json
+  ✓ Regenerated 101/101 scripts
+
+Processing: fortinet_fortigate_ndm_checks.json
+  ✓ Regenerated 60/60 scripts
+
+Processing: kubernetes_v1r11_checks.json
+  ✓ Regenerated 94/94 scripts
+
+Processing: microsoft_excel_2016_checks.json
+  WARNING: Script directory not found
+
+Processing: microsoft_office_365_proplus_checks.json
+  WARNING: Script directory not found
+
+Processing: microsoft_office_system_2016_checks.json
+  WARNING: Script directory not found
+
+Processing: microsoft_outlook_2016_checks.json
+  WARNING: Script directory not found
+
+Processing: microsoft_powerpoint_2016_checks.json
+  WARNING: Script directory not found
+
+Processing: microsoft_word_2016_checks.json
+  WARNING: Script directory not found
+
+Processing: oracle_database_19c_v1r2_checks.json
+  ✓ Regenerated 96/96 scripts
+
+Processing: oracle_http_server_12.1.3_v2r3_checks.json
+  ✓ Regenerated 280/280 scripts
+
+Processing: oracle_linux_8_v2r5_checks.json
+  ✓ Regenerated 374/374 scripts
+
+Processing: oracle_linux_9_v1r2_checks.json
+  ✓ Regenerated 456/456 scripts
+
+Processing: oracle_weblogic_12c_v2r2_checks.json
+  WARNING: Script directory not found
+
+Processing: palo_alto_ndm_checks.json
+  ✓ Regenerated 34/34 scripts
+
+Processing: rhel_8_v2r4_checks.json
+  ✓ Regenerated 369/369 scripts
+
+Processing: rhel_9_v2r5_checks.json
+  ✓ Regenerated 450/450 scripts
+
+Processing: ubuntu_22.04_lts_v1r2_checks.json
+  WARNING: Script directory not found
+
+Processing: weblogic_checks.json
+  ✓ Regenerated 72/72 scripts
+
+Processing: windows_10_checks.json
+  ✓ Regenerated 261/261 scripts
+
+Processing: windows_11_checks.json
+  ✓ Regenerated 258/258 scripts
+
+================================================================================
+REGENERATION COMPLETE
+================================================================================
+
+Total: 3243/3836 scripts regenerated
+
+All scripts now use unified template format.
+Ready for implementation phase!
