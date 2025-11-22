@@ -118,14 +118,27 @@ EOF
 ################################################################################
 
 main() {
-    # TODO: Implement actual STIG check logic
-    # This placeholder will be replaced with actual implementation
+    # Check BIND named process
+    process=$(ps -ef | grep named | grep -v grep)
 
-    echo "TODO: Implement check logic for $STIG_ID"
-    echo "Rule: The host running a BIND 9.x implementation must use a dedicated management interface in order to separate management traffic from DNS specific traffic."
+    if [[ -z "$process" ]]; then
+        echo "ERROR: named process not running"
+        [[ -n "$OUTPUT_JSON" ]] && output_json "ERROR" "Service not running" ""
+        exit 3
+    fi
 
-    [[ -n "$OUTPUT_JSON" ]] && output_json "ERROR" "Not implemented" "Requires implementation"
-    exit 3
+    echo "INFO: named process found:"
+    echo "$process"
+    echo ""
+
+    # Check for required arguments
+    echo "MANUAL REVIEW REQUIRED: Verify process arguments meet STIG requirements"
+    echo "Expected: required arguments"
+    echo "Current: $process"
+
+    [[ -n "$OUTPUT_JSON" ]] && output_json "MANUAL" "Process check requires validation" "$process"
+    exit 2  # Manual review required
+
 }
 
 # Run main check

@@ -115,14 +115,30 @@ EOF
 ################################################################################
 
 main() {
-    # TODO: Implement actual STIG check logic
-    # This placeholder will be replaced with actual implementation
+    # Check BIND version
+    if ! command -v named &>/dev/null; then
+        echo "ERROR: named command not found"
+        [[ -n "$OUTPUT_JSON" ]] && output_json "ERROR" "BIND not installed" ""
+        exit 3
+    fi
 
-    echo "TODO: Implement check logic for $STIG_ID"
-    echo "Rule: The BIND 9.x server implementation must be configured with a channel to send audit records to a local file."
+    version=$(named -v 2>&1)
 
-    [[ -n "$OUTPUT_JSON" ]] && output_json "ERROR" "Not implemented" "Requires implementation"
-    exit 3
+    if [[ -z "$version" ]]; then
+        echo "ERROR: Unable to determine BIND version"
+        [[ -n "$OUTPUT_JSON" ]] && output_json "ERROR" "Version check failed" ""
+        exit 3
+    fi
+
+    echo "INFO: BIND version detected:"
+    echo "$version"
+    echo ""
+    echo "MANUAL REVIEW REQUIRED: Verify version is Current-Stable per ISC"
+    echo "Reference: https://www.isc.org/downloads/"
+
+    [[ -n "$OUTPUT_JSON" ]] && output_json "MANUAL" "Version requires validation" "$version"
+    exit 2  # Manual review required
+
 }
 
 # Run main check

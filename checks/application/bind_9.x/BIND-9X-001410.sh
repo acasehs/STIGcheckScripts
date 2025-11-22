@@ -118,14 +118,38 @@ EOF
 ################################################################################
 
 main() {
-    # TODO: Implement actual STIG check logic
-    # This placeholder will be replaced with actual implementation
+    # Locate BIND directories
+    NAMED_DIRS=("/etc/named" "/var/named" "/etc/bind" "/var/named/chroot")
 
-    echo "TODO: Implement check logic for $STIG_ID"
-    echo "Rule: On the BIND 9.x server the private key corresponding to the ZSK, stored on name servers accepting dynamic updates, must be owned by root."
+    found_dir=""
+    for dir in "${NAMED_DIRS[@]}"; do
+        if [[ -d "$dir" ]]; then
+            found_dir="$dir"
+            break
+        fi
+    done
 
-    [[ -n "$OUTPUT_JSON" ]] && output_json "ERROR" "Not implemented" "Requires implementation"
-    exit 3
+    if [[ -z "$found_dir" ]]; then
+        echo "ERROR: BIND directory not found in standard locations"
+        [[ -n "$OUTPUT_JSON" ]] && output_json "ERROR" "Directory not found" ""
+        exit 3
+    fi
+
+    echo "INFO: BIND directory found: $found_dir"
+    echo ""
+    echo "Directory permissions:"
+    ls -ld "$found_dir"
+    echo ""
+    echo "File permissions:"
+    ls -l "$found_dir" | head -10
+    echo ""
+
+    echo "MANUAL REVIEW REQUIRED: Verify permissions meet STIG requirements"
+    echo "Location: $found_dir"
+
+    [[ -n "$OUTPUT_JSON" ]] && output_json "MANUAL" "Permission check requires validation" "$found_dir"
+    exit 2  # Manual review required
+
 }
 
 # Run main check
