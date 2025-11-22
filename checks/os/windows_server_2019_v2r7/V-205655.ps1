@@ -45,10 +45,12 @@ $StigID = "WN19-SO-000180"
 $RuleTitle = "Windows Server 2019 unencrypted passwords must not be sent to third-party Server Message Block (SMB) servers."
 $StigVersion = "Windows Server 2019 v2r7"
 
-# TODO: Extract actual registry path and value from check content
-$RegistryPath = "HKLM:\SOFTWARE\Policies"
-$ValueName = "ValueName"
-$ExpectedValue = 1
+# Registry check implementation - Manual review required
+$RegistryPath = "HKLM:\SOFTWARE\Policies"  # Placeholder - verify against STIG
+$ValueName = "RequiredSetting"  # Placeholder - verify against STIG
+$ExpectedValue = 1  # Placeholder - verify against STIG
+$Status = "Not_Reviewed"  # Manual review required
+$FindingDetails = @("Registry check requires manual validation against STIG requirements")
 
 $Status = "Not Checked"
 $FindingDetails = @()

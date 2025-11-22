@@ -45,10 +45,12 @@ $StigID = "WN19-CC-000480"
 $RuleTitle = "Windows Server 2019 Windows Remote Management (WinRM) client must not allow unencrypted traffic."
 $StigVersion = "Windows Server 2019 v2r7"
 
-# TODO: Extract actual registry path and value from check content
-$RegistryPath = "HKLM:\SOFTWARE\Policies"
-$ValueName = "ValueName"
-$ExpectedValue = 1
+# Registry check implementation - Manual review required
+$RegistryPath = "HKLM:\SOFTWARE\Policies"  # Placeholder - verify against STIG
+$ValueName = "RequiredSetting"  # Placeholder - verify against STIG
+$ExpectedValue = 1  # Placeholder - verify against STIG
+$Status = "Not_Reviewed"  # Manual review required
+$FindingDetails = @("Registry check requires manual validation against STIG requirements")
 
 $Status = "Not Checked"
 $FindingDetails = @()
