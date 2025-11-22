@@ -1,0 +1,177 @@
+#!/usr/bin/env bash
+################################################################################
+# STIG Check: V-2270
+# Severity: medium
+# Rule Title: Anonymous FTP user access to interactive scripts is prohibited.
+# STIG ID: WG430 A22
+# Rule ID: SV-36641r1
+#
+# Description:
+#     The directories containing the CGI scripts, such as PERL, must not be accessible to anonymous users via FTP. This applies to all directories that contain scripts that can dynamically produce web pages in an interactive manner (i.e., scripts based upon user-provided input). Such scripts contain infor...
+#
+# Check Content:
+#     Locate the directories containing the CGI scripts. These directories should be language-specific (e.g., PERL, ASP, JS, JSP, etc.). _x000D_ _x000D_ Using ls â€“al, examine the file permissions on the CGI, the cgi-bin, and the cgi-shl directories._x000D_ _x000D_ Anonymous FTP users must not have access to these directories._x000D_ _x000D_ If the CGI, the cgi-bin, or the cgi-shl directories can be ac...
+#
+# Exit Codes:
+#     0 = Check Passed (Compliant)
+#     1 = Check Failed (Finding)
+#     2 = Check Not Applicable
+#     3 = Check Error
+################################################################################
+
+# Configuration
+VULN_ID="V-2270"
+STIG_ID="WG430 A22"
+SEVERITY="medium"
+TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+CONFIG_FILE=""
+OUTPUT_JSON=""
+
+# Parse arguments
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --config)
+            CONFIG_FILE="$2"
+            shift 2
+            ;;
+        --output-json)
+            OUTPUT_JSON="$2"
+            shift 2
+            ;;
+        -h|--help)
+            cat << 'EOF'
+Usage: $0 [OPTIONS]
+
+Options:
+  --config <file>         Configuration file (JSON)
+  --output-json <file>    Output results in JSON format
+  -h, --help             Show this help message
+
+Exit Codes:
+  0 = Pass (Compliant)
+  1 = Fail (Finding)
+  2 = Not Applicable
+  3 = Error
+
+Example:
+  $0
+  $0 --config apache-config.json
+  $0 --output-json results.json
+EOF
+            exit 0
+            ;;
+        *)
+            echo "Unknown option: $1"
+            exit 3
+            ;;
+    esac
+done
+
+# Load configuration if provided
+if [[ -n "$CONFIG_FILE" ]]; then
+    if [[ ! -f "$CONFIG_FILE" ]]; then
+        echo "ERROR: Configuration file not found: $CONFIG_FILE"
+        exit 3
+    fi
+    # TODO: Load configuration values using jq if available
+fi
+
+################################################################################
+# APACHE HTTPD HELPER FUNCTIONS
+################################################################################
+
+# Get Apache configuration root and main config file
+get_apache_config() {
+    # Try apachectl first
+    if command -v apachectl &> /dev/null; then
+        HTTPD_ROOT=$(apachectl -V 2>/dev/null | grep -i "HTTPD_ROOT" | cut -d'"' -f2)
+        SERVER_CONFIG=$(apachectl -V 2>/dev/null | grep -i "SERVER_CONFIG_FILE" | cut -d'"' -f2)
+    # Try apache2ctl
+    elif command -v apache2ctl &> /dev/null; then
+        HTTPD_ROOT=$(apache2ctl -V 2>/dev/null | grep -i "HTTPD_ROOT" | cut -d'"' -f2)
+        SERVER_CONFIG=$(apache2ctl -V 2>/dev/null | grep -i "SERVER_CONFIG_FILE" | cut -d'"' -f2)
+    # Try httpd directly
+    elif command -v httpd &> /dev/null; then
+        HTTPD_ROOT=$(httpd -V 2>/dev/null | grep -i "HTTPD_ROOT" | cut -d'"' -f2)
+        SERVER_CONFIG=$(httpd -V 2>/dev/null | grep -i "SERVER_CONFIG_FILE" | cut -d'"' -f2)
+    else
+        echo "ERROR: Apache not found (apachectl, apache2ctl, or httpd)"
+        return 1
+    fi
+
+    # Construct full config path
+    if [[ "$SERVER_CONFIG" == /* ]]; then
+        HTTPD_CONF="$SERVER_CONFIG"
+    else
+        HTTPD_CONF="$HTTPD_ROOT/$SERVER_CONFIG"
+    fi
+
+    if [[ ! -f "$HTTPD_CONF" ]]; then
+        echo "ERROR: Apache config file not found: $HTTPD_CONF"
+        return 1
+    fi
+
+    return 0
+}
+
+################################################################################
+# CHECK IMPLEMENTATION
+################################################################################
+
+# TODO: Implement the actual check logic
+#
+# STIG Check Method from the official STIG:
+# Locate the directories containing the CGI scripts. These directories should be language-specific (e.g., PERL, ASP, JS, JSP, etc.). _x000D_ _x000D_ Using ls â€“al, examine the file permissions on the CGI, the cgi-bin, and the cgi-shl directories._x000D_ _x000D_ Anonymous FTP users must not have access to these directories._x000D_ _x000D_ If the CGI, the cgi-bin, or the cgi-shl directories can be accessed by any group that does not require access, this is a finding._x000D_
+#
+# Fix Text from the official STIG:
+# If the CGI, the cgi-bin, or the cgi-shl directories can be accessed via FTP by any group or user that does not require access, remove permissions to such directories for all but the web administrators and the SAs. Ensure that any such access employs an encrypted connection.
+
+echo "TODO: Implement Apache check for V-2270"
+echo "This is a placeholder that requires implementation."
+
+# Placeholder status
+STATUS="Not Implemented"
+EXIT_CODE=2
+FINDING_DETAILS="Check logic not yet implemented - requires Apache domain expertise"
+
+################################################################################
+# OUTPUT RESULTS
+################################################################################
+
+# JSON output if requested
+if [[ -n "$OUTPUT_JSON" ]]; then
+    cat > "$OUTPUT_JSON" << EOF_JSON
+{
+  "vuln_id": "$VULN_ID",
+  "stig_id": "$STIG_ID",
+  "severity": "$SEVERITY",
+  "rule_title": "Anonymous FTP user access to interactive scripts is prohibited.",
+  "status": "$STATUS",
+  "finding_details": "$FINDING_DETAILS",
+  "timestamp": "$TIMESTAMP",
+  "exit_code": $EXIT_CODE
+}
+EOF_JSON
+fi
+
+# Human-readable output
+cat << EOF
+
+================================================================================
+STIG Check: $VULN_ID - $STIG_ID
+Severity: ${SEVERITY^^}
+================================================================================
+Rule: Anonymous FTP user access to interactive scripts is prohibited.
+Status: $STATUS
+Timestamp: $TIMESTAMP
+
+--------------------------------------------------------------------------------
+Finding Details:
+--------------------------------------------------------------------------------
+$FINDING_DETAILS
+
+================================================================================
+
+EOF
+
+exit $EXIT_CODE
