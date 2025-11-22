@@ -131,32 +131,26 @@ def perform_check(config):
                message: Human-readable status message
                details: Additional details about the check
     """
+    """
+    Perform the actual STIG check
+    """
 
-    # Example implementation structure for Docker:
-    # stdout, error = docker_exec("info --format '{{.SecurityOptions}}'")
-    # if error:
-    #     return (3, f"Error executing docker command: {error}", "")
-    #
-    # # Analyze output for compliance
-    # if "expected_value" in stdout:
-    #     return (0, "Compliant", stdout)
-    # else:
-    #     return (1, "Non-compliant - Finding", stdout)
+    # Execute check based on type
 
-    # Example implementation structure for Kubernetes:
-    # namespace = config.get('kubernetes', {}).get('namespace')
-    # context = config.get('kubernetes', {}).get('context')
-    # kubeconfig = config.get('kubernetes', {}).get('kubeconfig')
-    #
-    # stdout, error = kubectl_exec("get pods", namespace, context, kubeconfig)
-    # if error:
-    #     return (3, f"Error executing kubectl command: {error}", "")
-    #
-    # # Analyze output for compliance
-    # if some_compliance_check(stdout):
-    #     return (0, "Compliant", stdout)
-    # else:
-    #     return (1, "Non-compliant - Finding", stdout)
+    # Check FIPS mode
+    # Check host FIPS
+    stdout, error = run_command("cat /proc/sys/crypto/fips_enabled 2>/dev/null || echo 0")
+
+    if stdout and stdout.strip() == "1":
+        return (0, "PASS: FIPS mode enabled on host", stdout)
+
+    # Check Docker FIPS
+    stdout, error = run_command("docker info 2>/dev/null | grep -i 'FIPS mode'")
+
+    if stdout and any(x in stdout.lower() for x in ['enabled', 'true', '1']):
+        return (0, "PASS: FIPS mode enabled on Docker", stdout)
+
+    return (1, "FAIL: FIPS mode not enabled", "")
 
     return (3, "Not implemented - Stub implementation",
             "This check requires container domain expertise to implement")

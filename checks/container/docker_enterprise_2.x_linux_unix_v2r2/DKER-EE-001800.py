@@ -133,32 +133,25 @@ def perform_check(config):
                message: Human-readable status message
                details: Additional details about the check
     """
+    """
+    Perform the actual STIG check
+    """
 
-    # Example implementation structure for Docker:
-    # stdout, error = docker_exec("info --format '{{.SecurityOptions}}'")
-    # if error:
-    #     return (3, f"Error executing docker command: {error}", "")
-    #
-    # # Analyze output for compliance
-    # if "expected_value" in stdout:
-    #     return (0, "Compliant", stdout)
-    # else:
-    #     return (1, "Non-compliant - Finding", stdout)
+    # Execute check based on type
 
-    # Example implementation structure for Kubernetes:
-    # namespace = config.get('kubernetes', {}).get('namespace')
-    # context = config.get('kubernetes', {}).get('context')
-    # kubeconfig = config.get('kubernetes', {}).get('kubeconfig')
-    #
-    # stdout, error = kubectl_exec("get pods", namespace, context, kubeconfig)
-    # if error:
-    #     return (3, f"Error executing kubectl command: {error}", "")
-    #
-    # # Analyze output for compliance
-    # if some_compliance_check(stdout):
-    #     return (0, "Compliant", stdout)
-    # else:
-    #     return (1, "Non-compliant - Finding", stdout)
+    # Check docker daemon process
+    stdout, error = run_command("ps -ef | grep dockerd | grep -v grep")
+
+    if error:
+        return (3, f"Error checking docker process: {error}", "")
+
+    # Check for TCP binding
+    if "-H TCP://" in stdout:
+        return (1, "FAIL: Docker daemon configured with TCP binding", stdout)
+    elif "-H UNIX://" in stdout or "/var/run/docker.sock" in stdout:
+        return (0, "PASS: Docker daemon using UNIX socket (compliant)", stdout)
+    else:
+        return (1, "FAIL: Unable to determine docker daemon configuration", stdout)
 
     return (3, "Not implemented - Stub implementation",
             "This check requires container domain expertise to implement")

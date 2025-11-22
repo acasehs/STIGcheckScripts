@@ -131,32 +131,24 @@ def perform_check(config):
                message: Human-readable status message
                details: Additional details about the check
     """
+    """
+    Perform the actual STIG check
+    """
 
-    # Example implementation structure for Docker:
-    # stdout, error = docker_exec("info --format '{{.SecurityOptions}}'")
-    # if error:
-    #     return (3, f"Error executing docker command: {error}", "")
-    #
-    # # Analyze output for compliance
-    # if "expected_value" in stdout:
-    #     return (0, "Compliant", stdout)
-    # else:
-    #     return (1, "Non-compliant - Finding", stdout)
+    # Execute check based on type
 
-    # Example implementation structure for Kubernetes:
-    # namespace = config.get('kubernetes', {}).get('namespace')
-    # context = config.get('kubernetes', {}).get('context')
-    # kubeconfig = config.get('kubernetes', {}).get('kubeconfig')
-    #
-    # stdout, error = kubectl_exec("get pods", namespace, context, kubeconfig)
-    # if error:
-    #     return (3, f"Error executing kubectl command: {error}", "")
-    #
-    # # Analyze output for compliance
-    # if some_compliance_check(stdout):
-    #     return (0, "Compliant", stdout)
-    # else:
-    #     return (1, "Non-compliant - Finding", stdout)
+    # TODO: Implement specific check logic
+    # STIG ID: DKER-EE-002010
+    # Check Type: command_output
+    # Check Content: Ensure memory limits are in place for all containers.
+
+This check should be executed on all nodes in a Docker Enterprise cluster.
+
+via CLI:
+
+Linux: As a Docker EE Admin, execute the following command ...
+
+    return (3, "Not implemented - Requires domain expertise", "Stub implementation")
 
     return (3, "Not implemented - Stub implementation",
             "This check requires container domain expertise to implement")

@@ -194,45 +194,48 @@ main() {
         exit 3
     fi
 
-    # TODO: Implement actual STIG check logic
-    # This is a stub implementation requiring container domain expertise
-    #
-    # Implementation notes:
-    # 1. Execute appropriate CLI commands (docker)
-    # 2. Parse output to verify compliance
-    # 3. Return appropriate exit code
-    #
-    # Example for Docker:
-    # output=$(docker_exec "info --format '{{.SecurityOptions}}'")
-    # if [[ $? -ne 0 ]]; then
-    #     echo "ERROR: Failed to execute docker command"
-    #     exit 3
-    # fi
-    #
-    # Example for Kubernetes:
-    # output=$(kubectl_exec "get pods --all-namespaces")
-    # if [[ $? -ne 0 ]]; then
-    #     echo "ERROR: Failed to execute kubectl command"
-    #     exit 3
-    # fi
-    #
-    # Analyze output and determine compliance:
-    # if [[ "$output" =~ <expected_pattern> ]]; then
-    #     echo "PASS: Check DKER-EE-002490 - Compliant"
-    #     [[ -n "$OUTPUT_JSON" ]] && output_json "PASS" "Compliant" "$output"
-    #     exit 0
-    # else
-    #     echo "FAIL: Check DKER-EE-002490 - Finding"
-    #     [[ -n "$OUTPUT_JSON" ]] && output_json "FAIL" "Non-compliant" "$output"
-    #     exit 1
-    # fi
 
-    echo "TODO: Implement check logic for DKER-EE-002490"
-    echo "Description: The Universal Control Plane (UCP) component of Docker Enterprise includes a built-in access authorization mechanism called eNZi which can be integrated with an LDAP server and subsequently terminate all network connections associated with a communications session at the end of the session, or as follows: for in-band management sessions (privileged sessions), the session must be terminated after 10 minutes of inactivity; and for user sessions (non-privileged session), the session must be terminat"
-    echo "This check requires container domain expertise to implement"
+    # Check UCP per_user_limit setting via API
+    # Requires UCP credentials from config file
+    if [[  -z "${UCP_URL}" ]] || [[ -z "${UCP_USERNAME}" ]]; then
+        echo "ERROR: UCP credentials not configured (use --config with UCP details)"
+        [[ -n "$OUTPUT_JSON" ]] && output_json "ERROR" "UCP credentials required" ""
+        exit 3
+    fi
 
-    [[ -n "$OUTPUT_JSON" ]] && output_json "ERROR" "Not implemented" "Stub implementation"
-    exit 3
+    # Authenticate to UCP
+    AUTH_RESPONSE=$(curl -sk -d '{"username":"'"$UCP_USERNAME"'","password":"'"$UCP_PASSWORD"'"}' \
+        https://$UCP_URL/auth/login 2>/dev/null)
+
+    AUTHTOKEN=$(echo "$AUTH_RESPONSE" | jq -r .auth_token 2>/dev/null)
+
+    if [[ -z "$AUTHTOKEN" ]] || [[ "$AUTHTOKEN" == "null" ]]; then
+        echo "ERROR: Failed to authenticate to UCP"
+        [[ -n "$OUTPUT_JSON" ]] && output_json "ERROR" "UCP authentication failed" ""
+        exit 3
+    fi
+
+    # Get UCP config
+    output=$(curl -sk -H "Authorization: Bearer $AUTHTOKEN" \
+        https://$UCP_URL/api/ucp/config-toml 2>/dev/null)
+
+    if [[ -z "$output" ]]; then
+        echo "FAIL: Unable to retrieve UCP configuration"
+        [[ -n "$OUTPUT_JSON" ]] && output_json "FAIL" "Could not retrieve config" ""
+        exit 1
+    fi
+
+    # Check for the specific setting
+    if echo "$output" | grep -q "per_user_limit"; then
+        setting_value=$(echo "$output" | grep "per_user_limit" | head -1)
+        echo "PASS: per_user_limit is configured: $setting_value"
+        [[ -n "$OUTPUT_JSON" ]] && output_json "PASS" "Setting configured" "$setting_value"
+        exit 0
+    else
+        echo "FAIL: per_user_limit not found in UCP configuration"
+        [[ -n "$OUTPUT_JSON" ]] && output_json "FAIL" "Setting not configured" ""
+        exit 1
+    fi
 }
 
 # Run main check

@@ -133,32 +133,21 @@ def perform_check(config):
                message: Human-readable status message
                details: Additional details about the check
     """
+    """
+    Perform the actual STIG check
+    """
 
-    # Example implementation structure for Docker:
-    # stdout, error = docker_exec("info --format '{{.SecurityOptions}}'")
-    # if error:
-    #     return (3, f"Error executing docker command: {error}", "")
-    #
-    # # Analyze output for compliance
-    # if "expected_value" in stdout:
-    #     return (0, "Compliant", stdout)
-    # else:
-    #     return (1, "Non-compliant - Finding", stdout)
+    # Execute check based on type
 
-    # Example implementation structure for Kubernetes:
-    # namespace = config.get('kubernetes', {}).get('namespace')
-    # context = config.get('kubernetes', {}).get('context')
-    # kubeconfig = config.get('kubernetes', {}).get('kubeconfig')
-    #
-    # stdout, error = kubectl_exec("get pods", namespace, context, kubeconfig)
-    # if error:
-    #     return (3, f"Error executing kubectl command: {error}", "")
-    #
-    # # Analyze output for compliance
-    # if some_compliance_check(stdout):
-    #     return (0, "Compliant", stdout)
-    # else:
-    #     return (1, "Non-compliant - Finding", stdout)
+    # TODO: Implement specific check logic
+    # STIG ID: DKER-EE-005210
+    # Check Type: command_output
+    # Check Content: Ensure that /etc/docker directory ownership is set to root:root.
+
+On CentOS host OS's, execute the below command to verify that the directory is owned and group-owned by root:
+stat -c %U:%G /etc/docke...
+
+    return (3, "Not implemented - Requires domain expertise", "Stub implementation")
 
     return (3, "Not implemented - Stub implementation",
             "This check requires container domain expertise to implement")

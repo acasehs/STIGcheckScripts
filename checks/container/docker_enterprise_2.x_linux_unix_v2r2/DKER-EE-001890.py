@@ -131,32 +131,65 @@ def perform_check(config):
                message: Human-readable status message
                details: Additional details about the check
     """
+    """
+    Perform the actual STIG check
+    """
 
-    # Example implementation structure for Docker:
-    # stdout, error = docker_exec("info --format '{{.SecurityOptions}}'")
-    # if error:
-    #     return (3, f"Error executing docker command: {error}", "")
-    #
-    # # Analyze output for compliance
-    # if "expected_value" in stdout:
-    #     return (0, "Compliant", stdout)
-    # else:
-    #     return (1, "Non-compliant - Finding", stdout)
+    # Execute check based on type
 
-    # Example implementation structure for Kubernetes:
-    # namespace = config.get('kubernetes', {}).get('namespace')
-    # context = config.get('kubernetes', {}).get('context')
-    # kubeconfig = config.get('kubernetes', {}).get('kubeconfig')
-    #
-    # stdout, error = kubectl_exec("get pods", namespace, context, kubeconfig)
-    # if error:
-    #     return (3, f"Error executing kubectl command: {error}", "")
-    #
-    # # Analyze output for compliance
-    # if some_compliance_check(stdout):
-    #     return (0, "Compliant", stdout)
-    # else:
-    #     return (1, "Non-compliant - Finding", stdout)
+    # API-based check (requires requests library)
+    try:
+        import requests
+        import json
+
+        # Get UCP credentials from config
+        ucp_url = config.get('docker', {}).get('ucp_url')
+        ucp_user = config.get('docker', {}).get('ucp_username')
+        ucp_pass = config.get('docker', {}).get('ucp_password')
+
+        if not all([ucp_url, ucp_user, ucp_pass]):
+            return (3, "ERROR: UCP credentials not configured", "")
+
+        # Authenticate
+        auth_data = {'username': ucp_user, 'password': ucp_pass}
+        auth_response = requests.post(
+            f"https://{ucp_url}/auth/login",
+            json=auth_data,
+            verify=False
+        )
+
+        if auth_response.status_code != 200:
+            return (3, "ERROR: UCP authentication failed", "")
+
+        auth_token = auth_response.json().get('auth_token')
+
+        # Get config
+        headers = {'Authorization': f'Bearer {auth_token}'}
+        config_response = requests.get(
+            f"https://{ucp_url}/api/ucp/config-toml",
+            headers=headers,
+            verify=False
+        )
+
+        config_text = config_response.text
+
+        # Parse for per_user_limit
+        match = re.search(r'per_user_limit\s*=\s*(\d+)', config_text)
+        if match:
+            limit = int(match.group(1))
+            required_limit = config.get('docker', {}).get('required_per_user_limit', 10)
+
+            if limit <= required_limit and limit > 0:
+                return (0, f"PASS: per_user_limit is {limit} (compliant)", config_text)
+            else:
+                return (1, f"FAIL: per_user_limit is {limit} (required: {required_limit})", config_text)
+        else:
+            return (1, "FAIL: per_user_limit not found in config", config_text)
+
+    except ImportError:
+        return (3, "ERROR: requests library required for API checks", "pip3 install requests")
+    except Exception as e:
+        return (3, f"ERROR: {str(e)}", "")
 
     return (3, "Not implemented - Stub implementation",
             "This check requires container domain expertise to implement")

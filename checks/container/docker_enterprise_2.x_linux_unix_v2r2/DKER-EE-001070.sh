@@ -196,47 +196,30 @@ main() {
         exit 3
     fi
 
-    # TODO: Implement actual STIG check logic
-    # This is a stub implementation requiring container domain expertise
-    #
-    # Implementation notes:
-    # 1. Execute appropriate CLI commands (docker)
-    # 2. Parse output to verify compliance
-    # 3. Return appropriate exit code
-    #
-    # Example for Docker:
-    # output=$(docker_exec "info --format '{{.SecurityOptions}}'")
-    # if [[ $? -ne 0 ]]; then
-    #     echo "ERROR: Failed to execute docker command"
-    #     exit 3
-    # fi
-    #
-    # Example for Kubernetes:
-    # output=$(kubectl_exec "get pods --all-namespaces")
-    # if [[ $? -ne 0 ]]; then
-    #     echo "ERROR: Failed to execute kubectl command"
-    #     exit 3
-    # fi
-    #
-    # Analyze output and determine compliance:
-    # if [[ "$output" =~ <expected_pattern> ]]; then
-    #     echo "PASS: Check DKER-EE-001070 - Compliant"
-    #     [[ -n "$OUTPUT_JSON" ]] && output_json "PASS" "Compliant" "$output"
-    #     exit 0
-    # else
-    #     echo "FAIL: Check DKER-EE-001070 - Finding"
-    #     [[ -n "$OUTPUT_JSON" ]] && output_json "FAIL" "Non-compliant" "$output"
-    #     exit 1
-    # fi
 
-    echo "TODO: Implement check logic for DKER-EE-001070"
-    echo "Description: When FIPS mode is enabled on a Docker Engine - Enterprise node, it uses FIPS-validated cryptography to protect the confidentiality of remote access sessions to any bound TCP sockets with TLS enabled and configured. FIPS mode in Docker Engine - Enterprise is automatically enabled when FIPS mode is also enabled on the underlying host operating system.
-#     
-#     This control is only configurable for the Docker Engine - Enterprise component of Docker Enterprise as only the Engine includes FIPS-va"
-    echo "This check requires container domain expertise to implement"
+    # Check FIPS mode
+    # Check host FIPS mode first
+    if [[ -f /proc/sys/crypto/fips_enabled ]]; then
+        host_fips=$(cat /proc/sys/crypto/fips_enabled)
+        if [[ "$host_fips" == "1" ]]; then
+            echo "PASS: FIPS mode enabled on host"
+            [[ -n "$OUTPUT_JSON" ]] && output_json "PASS" "FIPS enabled" "host fips: $host_fips"
+            exit 0
+        fi
+    fi
 
-    [[ -n "$OUTPUT_JSON" ]] && output_json "ERROR" "Not implemented" "Stub implementation"
-    exit 3
+    # Check DOCKER_FIPS environment variable
+    if docker_fips=$(docker info 2>/dev/null | grep -i "FIPS mode"); then
+        if echo "$docker_fips" | grep -qi "enabled\|true"; then
+            echo "PASS: FIPS mode enabled on Docker"
+            [[ -n "$OUTPUT_JSON" ]] && output_json "PASS" "FIPS enabled" "$docker_fips"
+            exit 0
+        fi
+    fi
+
+    echo "FAIL: FIPS mode not enabled"
+    [[ -n "$OUTPUT_JSON" ]] && output_json "FAIL" "FIPS mode not enabled" ""
+    exit 1
 }
 
 # Run main check

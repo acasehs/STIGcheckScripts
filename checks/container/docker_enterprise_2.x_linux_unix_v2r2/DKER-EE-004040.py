@@ -135,32 +135,24 @@ def perform_check(config):
                message: Human-readable status message
                details: Additional details about the check
     """
+    """
+    Perform the actual STIG check
+    """
 
-    # Example implementation structure for Docker:
-    # stdout, error = docker_exec("info --format '{{.SecurityOptions}}'")
-    # if error:
-    #     return (3, f"Error executing docker command: {error}", "")
-    #
-    # # Analyze output for compliance
-    # if "expected_value" in stdout:
-    #     return (0, "Compliant", stdout)
-    # else:
-    #     return (1, "Non-compliant - Finding", stdout)
+    # Execute check based on type
 
-    # Example implementation structure for Kubernetes:
-    # namespace = config.get('kubernetes', {}).get('namespace')
-    # context = config.get('kubernetes', {}).get('context')
-    # kubeconfig = config.get('kubernetes', {}).get('kubeconfig')
-    #
-    # stdout, error = kubectl_exec("get pods", namespace, context, kubeconfig)
-    # if error:
-    #     return (3, f"Error executing kubectl command: {error}", "")
-    #
-    # # Analyze output for compliance
-    # if some_compliance_check(stdout):
-    #     return (0, "Compliant", stdout)
-    # else:
-    #     return (1, "Non-compliant - Finding", stdout)
+    # TODO: Implement specific check logic
+    # STIG ID: DKER-EE-004040
+    # Check Type: command_output
+    # Check Content: This check only applies to the use of Docker Engine - Enterprise on a Linux host operating system.
+
+Ensure the default ulimit is not overwritten at runtime unless approved in the SSP.
+
+via CLI:
+
+Linux...
+
+    return (3, "Not implemented - Requires domain expertise", "Stub implementation")
 
     return (3, "Not implemented - Stub implementation",
             "This check requires container domain expertise to implement")

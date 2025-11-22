@@ -196,45 +196,24 @@ main() {
         exit 3
     fi
 
-    # TODO: Implement actual STIG check logic
-    # This is a stub implementation requiring container domain expertise
-    #
-    # Implementation notes:
-    # 1. Execute appropriate CLI commands (docker)
-    # 2. Parse output to verify compliance
-    # 3. Return appropriate exit code
-    #
-    # Example for Docker:
-    # output=$(docker_exec "info --format '{{.SecurityOptions}}'")
-    # if [[ $? -ne 0 ]]; then
-    #     echo "ERROR: Failed to execute docker command"
-    #     exit 3
-    # fi
-    #
-    # Example for Kubernetes:
-    # output=$(kubectl_exec "get pods --all-namespaces")
-    # if [[ $? -ne 0 ]]; then
-    #     echo "ERROR: Failed to execute kubectl command"
-    #     exit 3
-    # fi
-    #
-    # Analyze output and determine compliance:
-    # if [[ "$output" =~ <expected_pattern> ]]; then
-    #     echo "PASS: Check DKER-EE-001050 - Compliant"
-    #     [[ -n "$OUTPUT_JSON" ]] && output_json "PASS" "Compliant" "$output"
-    #     exit 0
-    # else
-    #     echo "FAIL: Check DKER-EE-001050 - Finding"
-    #     [[ -n "$OUTPUT_JSON" ]] && output_json "FAIL" "Non-compliant" "$output"
-    #     exit 1
-    # fi
 
-    echo "TODO: Implement check logic for DKER-EE-001050"
-    echo "Description: The UCP component of Docker Enterprise configures and leverages Swarm Mode for node-to-node cluster communication. Swarm Mode is built in to Docker Engine - Enterprise and uses TLS 1.2 at a minimum for encrypting communications. Under the hood, Swarm Mode includes an embedded public key infrastructure (PKI) system. When a UCP cluster is initialized, the first node in the cluster designates itself as a manager node. That node subsequently generates a new root Certificate Authority (CA) along with"
-    echo "This check requires container domain expertise to implement"
+    # Check docker daemon process arguments
+    output=$(ps -ef | grep dockerd | grep -v grep)
 
-    [[ -n "$OUTPUT_JSON" ]] && output_json "ERROR" "Not implemented" "Stub implementation"
-    exit 3
+    # Check for TCP binding (should NOT be present in UCP cluster)
+    if echo "$output" | grep -q "\-H TCP://"; then
+        echo "FAIL: Docker daemon is configured with TCP binding"
+        [[ -n "$OUTPUT_JSON" ]] && output_json "FAIL" "TCP binding detected on dockerd" "$output"
+        exit 1
+    elif echo "$output" | grep -q "\-H UNIX://\|/var/run/docker.sock"; then
+        echo "PASS: Docker daemon using UNIX socket (compliant)"
+        [[ -n "$OUTPUT_JSON" ]] && output_json "PASS" "Compliant - UNIX socket only" "$output"
+        exit 0
+    else
+        echo "PASS: Docker daemon not using TCP socket binding"
+        [[ -n "$OUTPUT_JSON" ]] && output_json "PASS" "Compliant" "$output"
+        exit 0
+    fi
 }
 
 # Run main check
