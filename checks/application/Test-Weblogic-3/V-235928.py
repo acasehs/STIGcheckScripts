@@ -33,9 +33,19 @@ from pathlib import Path
 
 
 class STIGCheck:
-    def __init__(self, domain_home, force=False):
+    def __init__(self, domain_home, config_file=None, force=False):
         self.domain_home = Path(domain_home)
+        self.config_file = Path(config_file) if config_file else None
         self.force = force
+
+        # Environment-specific defaults (can be overridden by config file)
+        self.approved_ports = [7002, 9002]
+        self.approved_protocols = ['t3s', 'https', 'iiops']
+
+        # Load configuration if provided
+        if self.config_file:
+            self.load_config()
+
         self.results = {
             'vuln_id': 'V-235928',
             'severity': 'medium',
@@ -46,8 +56,38 @@ class STIGCheck:
             'timestamp': datetime.utcnow().isoformat() + 'Z',
             'requires_elevation': True,
             'third_party_tools': 'None (uses Python stdlib)',
-            'check_method': 'Python - Direct config.xml parsing'
+            'check_method': 'Python - Direct config.xml parsing',
+            'config_file': str(self.config_file) if self.config_file else 'None (using defaults)'
         }
+
+    def load_config(self):
+        """Load environment-specific values from config file"""
+        try:
+            with open(self.config_file, 'r') as f:
+                config = json.load(f)
+
+            weblogic_config = config.get('weblogic', {})
+
+            # Load approved values from config
+            if 'approved_ports' in weblogic_config:
+                self.approved_ports = weblogic_config['approved_ports']
+
+            if 'approved_protocols' in weblogic_config:
+                self.approved_protocols = weblogic_config['approved_protocols']
+
+            print(f"INFO: Loaded configuration from {self.config_file}")
+            print(f"  - Approved ports: {self.approved_ports}")
+            print(f"  - Approved protocols: {self.approved_protocols}")
+
+        except FileNotFoundError:
+            print(f"ERROR: Configuration file not found: {self.config_file}")
+            sys.exit(3)
+        except json.JSONDecodeError as e:
+            print(f"ERROR: Invalid JSON in config file: {e}")
+            sys.exit(3)
+        except Exception as e:
+            print(f"ERROR: Failed to load config file: {e}")
+            sys.exit(3)
 
     def check_elevation(self):
         """Check if we have necessary read access"""
@@ -237,6 +277,8 @@ def main():
     )
     parser.add_argument('--domain-home', required=True,
                        help='WebLogic domain home directory (e.g., /u01/oracle/user_projects/domains/base_domain)')
+    parser.add_argument('--config', metavar='FILE',
+                       help='STIG configuration file (JSON) with environment-specific values')
     parser.add_argument('--force', action='store_true',
                        help='Force execution even without proper elevation')
     parser.add_argument('--output-json', metavar='FILE',
@@ -245,7 +287,7 @@ def main():
     args = parser.parse_args()
 
     # Run the check
-    check = STIGCheck(args.domain_home, args.force)
+    check = STIGCheck(args.domain_home, args.config, args.force)
     exit_code = check.run_check()
 
     # Output results

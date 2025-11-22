@@ -27,11 +27,16 @@
 # Default values
 DOMAIN_HOME=""
 OUTPUT_JSON=""
+CONFIG_FILE=""
 FORCE=false
 VULN_ID="V-235928"
 STIG_ID="WBLC-01-000009"
 SEVERITY="medium"
 TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
+# Environment-specific defaults (can be overridden by config file)
+APPROVED_PORTS="7002 9002"
+APPROVED_PROTOCOLS="t3s https iiops"
 
 # Parse arguments
 while [[ $# -gt 0 ]]; do
@@ -44,12 +49,39 @@ while [[ $# -gt 0 ]]; do
             OUTPUT_JSON="$2"
             shift 2
             ;;
+        --config)
+            CONFIG_FILE="$2"
+            shift 2
+            ;;
         --force)
             FORCE=true
             shift
             ;;
         -h|--help)
-            echo "Usage: $0 --domain-home <path> [--output-json <file>] [--force]"
+            cat << EOF
+Usage: $0 --domain-home <path> [OPTIONS]
+
+Required:
+  --domain-home <path>    WebLogic domain home directory
+
+Optional:
+  --config <file>         STIG configuration file (JSON) with environment-specific values
+  --output-json <file>    Output results to JSON file
+  --force                 Force execution without elevation check
+
+Example:
+  $0 --domain-home /u01/oracle/user_projects/domains/base_domain
+  $0 --domain-home /u01/oracle/user_projects/domains/base_domain --config stig-config.json
+  $0 --domain-home /u01/oracle/user_projects/domains/base_domain --output-json results.json
+
+Config File Format (JSON):
+  {
+    "weblogic": {
+      "approved_ports": [7002, 9002],
+      "approved_protocols": ["t3s", "https", "iiops"]
+    }
+  }
+EOF
             exit 0
             ;;
         *)
@@ -58,6 +90,24 @@ while [[ $# -gt 0 ]]; do
             ;;
     esac
 done
+
+# Load configuration file if provided
+if [[ -n "$CONFIG_FILE" ]]; then
+    if [[ ! -f "$CONFIG_FILE" ]]; then
+        echo "ERROR: Configuration file not found: $CONFIG_FILE"
+        exit 3
+    fi
+
+    # Extract approved values from JSON config using jq if available
+    if command -v jq &> /dev/null; then
+        APPROVED_PORTS=$(jq -r '.weblogic.approved_ports[]? // empty' "$CONFIG_FILE" | tr '\n' ' ')
+        APPROVED_PROTOCOLS=$(jq -r '.weblogic.approved_protocols[]? // empty' "$CONFIG_FILE" | tr '\n' ' ')
+        echo "INFO: Loaded configuration from $CONFIG_FILE"
+    else
+        echo "WARNING: jq not installed, using default approved values"
+        echo "INFO: Install jq for config file support: apt-get install jq or yum install jq"
+    fi
+fi
 
 # Validate domain home
 if [[ -z "$DOMAIN_HOME" ]]; then
