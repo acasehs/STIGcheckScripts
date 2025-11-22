@@ -1,0 +1,15 @@
+{
+  "device": {
+    "host": "firewall.example.com",
+    "port": 22,
+    "username": "readonly-user",
+    "auth_method": "key",
+    "ssh_key_file": "/secure/path/to/ssh-key",
+    "password": null,
+    "api_key": null
+  },
+  "output": {
+    "format": "json",
+    "directory": "./results"
+  }
+}
