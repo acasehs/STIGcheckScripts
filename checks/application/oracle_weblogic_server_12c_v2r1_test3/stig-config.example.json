@@ -1,0 +1,41 @@
+{
+  "description": "STIG Check Configuration File - Define environment-specific values",
+  "version": "1.0",
+  "organization": "Your Organization Name",
+  "environment": "Production",
+
+  "weblogic": {
+    "approved_protocols": ["t3s", "https", "iiops"],
+    "approved_ports": [7002, 9002],
+    "unauthorized_protocols": ["t3", "http", "iiop"],
+    "unauthorized_ports": [7001, 9001],
+
+    "approved_cipher_suites": [
+      "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384",
+      "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256",
+      "TLS_RSA_WITH_AES_256_GCM_SHA384",
+      "TLS_RSA_WITH_AES_128_GCM_SHA256"
+    ],
+
+    "authorized_users": ["weblogic", "admin", "sysadmin"],
+    "privileged_users": ["weblogic"],
+
+    "required_ssl_settings": {
+      "min_tls_version": "1.2",
+      "ssl_enabled": true,
+      "client_certificate_enforced": false
+    },
+
+    "audit_settings": {
+      "audit_level": "Custom",
+      "all_events_enabled": true,
+      "users_to_always_audit": ["weblogic", "admin"]
+    }
+  },
+
+  "notes": [
+    "This file should be customized for your environment",
+    "Approved values must align with organizational security policies",
+    "Keep this file under version control and review regularly"
+  ]
+}
