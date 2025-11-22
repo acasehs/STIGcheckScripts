@@ -122,14 +122,42 @@ EOF
 ################################################################################
 
 main() {
-    # TODO: Implement actual STIG check logic
-    # This placeholder will be replaced with actual implementation
+    # Locate BIND configuration file
+    NAMED_CONF="/etc/named.conf"
 
-    echo "TODO: Implement check logic for $STIG_ID"
-    echo "Rule: A BIND 9.x server implementation must maintain the integrity and confidentiality of DNS information while it is being prepared for transmission, in transmission, and in use and t must perform integrit"
+    # Check common locations
+    if [[ ! -f "$NAMED_CONF" ]]; then
+        for conf in "/etc/bind/named.conf" "/var/named/chroot/etc/named.conf"; do
+            if [[ -f "$conf" ]]; then
+                NAMED_CONF="$conf"
+                break
+            fi
+        done
+    fi
 
-    [[ -n "$OUTPUT_JSON" ]] && output_json "ERROR" "Not implemented" "Requires implementation"
-    exit 3
+    if [[ ! -f "$NAMED_CONF" ]]; then
+        echo "ERROR: named.conf not found in standard locations"
+        [[ -n "$OUTPUT_JSON" ]] && output_json "ERROR" "Config file not found" ""
+        exit 3
+    fi
+
+    echo "INFO: Found BIND configuration: $NAMED_CONF"
+    echo ""
+
+    # Display relevant configuration sections
+    echo "Configuration preview:"
+    grep -E "^[[:space:]]*(logging|options|zone|acl|view)" "$NAMED_CONF" | head -20
+    echo ""
+
+    echo "MANUAL REVIEW REQUIRED: Review BIND configuration for STIG compliance"
+    echo "Configuration file: $NAMED_CONF"
+    echo "Required settings: file"
+    echo ""
+    echo "This check requires manual examination of BIND configuration"
+
+    [[ -n "$OUTPUT_JSON" ]] && output_json "MANUAL" "Configuration requires validation" "$NAMED_CONF"
+    exit 2  # Manual review required
+
 }
 
 # Run main check

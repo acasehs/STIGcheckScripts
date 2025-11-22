@@ -107,14 +107,43 @@ EOF
 ################################################################################
 
 main() {
-    # TODO: Implement actual STIG check logic
-    # This placeholder will be replaced with actual implementation
+    # Oracle HTTP Server - Permission Check
 
-    echo "TODO: Implement check logic for $STIG_ID"
-    echo "Rule: OHS log files must only be accessible by privileged users."
+    if [[ -z "$DOMAIN_HOME" ]]; then
+        if [[ -n "$CONFIG_FILE" ]] && [[ -f "$CONFIG_FILE" ]]; then
+            DOMAIN_HOME=$(grep -i "domain_home" "$CONFIG_FILE" 2>/dev/null | cut -d'=' -f2 | tr -d ' "')
+        fi
+    fi
 
-    [[ -n "$OUTPUT_JSON" ]] && output_json "ERROR" "Not implemented" "Requires implementation"
-    exit 3
+    if [[ -z "$DOMAIN_HOME" ]]; then
+        echo "ERROR: DOMAIN_HOME not set"
+        [[ -n "$OUTPUT_JSON" ]] && output_json "ERROR" "DOMAIN_HOME not set" ""
+        exit 3
+    fi
+
+    OHS_DIR="$DOMAIN_HOME/config/fmwconfig/components/OHS"
+
+    if [[ ! -d "$OHS_DIR" ]]; then
+        echo "ERROR: OHS directory not found: $OHS_DIR"
+        [[ -n "$OUTPUT_JSON" ]] && output_json "ERROR" "Directory not found" "$OHS_DIR"
+        exit 3
+    fi
+
+    echo "INFO: OHS directory: $OHS_DIR"
+    echo ""
+    echo "Directory permissions:"
+    ls -ld "$OHS_DIR"
+    echo ""
+    echo "File permissions (sample):"
+    ls -l "$OHS_DIR" 2>/dev/null | head -10
+    echo ""
+
+    echo "MANUAL REVIEW REQUIRED: Verify permissions meet STIG requirements"
+    echo "Location: $OHS_DIR"
+
+    [[ -n "$OUTPUT_JSON" ]] && output_json "MANUAL" "Permission check requires validation" "$OHS_DIR"
+    exit 2  # Manual review required
+
 }
 
 # Run main check
