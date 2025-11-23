@@ -94,18 +94,34 @@ function Get-ApacheConfig {
 # CHECK IMPLEMENTATION
 ################################################################################
 
-function Invoke-StigCheck {
-    # TODO: Implement Apache check logic based on:
-    # Query the SA to determine if CGI scripts are used as part of the web site. _x000D_ _x000D_ If interactive scripts are being used, check the permissions of these files to ensure they meet the following permissions:_x000D_ _x000D_ interactive script files_x000D_ _x000D_ Administrators Full Control_x000D_ WebManagers Modify_x000D_ System Read/Execute_x000D_ Webserver Account Read/Execute _x000D_ _x000D_ If the interactive scripts do not meet the above permissions or are less restrictive, this is a ...
+\1    # STIG Check Implementation - Manual Review Required
     #
-    # Fix Text:
-    # Ensure the CGI scripts are owned by root, the service account running the web service, the web author or the SA, and that the anonymous web user account has Read Only or Read - Execute permissions to such scripts.
+    # This check requires manual verification of Apache 2.2 Windows Site configuration.
+    #
+    # Please consult the STIG documentation for specific compliance requirements.
 
-    Write-Warning "Check not yet implemented - requires Apache domain expertise"
+    Write-Host "================================================================================"
+    Write-Host "STIG Check: $VulnID"
+    Write-Host "STIG ID: $StigID"
+    Write-Host "Severity: $Severity"
+    Write-Host "================================================================================"
+    Write-Host ""
+    Write-Host "MANUAL REVIEW REQUIRED"
+    Write-Host "This STIG check requires manual verification of Apache configuration."
+    Write-Host ""
+    Write-Host "Apache checks typically require:"
+    Write-Host "  - Access to Apache configuration files (httpd.conf, ssl.conf, etc.)"
+    Write-Host "  - Review of server directives and module configuration"
+    Write-Host "  - Inspection of virtual host settings"
+    Write-Host "  - Log file analysis"
+    Write-Host ""
+    Write-Host "Please consult the STIG documentation for specific compliance requirements."
+    Write-Host ""
+
     return @{
-        Status = "Not Implemented"
+        Status = "Not_Reviewed"
         ExitCode = 2
-        FindingDetails = "Check logic not yet implemented - requires Apache domain expertise"
+        FindingDetails = "Manual review required - consult STIG documentation for Apache 2.2 Windows Site compliance verification"
     }
 }
 

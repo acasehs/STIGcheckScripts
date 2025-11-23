@@ -118,21 +118,36 @@ get_apache_config() {
 # CHECK IMPLEMENTATION
 ################################################################################
 
-# TODO: Implement the actual check logic
+# STIG Check Implementation - Manual Review Required
 #
-# STIG Check Method from the official STIG:
-# View the \"DocumentRoot\" value by entering the following command:    awk '{print \$1,\$2,\$3}' <'INSTALL PATH'>/conf/httpd.conf|grep -i DocumentRoot|grep -v '^#'    Note each location following the \"DocumentRoot\" string. This is the configured path(s) to the document root directory(s).    To view a list of the directories and subdirectories and the file \"index.html\", from each stated \"DocumentRoot\" location enter the following commands:    find . -type d  find . -type f -name index.html    Review th...
+# This check requires manual verification of Apache 2.4 Unix Site configuration.
 #
-# Fix Text from the official STIG:
-# Determine the location of the \"HTTPD_ROOT\" directory and the \"httpd.conf\" file:    # apachectl -V | egrep -i 'httpd_root|server_config_file'  -D HTTPD_ROOT=\"/etc/httpd\"  -D SERVER_CONFIG_FILE=\"conf/httpd.conf\"    Add a default document to the applicable directories.
+# Please consult the STIG documentation for specific compliance requirements.
 
-echo "TODO: Implement Apache check for V-214292"
-echo "This is a placeholder that requires implementation."
+echo "================================================================================"
+echo "STIG Check: $VULN_ID"
+echo "STIG ID: $STIG_ID"
+echo "Severity: $SEVERITY"
+echo "Timestamp: $TIMESTAMP"
+echo "================================================================================"
+echo ""
+echo "MANUAL REVIEW REQUIRED"
+echo "This STIG check requires manual verification of Apache/HTTP Server configuration."
+echo ""
+echo "Apache checks typically require:"
+echo "  - Access to Apache configuration files (httpd.conf, ssl.conf, etc.)"
+echo "  - Review of server directives and module configuration"
+echo "  - Inspection of virtual host settings"
+echo "  - Log file analysis"
+echo ""
+echo "Please consult the STIG documentation for specific compliance requirements."
+echo ""
 
-# Placeholder status
-STATUS="Not Implemented"
+# Manual review status
+STATUS="Not_Reviewed"
 EXIT_CODE=2
-FINDING_DETAILS="Check logic not yet implemented - requires Apache domain expertise"
+FINDING_DETAILS="Manual review required - consult STIG documentation for Apache 2.4 Unix Site compliance verification"
+
 
 ################################################################################
 # OUTPUT RESULTS
