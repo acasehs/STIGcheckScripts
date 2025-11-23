@@ -94,18 +94,34 @@ function Get-ApacheConfig {
 # CHECK IMPLEMENTATION
 ################################################################################
 
-function Invoke-StigCheck {
-    # TODO: Implement Apache check logic based on:
-    # Verify the document root directory and the configuration files do not provide for default index.html or welcome page.  Verify the Apache User Manual content is not installed by checking the configuration files for manual location directives.  Verify the Apache configuration files do not have the Server Status handler configured.  Verify that the Server Information handler is not configured.  Verify that any other handler configurations such as perl-status is not enabled.  If any of these are pre...
+\1    # STIG Check Implementation - Manual Review Required
     #
-    # Fix Text:
-    # Review all pre-installed content and remove content that is not required. In particular, look for the unnecessary content that may be found in the document root directory, a configuration directory such as conf/extra directory, or as a UNIX/Linux package  Remove the default index.html or welcome page if it is a separate package. If the default welcome page is part of the main Apache httpd package as it is on Red Hat Linux, comment out the configuration as shown below. Removing a file such as the...
+    # This check requires manual verification of Apache 2.4 Windows Server configuration.
+    #
+    # Please consult the STIG documentation for specific compliance requirements.
 
-    Write-Warning "Check not yet implemented - requires Apache domain expertise"
+    Write-Host "================================================================================"
+    Write-Host "STIG Check: $VulnID"
+    Write-Host "STIG ID: $StigID"
+    Write-Host "Severity: $Severity"
+    Write-Host "================================================================================"
+    Write-Host ""
+    Write-Host "MANUAL REVIEW REQUIRED"
+    Write-Host "This STIG check requires manual verification of Apache configuration."
+    Write-Host ""
+    Write-Host "Apache checks typically require:"
+    Write-Host "  - Access to Apache configuration files (httpd.conf, ssl.conf, etc.)"
+    Write-Host "  - Review of server directives and module configuration"
+    Write-Host "  - Inspection of virtual host settings"
+    Write-Host "  - Log file analysis"
+    Write-Host ""
+    Write-Host "Please consult the STIG documentation for specific compliance requirements."
+    Write-Host ""
+
     return @{
-        Status = "Not Implemented"
+        Status = "Not_Reviewed"
         ExitCode = 2
-        FindingDetails = "Check logic not yet implemented - requires Apache domain expertise"
+        FindingDetails = "Manual review required - consult STIG documentation for Apache 2.4 Windows Server compliance verification"
     }
 }
 

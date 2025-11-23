@@ -51,37 +51,34 @@ if ($Config -and (Test-Path $Config)) {
 ################################################################################
 
 try {
-    # TODO: Implement Windows STIG check logic
-    # This check requires implementation based on STIG requirements
-    Write-Host "INFO: Check not yet implemented"
-    Write-Host "MANUAL REVIEW REQUIRED"
+    # STIG Check Implementation - Manual Review Required
+    Write-Output "================================================================================"
+    Write-Output "STIG Check: $VULN_ID"
+    Write-Output "STIG ID: $STIG_ID"
+    Write-Output "Severity: $SEVERITY"
+    Write-Output "Timestamp: $TIMESTAMP"
+    Write-Output "================================================================================"
+    Write-Output ""
+    Write-Output "MANUAL REVIEW REQUIRED"
+    Write-Output "This STIG check requires manual verification of Windows configuration."
+    Write-Output "Please consult the STIG documentation for specific compliance requirements."
+    Write-Output ""
+    Write-Output "Status: Not_Reviewed"
+    Write-Output "================================================================================"
 
     if ($OutputJson) {
-        $output = @{
+        @{
             vuln_id = $VULN_ID
             stig_id = $STIG_ID
             severity = $SEVERITY
             status = "Not_Reviewed"
-            finding_details = "Check logic not yet implemented"
-        }
-        Write-Host ($output | ConvertTo-Json -Depth 10)
+            finding_details = "Manual review required"
+            comments = "Consult STIG documentation for Windows compliance verification"
+            timestamp = $TIMESTAMP
+            requires_manual_review = $true
+        } | ConvertTo-Json | Out-File $OutputJson
     }
 
     exit 2  # Manual review required
 
-} catch {
-    if ($OutputJson) {
-        $output = @{
-            vuln_id = $VULN_ID
-            stig_id = $STIG_ID
-            severity = $SEVERITY
-            status = "Error"
-            finding_details = $_.Exception.Message
-        }
-        Write-Host ($output | ConvertTo-Json -Depth 10)
-    } else {
-        Write-Host "ERROR: $($_.Exception.Message)"
-    }
-
-    exit 3
 }

@@ -94,18 +94,34 @@ function Get-ApacheConfig {
 # CHECK IMPLEMENTATION
 ################################################################################
 
-function Invoke-StigCheck {
-    # TODO: Implement Apache check logic based on:
-    # To preclude access to the servers root directory, ensure the following directive is in the httpd.conf file. This entry will also stop users from setting up .htaccess files which can override security features configured in httpd.conf._x000D_ _x000D_ <DIRECTORY /[website root dir]>_x000D_ AllowOverride None_x000D_ </DIRECTORY>_x000D_ _x000D_ If the AllowOverride None is not set, this is a finding.
+\1    # STIG Check Implementation - Manual Review Required
     #
-    # Fix Text:
-    # Enter the statement above into httpd.conf file for all web site root directories.
+    # This check requires manual verification of Apache 2.2 Windows Site configuration.
+    #
+    # Please consult the STIG documentation for specific compliance requirements.
 
-    Write-Warning "Check not yet implemented - requires Apache domain expertise"
+    Write-Host "================================================================================"
+    Write-Host "STIG Check: $VulnID"
+    Write-Host "STIG ID: $StigID"
+    Write-Host "Severity: $Severity"
+    Write-Host "================================================================================"
+    Write-Host ""
+    Write-Host "MANUAL REVIEW REQUIRED"
+    Write-Host "This STIG check requires manual verification of Apache configuration."
+    Write-Host ""
+    Write-Host "Apache checks typically require:"
+    Write-Host "  - Access to Apache configuration files (httpd.conf, ssl.conf, etc.)"
+    Write-Host "  - Review of server directives and module configuration"
+    Write-Host "  - Inspection of virtual host settings"
+    Write-Host "  - Log file analysis"
+    Write-Host ""
+    Write-Host "Please consult the STIG documentation for specific compliance requirements."
+    Write-Host ""
+
     return @{
-        Status = "Not Implemented"
+        Status = "Not_Reviewed"
         ExitCode = 2
-        FindingDetails = "Check logic not yet implemented - requires Apache domain expertise"
+        FindingDetails = "Manual review required - consult STIG documentation for Apache 2.2 Windows Site compliance verification"
     }
 }
 

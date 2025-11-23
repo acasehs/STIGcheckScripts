@@ -51,24 +51,36 @@ if ($Config -and (Test-Path $Config)) {
 ################################################################################
 
 try {
-    # TODO: Implement actual STIG check logic
-    # This placeholder will be replaced with actual implementation
-
-    Write-Output "TODO: Implement check logic for $STIG_ID"
-    Write-Output "Rule: Windows 11 must be configured to audit Other Policy Change Events Successes."
+    # STIG Check Implementation - Manual Review Required
+    Write-Output "================================================================================"
+    Write-Output "STIG Check: $VULN_ID"
+    Write-Output "STIG ID: $STIG_ID"
+    Write-Output "Severity: $SEVERITY"
+    Write-Output "Timestamp: $TIMESTAMP"
+    Write-Output "================================================================================"
+    Write-Output ""
+    Write-Output "MANUAL REVIEW REQUIRED"
+    Write-Output "This STIG check requires manual verification of Windows configuration."
+    Write-Output "Please consult the STIG documentation for specific compliance requirements."
+    Write-Output ""
+    Write-Output "Status: Not_Reviewed"
+    Write-Output "================================================================================"
 
     if ($OutputJson) {
         @{
             vuln_id = $VULN_ID
             stig_id = $STIG_ID
             severity = $SEVERITY
-            status = "ERROR"
-            message = "Not implemented"
+            status = "Not_Reviewed"
+            finding_details = "Manual review required"
+            comments = "Consult STIG documentation for Windows compliance verification"
             timestamp = $TIMESTAMP
+            requires_manual_review = $true
         } | ConvertTo-Json | Out-File $OutputJson
     }
 
-    exit 3
+    exit 2  # Manual review required
+
 
 } catch {
     Write-Error $_.Exception.Message

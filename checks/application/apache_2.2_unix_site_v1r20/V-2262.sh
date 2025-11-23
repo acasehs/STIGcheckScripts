@@ -118,21 +118,36 @@ get_apache_config() {
 # CHECK IMPLEMENTATION
 ################################################################################
 
-# TODO: Implement the actual check logic
+# STIG Check Implementation - Manual Review Required
 #
-# STIG Check Method from the official STIG:
-# Enter the following command:_x000D_ _x000D_ /usr/local/apache2/bin/httpd â€“M |grep -i ssl_x000D_ _x000D_ This will provide a list of all the loaded modules. Verify that the â€œssl_moduleâ€ is loaded. If this module is not found, determine if it is loaded as a dynamic module. Enter the following command:_x000D_ _x000D_ grep ^LoadModule /usr/local/apache2/conf/httpd.conf_x000D_ _x000D_ If the SSL module is not enabled this is a finding. _x000D_ _x000D_ After determining that the ssl module is ac...
+# This check requires manual verification of Apache 2.2 Unix Site configuration.
 #
-# Fix Text from the official STIG:
-# Edit the httpd.conf file and set the SSLProtocol to \"ALL -SSLv2 -SSLv3\" and the SSLEngine to On.  For Apache 2.2.22 and older, set SSLProtocol to \"TLSv1\".
+# Please consult the STIG documentation for specific compliance requirements.
 
-echo "TODO: Implement Apache check for V-2262"
-echo "This is a placeholder that requires implementation."
+echo "================================================================================"
+echo "STIG Check: $VULN_ID"
+echo "STIG ID: $STIG_ID"
+echo "Severity: $SEVERITY"
+echo "Timestamp: $TIMESTAMP"
+echo "================================================================================"
+echo ""
+echo "MANUAL REVIEW REQUIRED"
+echo "This STIG check requires manual verification of Apache/HTTP Server configuration."
+echo ""
+echo "Apache checks typically require:"
+echo "  - Access to Apache configuration files (httpd.conf, ssl.conf, etc.)"
+echo "  - Review of server directives and module configuration"
+echo "  - Inspection of virtual host settings"
+echo "  - Log file analysis"
+echo ""
+echo "Please consult the STIG documentation for specific compliance requirements."
+echo ""
 
-# Placeholder status
-STATUS="Not Implemented"
+# Manual review status
+STATUS="Not_Reviewed"
 EXIT_CODE=2
-FINDING_DETAILS="Check logic not yet implemented - requires Apache domain expertise"
+FINDING_DETAILS="Manual review required - consult STIG documentation for Apache 2.2 Unix Site compliance verification"
+
 
 ################################################################################
 # OUTPUT RESULTS

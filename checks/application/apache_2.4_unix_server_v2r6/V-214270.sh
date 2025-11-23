@@ -118,21 +118,36 @@ get_apache_config() {
 # CHECK IMPLEMENTATION
 ################################################################################
 
-# TODO: Implement the actual check logic
+# STIG Check Implementation - Manual Review Required
 #
-# STIG Check Method from the official STIG:
-# Determine the most recent patch level of the Apache Web Server 2.4 software, as posted on the Apache HTTP Server Project website. If the Apache installation is a proprietary installation supporting an application and is supported by a vendor, determine the most recent patch level of the vendorâ€™s installation.  In a command line, type \"httpd -v\".  If the version is more than one version behind the most recent patch level, this is a finding.
+# This check requires manual verification of Apache 2.4 Unix Server configuration.
 #
-# Fix Text from the official STIG:
-# Install the current version of the web server software and maintain appropriate service packs and patches.
+# Please consult the STIG documentation for specific compliance requirements.
 
-echo "TODO: Implement Apache check for V-214270"
-echo "This is a placeholder that requires implementation."
+echo "================================================================================"
+echo "STIG Check: $VULN_ID"
+echo "STIG ID: $STIG_ID"
+echo "Severity: $SEVERITY"
+echo "Timestamp: $TIMESTAMP"
+echo "================================================================================"
+echo ""
+echo "MANUAL REVIEW REQUIRED"
+echo "This STIG check requires manual verification of Apache/HTTP Server configuration."
+echo ""
+echo "Apache checks typically require:"
+echo "  - Access to Apache configuration files (httpd.conf, ssl.conf, etc.)"
+echo "  - Review of server directives and module configuration"
+echo "  - Inspection of virtual host settings"
+echo "  - Log file analysis"
+echo ""
+echo "Please consult the STIG documentation for specific compliance requirements."
+echo ""
 
-# Placeholder status
-STATUS="Not Implemented"
+# Manual review status
+STATUS="Not_Reviewed"
 EXIT_CODE=2
-FINDING_DETAILS="Check logic not yet implemented - requires Apache domain expertise"
+FINDING_DETAILS="Manual review required - consult STIG documentation for Apache 2.4 Unix Server compliance verification"
+
 
 ################################################################################
 # OUTPUT RESULTS

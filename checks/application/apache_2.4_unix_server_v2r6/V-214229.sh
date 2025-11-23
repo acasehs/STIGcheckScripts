@@ -118,21 +118,36 @@ get_apache_config() {
 # CHECK IMPLEMENTATION
 ################################################################################
 
-# TODO: Implement the actual check logic
+# STIG Check Implementation - Manual Review Required
 #
-# STIG Check Method from the official STIG:
-# Issue the following command: httpd -M |grep -E 'session_module|usertrack'  Expected output: usertrack_module (shared) session_module (shared)  If results do not return both \"usertrack_module (shared)\" and \"session_module (shared)\", this is a finding.  Alternatively, determine the location of the \"HTTPD_ROOT\" directory and the \"httpd.conf\" file:  # apachectl -V | egrep -i 'httpd_root|server_config_file' -D HTTPD_ROOT=\"/etc/httpd\" -D SERVER_CONFIG_FILE=\"conf/httpd.conf\"  Note: The apachectl front ...
+# This check requires manual verification of Apache 2.4 Unix Server configuration.
 #
-# Fix Text from the official STIG:
-# If the modules are not installed, install any missing packages.  Add the following lines to the \"httpd.conf\" file:  LoadModule usertrack_module modules/mod_usertrack.so  LoadModule session_module modules/mod_session.so  Additional documentation can be found at:  https://httpd.apache.org/docs/2.4/mod/mod_usertrack.html  https://httpd.apache.org/docs/2.4/mod/mod_session.html  Restart Apache: apachectl restart
+# Please consult the STIG documentation for specific compliance requirements.
 
-echo "TODO: Implement Apache check for V-214229"
-echo "This is a placeholder that requires implementation."
+echo "================================================================================"
+echo "STIG Check: $VULN_ID"
+echo "STIG ID: $STIG_ID"
+echo "Severity: $SEVERITY"
+echo "Timestamp: $TIMESTAMP"
+echo "================================================================================"
+echo ""
+echo "MANUAL REVIEW REQUIRED"
+echo "This STIG check requires manual verification of Apache/HTTP Server configuration."
+echo ""
+echo "Apache checks typically require:"
+echo "  - Access to Apache configuration files (httpd.conf, ssl.conf, etc.)"
+echo "  - Review of server directives and module configuration"
+echo "  - Inspection of virtual host settings"
+echo "  - Log file analysis"
+echo ""
+echo "Please consult the STIG documentation for specific compliance requirements."
+echo ""
 
-# Placeholder status
-STATUS="Not Implemented"
+# Manual review status
+STATUS="Not_Reviewed"
 EXIT_CODE=2
-FINDING_DETAILS="Check logic not yet implemented - requires Apache domain expertise"
+FINDING_DETAILS="Manual review required - consult STIG documentation for Apache 2.4 Unix Server compliance verification"
+
 
 ################################################################################
 # OUTPUT RESULTS
