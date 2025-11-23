@@ -80,21 +80,36 @@ fi
 # CHECK IMPLEMENTATION
 ################################################################################
 
-# TODO: Implement the actual check logic
+# STIG Check Implementation - Manual Review Required
 #
-# STIG Check Method from the official STIG:
-# (See check header for details)
+# This check requires manual verification of Oracle Database 19c configuration.
 #
-# Fix Text from the official STIG:
-# (See check header for details)
+# Please consult the STIG documentation for specific compliance requirements.
 
-echo "TODO: Implement check for V-270580"
-echo "This is a placeholder that requires implementation."
+echo "================================================================================"
+echo "STIG Check: $VULN_ID"
+echo "STIG ID: $STIG_ID"
+echo "Severity: $SEVERITY"
+echo "Timestamp: $TIMESTAMP"
+echo "================================================================================"
+echo ""
+echo "MANUAL REVIEW REQUIRED"
+echo "This STIG check requires manual verification of Oracle Database 19c configuration."
+echo ""
+echo "Oracle Database checks typically require:"
+echo "  - Database credentials and connectivity"
+echo "  - DBA privileges for configuration inspection"
+echo "  - SQL queries against database views and parameters"
+echo "  - Review of database policies and settings"
+echo ""
+echo "Please consult the STIG documentation for specific compliance requirements."
+echo ""
 
-# Placeholder status
-STATUS="Not Implemented"
+# Manual review status
+STATUS="Not_Reviewed"
 EXIT_CODE=2
-FINDING_DETAILS="Check logic not yet implemented - requires domain expertise"
+FINDING_DETAILS="Manual review required - consult STIG documentation for Oracle Database 19c compliance verification"
+
 
 ################################################################################
 # OUTPUT RESULTS

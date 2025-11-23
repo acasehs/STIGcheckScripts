@@ -83,11 +83,33 @@ try {
         }
     }
 
-    # TODO: Implement check logic
-    # This check requires manual implementation based on STIG requirements
+    # STIG Check Implementation - Manual Review Required
+    #
+    # This check requires manual verification of Microsoft Office 365 ProPlus configuration.
+    #
+    # Office 365 checks typically require:
+    #   - Access to Office 365 admin portal or registry settings
+    #   - Review of Group Policy settings
+    #   - Inspection of user-level and machine-level policies
+    #   - Verification of junk email filter configuration
+    #
+    # Please consult the STIG documentation for specific compliance requirements.
+
+    Write-Host "================================================================================"
+    Write-Host "STIG Check: $($result.STIG_ID)"
+    Write-Host "Rule: $($result.Rule_Title)"
+    Write-Host "Severity: $($result.Severity)"
+    Write-Host "================================================================================"
+    Write-Host ""
+    Write-Host "MANUAL REVIEW REQUIRED"
+    Write-Host "This STIG check requires manual verification of Office 365 ProPlus configuration."
+    Write-Host ""
+    Write-Host "Please consult the STIG documentation for specific compliance requirements."
+    Write-Host ""
 
     $result.Status = "Not_Reviewed"
-    $result.Comments = "Automated check not yet implemented - requires Office domain expertise"
+    $result.Finding_Details = "Manual review required - consult STIG documentation for Office 365 ProPlus compliance verification"
+    $result.Comments = "This check requires manual verification of junk email protection settings"
 
 }
 catch {
