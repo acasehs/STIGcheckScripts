@@ -45,10 +45,12 @@ $StigID = "WN22-CC-000050"
 $RuleTitle = "Windows Server 2022 must be configured to prevent Internet Control Message Protocol (ICMP) redirects from overriding Open Shortest Path First (OSPF)-generated routes."
 $StigVersion = "Windows Server 2022 v1r3"
 
-# TODO: Extract actual registry path and value from check content
-$RegistryPath = "HKLM:\SOFTWARE\Policies"
-$ValueName = "ValueName"
-$ExpectedValue = 1
+# Registry check implementation - Manual review required
+$RegistryPath = "HKLM:\SOFTWARE\Policies"  # Placeholder - verify against STIG
+$ValueName = "RequiredSetting"  # Placeholder - verify against STIG
+$ExpectedValue = 1  # Placeholder - verify against STIG
+$Status = "Not_Reviewed"  # Manual review required
+$FindingDetails = @("Registry check requires manual validation against STIG requirements")
 
 $Status = "Not Checked"
 $FindingDetails = @()

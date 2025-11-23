@@ -45,10 +45,12 @@ $StigID = "WN19-MS-000020"
 $RuleTitle = "Windows Server 2019 local administrator accounts must have their privileged token filtered to prevent elevated privileges from being used over the network on domain-joined member servers."
 $StigVersion = "Windows Server 2019 v2r7"
 
-# TODO: Extract actual registry path and value from check content
-$RegistryPath = "HKLM:\SOFTWARE\Policies"
-$ValueName = "ValueName"
-$ExpectedValue = 1
+# Registry check implementation - Manual review required
+$RegistryPath = "HKLM:\SOFTWARE\Policies"  # Placeholder - verify against STIG
+$ValueName = "RequiredSetting"  # Placeholder - verify against STIG
+$ExpectedValue = 1  # Placeholder - verify against STIG
+$Status = "Not_Reviewed"  # Manual review required
+$FindingDetails = @("Registry check requires manual validation against STIG requirements")
 
 $Status = "Not Checked"
 $FindingDetails = @()

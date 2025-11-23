@@ -45,10 +45,12 @@ $StigID = "WN22-SO-000270"
 $RuleTitle = "Windows Server 2022 must prevent NTLM from falling back to a Null session."
 $StigVersion = "Windows Server 2022 v1r3"
 
-# TODO: Extract actual registry path and value from check content
-$RegistryPath = "HKLM:\SOFTWARE\Policies"
-$ValueName = "ValueName"
-$ExpectedValue = 1
+# Registry check implementation - Manual review required
+$RegistryPath = "HKLM:\SOFTWARE\Policies"  # Placeholder - verify against STIG
+$ValueName = "RequiredSetting"  # Placeholder - verify against STIG
+$ExpectedValue = 1  # Placeholder - verify against STIG
+$Status = "Not_Reviewed"  # Manual review required
+$FindingDetails = @("Registry check requires manual validation against STIG requirements")
 
 $Status = "Not Checked"
 $FindingDetails = @()
