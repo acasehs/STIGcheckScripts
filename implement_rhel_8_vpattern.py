@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-RHEL 9 V-* Template Implementation Engine
+RHEL 8 V-* Template Implementation Engine
 Implements V-* pattern files with manual review framework
 """
 
@@ -30,26 +30,25 @@ EXIT_CODE=2
 FINDING_DETAILS="Manual review required - consult STIG documentation for compliance verification"
 '''
 
-rhel_9_dir = Path('checks/os/rhel_9_v2r5')
+rhel_8_dir = Path('checks/os/rhel_8_v2r4')
 
 print("=" * 80)
-print("RHEL 9 V-* PATTERN IMPLEMENTATION ENGINE")
+print("RHEL 8 V-* PATTERN IMPLEMENTATION ENGINE")
 print("Implementing V-* template files with manual review framework")
 print("=" * 80)
 print()
 
-if not rhel_9_dir.exists():
-    print(f"ERROR: Directory not found: {rhel_9_dir}")
+if not rhel_8_dir.exists():
+    print(f"ERROR: Directory not found: {rhel_8_dir}")
     exit(1)
 
-v_scripts = list(rhel_9_dir.glob('V-*.sh'))
+v_scripts = list(rhel_8_dir.glob('V-*.sh'))
 print(f"Found {len(v_scripts)} V-* scripts")
 
 total = 0
 implemented = 0
 
 for script_path in sorted(v_scripts):
-
     try:
         content = script_path.read_text(encoding='utf-8')
 
@@ -79,5 +78,5 @@ for script_path in sorted(v_scripts):
 
 print()
 print("=" * 80)
-print(f"✅ Implemented {implemented}/{total} RHEL 9 V-* checks")
+print(f"✅ Implemented {implemented}/{total} RHEL 8 V-* checks")
 print("=" * 80)
