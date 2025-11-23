@@ -45,11 +45,8 @@ print(f"Found {len(scripts)} total scripts")
 
 total = 0
 implemented = 0
-target = 30  # Need 22 for 60%, implementing 30 to exceed milestone
 
 for script_path in sorted(scripts):
-    if implemented >= target:
-        break
 
     try:
         content = script_path.read_text(encoding='utf-8')
@@ -72,7 +69,7 @@ for script_path in sorted(scripts):
             script_path.write_text(new_content, encoding='utf-8')
             implemented += 1
 
-            if implemented % 10 == 0:
+            if implemented % 50 == 0:
                 print(f"  ✓ {implemented} files implemented...")
 
     except Exception as e:
@@ -81,5 +78,4 @@ for script_path in sorted(scripts):
 print()
 print("=" * 80)
 print(f"✅ Implemented {implemented}/{total} RHEL 9 checks")
-print(f"Target: {target} implementations (reached: {implemented >= target})")
 print("=" * 80)
