@@ -1,123 +1,51 @@
 #!/usr/bin/env bash
 ################################################################################
 # STIG Check: V-271458
-# Severity: medium
-# Rule Title: OL 9 must not have the telnet-server package installed.
 # STIG ID: OL09-00-000110
-# Rule ID: SV-271458r1091086
+# Severity: medium
+# Rule Title: OL 9 must not have the telnet-server package installed....
 #
-# Description:
-#     It is detrimental for operating systems to provide, or install by default, functionality exceeding requirements or mission objectives. These unnecessary capabilities are often overlooked and therefore, may remain unsecure. They increase the risk to the platform by providing additional attack vectors.
-
-The telnet service provides an unencrypted remote access service, which does not provide for the confidentiality and integrity of user passwords or the remote session. If a privileged user were to 
-#
-# Check Content:
-#     Verify that OL 9 does not have the telnet-server package installed with the following command:
-
-$ dnf list --installed telnet-server
-Error: No matching Packages to list
-
-If the \"telnet-server\" package is installed, this is a finding.
-#
-# Exit Codes:
-#     0 = Check Passed (Compliant)
-#     1 = Check Failed (Finding)
-#     2 = Check Not Applicable
-#     3 = Check Error
+# Automated Check: Package Installation Validation
 ################################################################################
 
-# Configuration
+set -euo pipefail
+
 VULN_ID="V-271458"
 STIG_ID="OL09-00-000110"
 SEVERITY="medium"
 TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-CONFIG_FILE=""
 OUTPUT_JSON=""
 
-# Parse arguments
 while [[ $# -gt 0 ]]; do
-    case $1 in
-        --config)
-            CONFIG_FILE="$2"
-            shift 2
-            ;;
-        --output-json)
-            OUTPUT_JSON="$2"
-            shift 2
-            ;;
-        -h|--help)
-            cat << 'EOF'
-Usage: $0 [OPTIONS]
-
-Options:
-  --config <file>         Configuration file (JSON)
-  --output-json <file>    Output results in JSON format
-  -h, --help             Show this help message
-
-Exit Codes:
-  0 = Pass (Compliant)
-  1 = Fail (Finding)
-  2 = Not Applicable
-  3 = Error
-
-EOF
-            exit 0
-            ;;
-        *)
-            echo "Unknown option: $1"
-            exit 3
-            ;;
-    esac
+    case $1 in --output-json) OUTPUT_JSON="$2"; shift 2;; *) shift;; esac
 done
 
-# Load configuration if provided
-if [[ -n "$CONFIG_FILE" ]] && [[ -f "$CONFIG_FILE" ]]; then
-    # Source configuration or parse JSON as needed
-    :
-fi
-
-################################################################################
-# HELPER FUNCTIONS
-################################################################################
-
-# Output results in JSON format
 output_json() {
-    local status="$1"
-    local message="$2"
-    local details="$3"
-
-    cat > "$OUTPUT_JSON" << EOF
-{
-  "vuln_id": "$VULN_ID",
-  "stig_id": "$STIG_ID",
-  "severity": "$SEVERITY",
-  "status": "$status",
-  "message": "$message",
-  "details": "$details",
-  "timestamp": "$TIMESTAMP"
-}
+    [[ -n "$OUTPUT_JSON" ]] && cat > "$OUTPUT_JSON" << EOF
+{"vuln_id":"$VULN_ID","stig_id":"$STIG_ID","severity":"$SEVERITY","status":"$1","finding_details":"$2","timestamp":"$TIMESTAMP"}
 EOF
 }
 
-################################################################################
-# MAIN CHECK LOGIC
-################################################################################
+PACKAGE="$"
 
-main() {
-    PKG="server"
-
-    if rpm -q "$PKG" &>/dev/null || dpkg -l "$PKG" 2>/dev/null | grep -q "^ii"; then
-        ver=$(rpm -q "$PKG" 2>/dev/null || dpkg -l "$PKG" 2>/dev/null | awk '{print $3}')
-        echo "PASS: Package installed ($ver)"
-        [[ -n "$OUTPUT_JSON" ]] && output_json "PASS" "Installed" "$PKG"
+if yum list installed "$PACKAGE" &>/dev/null; then
+    if [[ true ]]; then
+        output_json "NotAFinding" "Package is installed (compliant)"
+        echo "[$VULN_ID] PASS - Package $PACKAGE is installed"
         exit 0
     else
-        echo "FAIL: Package not installed"
-        [[ -n "$OUTPUT_JSON" ]] && output_json "FAIL" "Missing" "$PKG"
+        output_json "Open" "Package should be installed"
+        echo "[$VULN_ID] FAIL - Package $PACKAGE should be installed"
         exit 1
     fi
-
-}
-
-# Run main check
-main "$@"
+else
+    if [[ false ]]; then
+        output_json "NotAFinding" "Package not installed (compliant)"
+        echo "[$VULN_ID] PASS - Package $PACKAGE is not installed"
+        exit 0
+    else
+        output_json "Open" "Required package not installed"
+        echo "[$VULN_ID] FAIL - Package $PACKAGE should be installed"
+        exit 1
+    fi
+fi

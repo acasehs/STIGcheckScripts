@@ -1,128 +1,42 @@
 #!/usr/bin/env bash
 ################################################################################
 # STIG Check: V-271749
-# Severity: medium
-# Rule Title: OL 9 must restrict usage of ptrace to descendant processes.
 # STIG ID: OL09-00-002410
-# Rule ID: SV-271749r1091959
+# Severity: medium
+# Rule Title: OL 9 must restrict usage of ptrace to descendant processes....
 #
-# Description:
-#     Unrestricted usage of ptrace allows compromised binaries to run ptrace on other processes of the user. Like this, the attacker can steal sensitive information from the target processes (e.g., SSH sessions, web browser, etc.) without any additional assistance from the user (i.e., without resorting to phishing).
-#
-# Check Content:
-#     Verify that OL 9 restricts usage of ptrace to descendant processes with the following commands:
-
-$ sysctl kernel.yama.ptrace_scope
-kernel.yama.ptrace_scope = 1
-
-If the returned line does not have a value of \"1\", or a line is not returned, this is a finding.
-#
-# Exit Codes:
-#     0 = Check Passed (Compliant)
-#     1 = Check Failed (Finding)
-#     2 = Check Not Applicable
-#     3 = Check Error
+# Automated Check: Kernel Parameter Validation
 ################################################################################
 
-# Configuration
+set -euo pipefail
+
 VULN_ID="V-271749"
 STIG_ID="OL09-00-002410"
 SEVERITY="medium"
 TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-CONFIG_FILE=""
 OUTPUT_JSON=""
 
-# Parse arguments
 while [[ $# -gt 0 ]]; do
-    case $1 in
-        --config)
-            CONFIG_FILE="$2"
-            shift 2
-            ;;
-        --output-json)
-            OUTPUT_JSON="$2"
-            shift 2
-            ;;
-        -h|--help)
-            cat << 'EOF'
-Usage: $0 [OPTIONS]
-
-Options:
-  --config <file>         Configuration file (JSON)
-  --output-json <file>    Output results in JSON format
-  -h, --help             Show this help message
-
-Exit Codes:
-  0 = Pass (Compliant)
-  1 = Fail (Finding)
-  2 = Not Applicable
-  3 = Error
-
-EOF
-            exit 0
-            ;;
-        *)
-            echo "Unknown option: $1"
-            exit 3
-            ;;
-    esac
+    case $1 in --output-json) OUTPUT_JSON="$2"; shift 2;; *) shift;; esac
 done
 
-# Load configuration if provided
-if [[ -n "$CONFIG_FILE" ]] && [[ -f "$CONFIG_FILE" ]]; then
-    # Source configuration or parse JSON as needed
-    :
-fi
-
-################################################################################
-# HELPER FUNCTIONS
-################################################################################
-
-# Output results in JSON format
 output_json() {
-    local status="$1"
-    local message="$2"
-    local details="$3"
-
-    cat > "$OUTPUT_JSON" << EOF
-{
-  "vuln_id": "$VULN_ID",
-  "stig_id": "$STIG_ID",
-  "severity": "$SEVERITY",
-  "status": "$status",
-  "message": "$message",
-  "details": "$details",
-  "timestamp": "$TIMESTAMP"
-}
+    [[ -n "$OUTPUT_JSON" ]] && cat > "$OUTPUT_JSON" << EOF
+{"vuln_id":"$VULN_ID","stig_id":"$STIG_ID","severity":"$SEVERITY","status":"$1","finding_details":"$2","timestamp":"$TIMESTAMP"}
 EOF
 }
 
-################################################################################
-# MAIN CHECK LOGIC
-################################################################################
+PARAM="kernel.yama.ptrace_scope"
+EXPECTED="1"
 
-main() {
-    PARAM="kernel.yama.ptrace_scope"
-    EXPECTED="1"
+ACTUAL=$(sysctl -n "$PARAM" 2>/dev/null || echo "NOT_SET")
 
-    actual=$(sysctl -n "$PARAM" 2>/dev/null)
-    if [[ -z "$actual" ]]; then
-        echo "ERROR: Parameter not found"
-        [[ -n "$OUTPUT_JSON" ]] && output_json "ERROR" "Not found" "$PARAM"
-        exit 3
-    fi
-
-    if [[ "$actual" == "$EXPECTED" ]]; then
-        echo "PASS: $PARAM = $actual (compliant)"
-        [[ -n "$OUTPUT_JSON" ]] && output_json "PASS" "Compliant" "$PARAM=$actual"
-        exit 0
-    else
-        echo "FAIL: $PARAM = $actual (expected: $EXPECTED)"
-        [[ -n "$OUTPUT_JSON" ]] && output_json "FAIL" "Mismatch" "Expected: $EXPECTED"
-        exit 1
-    fi
-
-}
-
-# Run main check
-main "$@"
+if [[ "$ACTUAL" == "$EXPECTED" ]]; then
+    output_json "NotAFinding" "Kernel parameter compliant: $PARAM=$ACTUAL"
+    echo "[$VULN_ID] PASS - $PARAM=$ACTUAL"
+    exit 0
+else
+    output_json "Open" "Kernel parameter not compliant: $PARAM=$ACTUAL (expected: $EXPECTED)"
+    echo "[$VULN_ID] FAIL - $PARAM=$ACTUAL (expected: $EXPECTED)"
+    exit 1
+fi

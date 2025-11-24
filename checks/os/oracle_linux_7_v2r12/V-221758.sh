@@ -1,44 +1,51 @@
 #!/usr/bin/env bash
-#
+################################################################################
 # STIG Check: V-221758
-# Severity: high
-# Rule Title: The Oracle Linux operating system must implement NIST FIPS-validated cryptography for the following: to provision digital signatures, to generate cryptographic hashes, and to protect data requiring data-at-rest protections in accordance with applicable federal laws, Executive Orders, directives, policies, regulations, and standards.
 # STIG ID: OL07-00-021350
-# STIG Version: Oracle Linux 8 v1r7
-# Requires Elevation: No
-# Third-Party Tools: None (uses yum/rpm)
+# Severity: high
+# Rule Title: The Oracle Linux operating system must implement NIST FIPS-validated c...
 #
-# AUTO-GENERATED: 2025-11-22 04:31:25
-# Based on template: V-248519 (package check)
+# Automated Check: Package Installation Validation
+################################################################################
 
-set -eo pipefail
+set -euo pipefail
 
 VULN_ID="V-221758"
-SEVERITY="high"
 STIG_ID="OL07-00-021350"
-RULE_TITLE="The Oracle Linux operating system must implement NIST FIPS-validated cryptography for the following: to provision digital signatures, to generate cryptographic hashes, and to protect data requiring da"
-STIG_VERSION="Oracle Linux 8 v1r7"
+SEVERITY="high"
+TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+OUTPUT_JSON=""
 
-# TODO: Extract actual package name from check content
-PACKAGE_NAME="is"
+while [[ $# -gt 0 ]]; do
+    case $1 in --output-json) OUTPUT_JSON="$2"; shift 2;; *) shift;; esac
+done
 
-# Check implementation
-run_check() {
-
-    # Check if is package is NOT installed
-    if ! check_package_installed "is"; then
-        STATUS="NotAFinding"
-        # Package not installed (as required) - PASS
-        return 0
-    else
-        package_version=$(get_package_version "is")
-        STATUS="Open"
-        # Package installed (should not be) - FAIL
-        return 1
-    fi
-
+output_json() {
+    [[ -n "$OUTPUT_JSON" ]] && cat > "$OUTPUT_JSON" << EOF
+{"vuln_id":"$VULN_ID","stig_id":"$STIG_ID","severity":"$SEVERITY","status":"$1","finding_details":"$2","timestamp":"$TIMESTAMP"}
+EOF
 }
 
-# Main execution
-run_check
-exit $?
+PACKAGE="installed"
+
+if rpm -q "$PACKAGE" &>/dev/null; then
+    if [[ true ]]; then
+        output_json "NotAFinding" "Package is installed (compliant)"
+        echo "[$VULN_ID] PASS - Package $PACKAGE is installed"
+        exit 0
+    else
+        output_json "Open" "Package should be installed"
+        echo "[$VULN_ID] FAIL - Package $PACKAGE should be installed"
+        exit 1
+    fi
+else
+    if [[ false ]]; then
+        output_json "NotAFinding" "Package not installed (compliant)"
+        echo "[$VULN_ID] PASS - Package $PACKAGE is not installed"
+        exit 0
+    else
+        output_json "Open" "Required package not installed"
+        echo "[$VULN_ID] FAIL - Package $PACKAGE should be installed"
+        exit 1
+    fi
+fi

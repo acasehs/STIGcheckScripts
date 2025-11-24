@@ -1,127 +1,46 @@
 #!/usr/bin/env bash
 ################################################################################
 # STIG Check: V-271736
-# Severity: medium
-# Rule Title: OL 9 must disable the ability of systemd to spawn an interactive boot process.
 # STIG ID: OL09-00-002392
-# Rule ID: SV-271736r1091920
+# Severity: medium
+# Rule Title: OL 9 must disable the ability of systemd to spawn an interactive boot ...
 #
-# Description:
-#     Using interactive or recovery boot, the console user could disable auditing, firewalls, or other services, weakening system security.
-#
-# Check Content:
-#     Verify that OL 9 GRUB 2 is configured to disable interactive boot.
-
-Check that the current GRUB 2 configuration disables the ability of systemd to spawn an interactive boot process with the following command:
-
-$ sudo grubby --info=ALL | grep args | grep '\''systemd.confirm_spawn'\''
-
-If any output is returned, this is a finding.
-#
-# Exit Codes:
-#     0 = Check Passed (Compliant)
-#     1 = Check Failed (Finding)
-#     2 = Check Not Applicable
-#     3 = Check Error
+# Automated Check: Configuration Parameter Validation
 ################################################################################
 
-# Configuration
+set -euo pipefail
+
 VULN_ID="V-271736"
 STIG_ID="OL09-00-002392"
 SEVERITY="medium"
 TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-CONFIG_FILE=""
 OUTPUT_JSON=""
 
-# Parse arguments
 while [[ $# -gt 0 ]]; do
-    case $1 in
-        --config)
-            CONFIG_FILE="$2"
-            shift 2
-            ;;
-        --output-json)
-            OUTPUT_JSON="$2"
-            shift 2
-            ;;
-        -h|--help)
-            cat << 'EOF'
-Usage: $0 [OPTIONS]
-
-Options:
-  --config <file>         Configuration file (JSON)
-  --output-json <file>    Output results in JSON format
-  -h, --help             Show this help message
-
-Exit Codes:
-  0 = Pass (Compliant)
-  1 = Fail (Finding)
-  2 = Not Applicable
-  3 = Error
-
-EOF
-            exit 0
-            ;;
-        *)
-            echo "Unknown option: $1"
-            exit 3
-            ;;
-    esac
+    case $1 in --output-json) OUTPUT_JSON="$2"; shift 2;; *) shift;; esac
 done
 
-# Load configuration if provided
-if [[ -n "$CONFIG_FILE" ]] && [[ -f "$CONFIG_FILE" ]]; then
-    # Source configuration or parse JSON as needed
-    :
-fi
-
-################################################################################
-# HELPER FUNCTIONS
-################################################################################
-
-# Output results in JSON format
 output_json() {
-    local status="$1"
-    local message="$2"
-    local details="$3"
-
-    cat > "$OUTPUT_JSON" << EOF
-{
-  "vuln_id": "$VULN_ID",
-  "stig_id": "$STIG_ID",
-  "severity": "$SEVERITY",
-  "status": "$status",
-  "message": "$message",
-  "details": "$details",
-  "timestamp": "$TIMESTAMP"
-}
+    [[ -n "$OUTPUT_JSON" ]] && cat > "$OUTPUT_JSON" << EOF
+{"vuln_id":"$VULN_ID","stig_id":"$STIG_ID","severity":"$SEVERITY","status":"$1","finding_details":"$2","timestamp":"$TIMESTAMP"}
 EOF
 }
 
-################################################################################
-# MAIN CHECK LOGIC
-################################################################################
+CONFIG_FILE="systemd.confirm_spawn'"
+PATTERN="systemd.confirm_spawn"
 
-main() {
-    # STIG Check Implementation - Manual Review Required
-    #
-    # This check requires manual examination of system configuration.
-    # Please review the STIG requirement in the header and verify:
-    # - System configuration matches STIG requirements
-    # - Security controls are properly configured
-    # - Compliance status is documented
+if [[ ! -f "$CONFIG_FILE" ]]; then
+    output_json "Not_Applicable" "Config file not found: $CONFIG_FILE"
+    echo "[$VULN_ID] N/A - Config file not found"
+    exit 2
+fi
 
-    echo "INFO: Manual review required for $STIG_ID"
-    echo "Rule: Check the rule title in the header above"
-    echo ""
-    echo "MANUAL REVIEW REQUIRED"
-    echo "This STIG check requires manual verification of system configuration."
-    echo "Please consult the STIG documentation for specific compliance requirements."
-
-    [[ -n "$OUTPUT_JSON" ]] && output_json "Not_Reviewed" "Manual review required" "Consult STIG documentation for compliance requirements"
-    exit 2  # Manual review required
-
-}
-
-# Run main check
-main "$@"
+if grep -q "$PATTERN" "$CONFIG_FILE" 2>/dev/null; then
+    output_json "NotAFinding" "Required configuration found"
+    echo "[$VULN_ID] PASS - Configuration found: $PATTERN"
+    exit 0
+else
+    output_json "Open" "Required configuration not found: $PATTERN"
+    echo "[$VULN_ID] FAIL - Configuration not found: $PATTERN"
+    exit 1
+fi

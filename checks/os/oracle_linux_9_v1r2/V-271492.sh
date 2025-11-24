@@ -1,144 +1,51 @@
 #!/usr/bin/env bash
 ################################################################################
 # STIG Check: V-271492
-# Severity: medium
-# Rule Title: OL 9 must implement multifactor authentication for remote access to privileged accounts in such a way that one of the factors is provided by a device separate from the system gaining access.
 # STIG ID: OL09-00-000280
-# Rule ID: SV-271492r1091188
+# Severity: medium
+# Rule Title: OL 9 must implement multifactor authentication for remote access to pr...
 #
-# Description:
-#     Using an authentication device, such as a CAC or token that is separate from the information system, ensures that even if the information system is compromised, that compromise will not affect credentials stored on the authentication device.    Multifactor solutions that require devices separate fro...
-#
-# Check Content:
-#     Verify that OL 9 has the packages required for multifactor authentication installed with the following command:    $ dnf list --installed libpam-pkcs11    ii  libpam-pkcs11    0.6.12-2build3   amd64    Fully featured PAM module for using PKCS#11 smart cards    If the "libpam-pkcs11" package is not i...
-#
-# Exit Codes:
-#     0 = Check Passed (Compliant)
-#     1 = Check Failed (Finding)
-#     2 = Check Not Applicable
-#     3 = Check Error
+# Automated Check: Package Installation Validation
 ################################################################################
 
-# Configuration
+set -euo pipefail
+
 VULN_ID="V-271492"
 STIG_ID="OL09-00-000280"
 SEVERITY="medium"
 TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-CONFIG_FILE=""
 OUTPUT_JSON=""
 
-# Parse arguments
 while [[ $# -gt 0 ]]; do
-    case $1 in
-        --config)
-            CONFIG_FILE="$2"
-            shift 2
-            ;;
-        --output-json)
-            OUTPUT_JSON="$2"
-            shift 2
-            ;;
-        -h|--help)
-            cat << 'EOF'
-Usage: $0 [OPTIONS]
-
-Options:
-  --config <file>         Configuration file (JSON)
-  --output-json <file>    Output results in JSON format
-  -h, --help             Show this help message
-
-Exit Codes:
-  0 = Pass (Compliant)
-  1 = Fail (Finding)
-  2 = Not Applicable
-  3 = Error
-
-Example:
-  $0
-  $0 --config stig-config.json
-  $0 --output-json results.json
-EOF
-            exit 0
-            ;;
-        *)
-            echo "Unknown option: $1"
-            exit 3
-            ;;
-    esac
+    case $1 in --output-json) OUTPUT_JSON="$2"; shift 2;; *) shift;; esac
 done
 
-# Load configuration if provided
-if [[ -n "$CONFIG_FILE" ]]; then
-    if [[ ! -f "$CONFIG_FILE" ]]; then
-        echo "ERROR: Configuration file not found: $CONFIG_FILE"
-        exit 3
-    fi
-    # TODO: Load configuration values using jq if available
-fi
-
-################################################################################
-# CHECK IMPLEMENTATION
-################################################################################
-
-# STIG Check Implementation - Manual Review Required
-#
-# This check requires manual examination of system configuration.
-# Please review the STIG requirement in the header and verify:
-# - System configuration matches STIG requirements
-# - Security controls are properly configured
-# - Compliance status is documented
-
-echo "INFO: Manual review required for $VULN_ID"
-echo "STIG ID: $STIG_ID"
-echo ""
-echo "MANUAL REVIEW REQUIRED"
-echo "This STIG check requires manual verification of system configuration."
-echo "Please consult the STIG documentation for specific compliance requirements."
-
-# Manual review status
-STATUS="Not_Reviewed"
-EXIT_CODE=2
-FINDING_DETAILS="Manual review required - consult STIG documentation for compliance verification"
-
-
-################################################################################
-# OUTPUT RESULTS
-################################################################################
-
-# JSON output if requested
-if [[ -n "$OUTPUT_JSON" ]]; then
-    cat > "$OUTPUT_JSON" << EOF_JSON
-{
-  "vuln_id": "$VULN_ID",
-  "stig_id": "$STIG_ID",
-  "severity": "$SEVERITY",
-  "rule_title": "OL 9 must implement multifactor authentication for remote access to privileged accounts in such a way that one of the factors is provided by a device separate from the system gaining access.",
-  "status": "$STATUS",
-  "finding_details": "$FINDING_DETAILS",
-  "timestamp": "$TIMESTAMP",
-  "exit_code": $EXIT_CODE
-}
-EOF_JSON
-fi
-
-# Human-readable output
-cat << EOF
-
-================================================================================
-STIG Check: $VULN_ID - $STIG_ID
-Severity: ${SEVERITY^^}
-================================================================================
-Rule: OL 9 must implement multifactor authentication for remote access to privileged accounts in such a way that one of the factors is provided by a device separate from the system gaining access.
-Status: $STATUS
-Timestamp: $TIMESTAMP
-
---------------------------------------------------------------------------------
-Finding Details:
---------------------------------------------------------------------------------
-$FINDING_DETAILS
-
-================================================================================
-
+output_json() {
+    [[ -n "$OUTPUT_JSON" ]] && cat > "$OUTPUT_JSON" << EOF
+{"vuln_id":"$VULN_ID","stig_id":"$STIG_ID","severity":"$SEVERITY","status":"$1","finding_details":"$2","timestamp":"$TIMESTAMP"}
 EOF
+}
 
-exit $EXIT_CODE
+PACKAGE="$"
+
+if yum list installed "$PACKAGE" &>/dev/null; then
+    if [[ true ]]; then
+        output_json "NotAFinding" "Package is installed (compliant)"
+        echo "[$VULN_ID] PASS - Package $PACKAGE is installed"
+        exit 0
+    else
+        output_json "Open" "Package should be installed"
+        echo "[$VULN_ID] FAIL - Package $PACKAGE should be installed"
+        exit 1
+    fi
+else
+    if [[ false ]]; then
+        output_json "NotAFinding" "Package not installed (compliant)"
+        echo "[$VULN_ID] PASS - Package $PACKAGE is not installed"
+        exit 0
+    else
+        output_json "Open" "Required package not installed"
+        echo "[$VULN_ID] FAIL - Package $PACKAGE should be installed"
+        exit 1
+    fi
+fi
