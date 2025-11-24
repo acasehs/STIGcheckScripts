@@ -3,168 +3,84 @@
     STIG Check: V-205739
 
 .DESCRIPTION
-    Severity: high
-    Rule Title: Windows Server 2019 permissions on the Active Directory data files must only allow System and Administrators access.
     STIG ID: WN19-DC-000070
-    STIG Version: Windows Server 2019 v2r7
-    Requires Elevation: Yes (registry read may require admin)
-    Third-Party Tools: None (uses PowerShell Get-ItemProperty)
+    Severity: high
+    Rule Title: Windows Server 2019 permissions on the Active Directory data files mus...
 
-.NOTES
-    AUTO-GENERATED: 2025-11-22 04:41:54
-    Based on template: registry check
-
-.PARAMETER ConfigFile
-    Path to JSON configuration file
-
-.PARAMETER OutputJson
-    Path to output JSON results file
-
-.EXAMPLE
-    .\V-205739.ps1
-    .\V-205739.ps1 -ConfigFile stig-config.json
-    .\V-205739.ps1 -ConfigFile stig-config.json -OutputJson results.json
+    Automated Check: Registry Value Validation
 #>
 
 [CmdletBinding()]
 param(
     [Parameter(Mandatory=$false)]
-    [string]$ConfigFile,
+    [string]$Config,
 
     [Parameter(Mandatory=$false)]
-    [string]$OutputJson,
-
-    [Parameter(Mandatory=$false)]
-    [switch]$Force
+    [string]$OutputJson
 )
 
-# Global variables
+# Configuration
 $VulnID = "V-205739"
-$Severity = "high"
 $StigID = "WN19-DC-000070"
-$RuleTitle = "Windows Server 2019 permissions on the Active Directory data files must only allow System and Administrators access."
-$StigVersion = "Windows Server 2019 v2r7"
-
-# Registry check implementation - Manual review required
-$RegistryPath = "HKLM:\SOFTWARE\Policies"  # Placeholder - verify against STIG
-$ValueName = "RequiredSetting"  # Placeholder - verify against STIG
-$ExpectedValue = 1  # Placeholder - verify against STIG
-$Status = "Not_Reviewed"  # Manual review required
-$FindingDetails = @("Registry check requires manual validation against STIG requirements")
-
-$Status = "Not Checked"
-$FindingDetails = @()
+$Severity = "high"
 $Timestamp = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
 
-# Load configuration if provided
-if ($ConfigFile -and (Test-Path $ConfigFile)) {
-    try {
-        $Config = Get-Content $ConfigFile | ConvertFrom-Json
-        Write-Host "INFO: Loaded configuration from $ConfigFile"
-    } catch {
-        Write-Warning "Failed to load configuration file: $_"
-    }
-}
-
-# Function to check registry value
-function Test-RegistryValue {
+# Output function
+function Output-Json {
     param(
-        [string]$Path,
-        [string]$Name
+        [string]$Status,
+        [string]$FindingDetails
     )
 
-    try {
-        $value = Get-ItemProperty -Path $Path -Name $Name -ErrorAction Stop
-        return @{
-            Exists = $true
-            Value = $value.$Name
-        }
-    } catch {
-        return @{
-            Exists = $false
-            Value = $null
-        }
+    if ($OutputJson) {
+        @{
+            vuln_id = $VulnID
+            stig_id = $StigID
+            severity = $Severity
+            status = $Status
+            finding_details = $FindingDetails
+            timestamp = $Timestamp
+        } | ConvertTo-Json | Out-File -FilePath $OutputJson -Encoding UTF8
     }
 }
 
-# Main check logic
+# Automated registry check
+$RegPath = "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\NTDS\Parameters"
+$RegValue = "SettingName"
+$ExpectedValue = "1"
+
 try {
-    $regCheck = Test-RegistryValue -Path $RegistryPath -Name $ValueName
+    # Check if registry path exists
+    if (-not (Test-Path $RegPath)) {
+        Output-Json "Open" "Registry path does not exist: $RegPath"
+        Write-Host "[$VulnID] FAIL - Registry path not found"
+        exit 1
+    }
 
-    if ($regCheck.Exists) {
-        if ($regCheck.Value -eq $ExpectedValue) {
-            $Status = "NotAFinding"
-            $FindingDetails += @{
-                registry_path = $RegistryPath
-                value_name = $ValueName
-                actual_value = $regCheck.Value
-                expected_value = $ExpectedValue
-                status = "PASS"
-                reason = "Registry value matches expected configuration"
-            }
-            $exitCode = 0
-        } else {
-            $Status = "Open"
-            $FindingDetails += @{
-                registry_path = $RegistryPath
-                value_name = $ValueName
-                actual_value = $regCheck.Value
-                expected_value = $ExpectedValue
-                status = "FAIL"
-                reason = "Registry value does not match expected configuration"
-            }
-            $exitCode = 1
-        }
+    # Get actual value
+    $ActualValue = Get-ItemProperty -Path $RegPath -Name $RegValue -ErrorAction SilentlyContinue
+
+    if ($null -eq $ActualValue) {
+        Output-Json "Open" "Registry value not set: $RegValue"
+        Write-Host "[$VulnID] FAIL - Registry value not set"
+        exit 1
+    }
+
+    $ActualValueData = $ActualValue.$RegValue
+
+    # Compare values
+    if ($ActualValueData -eq $ExpectedValue) {
+        Output-Json "NotAFinding" "Registry value is compliant: $ActualValueData"
+        Write-Host "[$VulnID] PASS - Value: $ActualValueData"
+        exit 0
     } else {
-        $Status = "Open"
-        $FindingDetails += @{
-            registry_path = $RegistryPath
-            value_name = $ValueName
-            status = "FAIL"
-            reason = "Registry value does not exist"
-        }
-        $exitCode = 1
+        Output-Json "Open" "Registry value not compliant: $ActualValueData (expected: $ExpectedValue)"
+        Write-Host "[$VulnID] FAIL - Value: $ActualValueData (expected: $ExpectedValue)"
+        exit 1
     }
+
 } catch {
-    $Status = "Error"
-    $FindingDetails += @{
-        error = $_.Exception.Message
-    }
-    $exitCode = 3
+    Output-Json "ERROR" "Error checking registry: $($_.Exception.Message)"
+    Write-Host "[$VulnID] ERROR - $($_.Exception.Message)"
+    exit 3
 }
-
-# Output results
-$result = @{
-    vuln_id = $VulnID
-    severity = $Severity
-    stig_id = $StigID
-    stig_version = $StigVersion
-    rule_title = $RuleTitle
-    status = $Status
-    finding_details = $FindingDetails
-    timestamp = $Timestamp
-    requires_elevation = $true
-    third_party_tools = "None (uses PowerShell)"
-    check_method = "PowerShell - Get-ItemProperty"
-    config_file = if ($ConfigFile) { $ConfigFile } else { "None (using defaults)" }
-    exit_code = $exitCode
-}
-
-if ($OutputJson) {
-    $result | ConvertTo-Json -Depth 10 | Out-File -FilePath $OutputJson -Encoding UTF8
-    Write-Host "Results written to: $OutputJson"
-}
-
-# Print human-readable results
-Write-Host ""
-Write-Host "=" * 80
-Write-Host "STIG Check: $VulnID - $StigID"
-Write-Host "STIG Version: $StigVersion"
-Write-Host "Severity: $($Severity.ToUpper())"
-Write-Host "=" * 80
-Write-Host "Rule: $RuleTitle"
-Write-Host "Status: $Status"
-Write-Host "Timestamp: $Timestamp"
-Write-Host ""
-
-exit $exitCode

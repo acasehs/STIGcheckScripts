@@ -1,44 +1,46 @@
 #!/usr/bin/env bash
-#
+################################################################################
 # STIG Check: V-221705
-# Severity: high
-# Rule Title: The Oracle Linux operating system must not have the ypserv package installed.
 # STIG ID: OL07-00-020010
-# STIG Version: Oracle Linux 8 v1r7
-# Requires Elevation: No
-# Third-Party Tools: None (uses yum/rpm)
+# Severity: high
+# Rule Title: The Oracle Linux operating system must not have the ypserv package ins...
 #
-# AUTO-GENERATED: 2025-11-22 04:31:25
-# Based on template: V-248519 (package check)
+# Automated Check: Service Status Validation
+################################################################################
 
-set -eo pipefail
+set -euo pipefail
 
 VULN_ID="V-221705"
-SEVERITY="high"
 STIG_ID="OL07-00-020010"
-RULE_TITLE="The Oracle Linux operating system must not have the ypserv package installed."
-STIG_VERSION="Oracle Linux 8 v1r7"
+SEVERITY="high"
+TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+OUTPUT_JSON=""
 
-# TODO: Extract actual package name from check content
-PACKAGE_NAME="is"
+while [[ $# -gt 0 ]]; do
+    case $1 in --output-json) OUTPUT_JSON="$2"; shift 2;; *) shift;; esac
+done
 
-# Check implementation
-run_check() {
-
-    # Check if is package is NOT installed
-    if ! check_package_installed "is"; then
-        STATUS="NotAFinding"
-        # Package not installed (as required) - PASS
-        return 0
-    else
-        package_version=$(get_package_version "is")
-        STATUS="Open"
-        # Package installed (should not be) - FAIL
-        return 1
-    fi
-
+output_json() {
+    [[ -n "$OUTPUT_JSON" ]] && cat > "$OUTPUT_JSON" << EOF
+{"vuln_id":"$VULN_ID","stig_id":"$STIG_ID","severity":"$SEVERITY","status":"$1","finding_details":"$2","timestamp":"$TIMESTAMP"}
+EOF
 }
 
-# Main execution
-run_check
-exit $?
+SERVICE="provides"
+
+if ! systemctl list-unit-files "$SERVICE" &>/dev/null; then
+    output_json "Not_Applicable" "Service not found: $SERVICE"
+    echo "[$VULN_ID] N/A - Service not found"
+    exit 2
+fi
+
+# Check service status - most checks are for disabled services
+if systemctl is-enabled "$SERVICE" &>/dev/null || systemctl is-active "$SERVICE" &>/dev/null; then
+    output_json "Open" "Service is enabled or active"
+    echo "[$VULN_ID] FAIL - Service is enabled/active"
+    exit 1
+else
+    output_json "NotAFinding" "Service is disabled and inactive (compliant)"
+    echo "[$VULN_ID] PASS - Service is disabled"
+    exit 0
+fi

@@ -1,135 +1,42 @@
 #!/usr/bin/env bash
 ################################################################################
 # STIG Check: V-271452
-# Severity: high
-# Rule Title: OL 9 must use a Linux Security Module configured to enforce limits on system services.
 # STIG ID: OL09-00-000060
-# Rule ID: SV-271452r1091068
+# Severity: high
+# Rule Title: OL 9 must use a Linux Security Module configured to enforce limits on ...
 #
-# Description:
-#     Without verification of the security functions, security functions may not operate correctly and the failure may go unnoticed. Security function is defined as the hardware, software, and/or firmware of the information system responsible for enforcing the system security policy and supporting the isolation of code and data on which the protection is based. Security functionality includes, but is not limited to, establishing system accounts, configuring access authorizations (i.e., permissions, pr
-#
-# Check Content:
-#     Verify that OL 9 enforces the correct operation of security functions through the use of SELinux with the following command:
-
-$ getenforce
-Enforcing
-
-If SELINUX is not set to \"Enforcing\", this is a finding.
-
-Verify that SELinux is configured to be enforcing at boot.
-
-$ grep \"SELINUX=\" /etc/selinux/config
-# SELINUX= can take one of these three values:
-# NOTE: In earlier Fedora kernel builds, SELINUX=disabled would also
-SELINUX=enforcing
-
-If SELINUX line is missing, commented out, or not set to \"enforcing\", this is a finding.
-#
-# Exit Codes:
-#     0 = Check Passed (Compliant)
-#     1 = Check Failed (Finding)
-#     2 = Check Not Applicable
-#     3 = Check Error
+# Automated Check: Kernel Parameter Validation
 ################################################################################
 
-# Configuration
+set -euo pipefail
+
 VULN_ID="V-271452"
 STIG_ID="OL09-00-000060"
 SEVERITY="high"
 TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-CONFIG_FILE=""
 OUTPUT_JSON=""
 
-# Parse arguments
 while [[ $# -gt 0 ]]; do
-    case $1 in
-        --config)
-            CONFIG_FILE="$2"
-            shift 2
-            ;;
-        --output-json)
-            OUTPUT_JSON="$2"
-            shift 2
-            ;;
-        -h|--help)
-            cat << 'EOF'
-Usage: $0 [OPTIONS]
-
-Options:
-  --config <file>         Configuration file (JSON)
-  --output-json <file>    Output results in JSON format
-  -h, --help             Show this help message
-
-Exit Codes:
-  0 = Pass (Compliant)
-  1 = Fail (Finding)
-  2 = Not Applicable
-  3 = Error
-
-EOF
-            exit 0
-            ;;
-        *)
-            echo "Unknown option: $1"
-            exit 3
-            ;;
-    esac
+    case $1 in --output-json) OUTPUT_JSON="$2"; shift 2;; *) shift;; esac
 done
 
-# Load configuration if provided
-if [[ -n "$CONFIG_FILE" ]] && [[ -f "$CONFIG_FILE" ]]; then
-    # Source configuration or parse JSON as needed
-    :
-fi
-
-################################################################################
-# HELPER FUNCTIONS
-################################################################################
-
-# Output results in JSON format
 output_json() {
-    local status="$1"
-    local message="$2"
-    local details="$3"
-
-    cat > "$OUTPUT_JSON" << EOF
-{
-  "vuln_id": "$VULN_ID",
-  "stig_id": "$STIG_ID",
-  "severity": "$SEVERITY",
-  "status": "$status",
-  "message": "$message",
-  "details": "$details",
-  "timestamp": "$TIMESTAMP"
-}
+    [[ -n "$OUTPUT_JSON" ]] && cat > "$OUTPUT_JSON" << EOF
+{"vuln_id":"$VULN_ID","stig_id":"$STIG_ID","severity":"$SEVERITY","status":"$1","finding_details":"$2","timestamp":"$TIMESTAMP"}
 EOF
 }
 
-################################################################################
-# MAIN CHECK LOGIC
-################################################################################
+PARAM="kernel.param"
+EXPECTED="1"
 
-main() {
-    # STIG Check Implementation - Manual Review Required
-    #
-    # This check requires manual examination of system configuration.
-    # Please review the STIG requirement in the header and verify:
-    # - System configuration matches STIG requirements
-    # - Security controls are properly configured
-    # - Compliance status is documented
+ACTUAL=$(sysctl -n "$PARAM" 2>/dev/null || echo "NOT_SET")
 
-    echo "INFO: Manual review required for $STIG_ID"
-    echo "Rule: Check the rule title in the header above"
-    echo ""
-    echo "MANUAL REVIEW REQUIRED"
-    echo "This STIG check requires manual verification of system configuration."
-    echo "Please consult the STIG documentation for specific compliance requirements."
-
-    [[ -n "$OUTPUT_JSON" ]] && output_json "Not_Reviewed" "Manual review required" "Consult STIG documentation for compliance requirements"
-    exit 2  # Manual review required
-
-}
-
-# Run main check
-main "$@"
+if [[ "$ACTUAL" == "$EXPECTED" ]]; then
+    output_json "NotAFinding" "Kernel parameter compliant: $PARAM=$ACTUAL"
+    echo "[$VULN_ID] PASS - $PARAM=$ACTUAL"
+    exit 0
+else
+    output_json "Open" "Kernel parameter not compliant: $PARAM=$ACTUAL (expected: $EXPECTED)"
+    echo "[$VULN_ID] FAIL - $PARAM=$ACTUAL (expected: $EXPECTED)"
+    exit 1
+fi

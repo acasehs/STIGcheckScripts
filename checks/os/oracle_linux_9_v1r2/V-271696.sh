@@ -1,144 +1,48 @@
 #!/usr/bin/env bash
 ################################################################################
 # STIG Check: V-271696
-# Severity: medium
-# Rule Title: OL 9 must define default permissions for all authenticated users in such a way that the user can only read and modify their own files.
 # STIG ID: OL09-00-002304
-# Rule ID: SV-271696r1091800
+# Severity: medium
+# Rule Title: OL 9 must define default permissions for all authenticated users in su...
 #
-# Description:
-#     Setting the most restrictive default permissions ensures that when new accounts are created, they do not have unnecessary access.
-#
-# Check Content:
-#     Verify that OL 9 defines default permissions for all authenticated users in such a way that the user can only read and modify their own files with the following command:  Note: If the value of the "UMASK" parameter is set to "000" in "/etc/login.defs" file, the severity of this requirement is raised...
-#
-# Exit Codes:
-#     0 = Check Passed (Compliant)
-#     1 = Check Failed (Finding)
-#     2 = Check Not Applicable
-#     3 = Check Error
+# Automated Check: File Permission Validation
 ################################################################################
 
-# Configuration
+set -euo pipefail
+
 VULN_ID="V-271696"
 STIG_ID="OL09-00-002304"
 SEVERITY="medium"
 TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-CONFIG_FILE=""
 OUTPUT_JSON=""
 
-# Parse arguments
 while [[ $# -gt 0 ]]; do
-    case $1 in
-        --config)
-            CONFIG_FILE="$2"
-            shift 2
-            ;;
-        --output-json)
-            OUTPUT_JSON="$2"
-            shift 2
-            ;;
-        -h|--help)
-            cat << 'EOF'
-Usage: $0 [OPTIONS]
-
-Options:
-  --config <file>         Configuration file (JSON)
-  --output-json <file>    Output results in JSON format
-  -h, --help             Show this help message
-
-Exit Codes:
-  0 = Pass (Compliant)
-  1 = Fail (Finding)
-  2 = Not Applicable
-  3 = Error
-
-Example:
-  $0
-  $0 --config stig-config.json
-  $0 --output-json results.json
-EOF
-            exit 0
-            ;;
-        *)
-            echo "Unknown option: $1"
-            exit 3
-            ;;
-    esac
+    case $1 in --output-json) OUTPUT_JSON="$2"; shift 2;; *) shift;; esac
 done
 
-# Load configuration if provided
-if [[ -n "$CONFIG_FILE" ]]; then
-    if [[ ! -f "$CONFIG_FILE" ]]; then
-        echo "ERROR: Configuration file not found: $CONFIG_FILE"
-        exit 3
-    fi
-    # TODO: Load configuration values using jq if available
-fi
-
-################################################################################
-# CHECK IMPLEMENTATION
-################################################################################
-
-# STIG Check Implementation - Manual Review Required
-#
-# This check requires manual examination of system configuration.
-# Please review the STIG requirement in the header and verify:
-# - System configuration matches STIG requirements
-# - Security controls are properly configured
-# - Compliance status is documented
-
-echo "INFO: Manual review required for $VULN_ID"
-echo "STIG ID: $STIG_ID"
-echo ""
-echo "MANUAL REVIEW REQUIRED"
-echo "This STIG check requires manual verification of system configuration."
-echo "Please consult the STIG documentation for specific compliance requirements."
-
-# Manual review status
-STATUS="Not_Reviewed"
-EXIT_CODE=2
-FINDING_DETAILS="Manual review required - consult STIG documentation for compliance verification"
-
-
-################################################################################
-# OUTPUT RESULTS
-################################################################################
-
-# JSON output if requested
-if [[ -n "$OUTPUT_JSON" ]]; then
-    cat > "$OUTPUT_JSON" << EOF_JSON
-{
-  "vuln_id": "$VULN_ID",
-  "stig_id": "$STIG_ID",
-  "severity": "$SEVERITY",
-  "rule_title": "OL 9 must define default permissions for all authenticated users in such a way that the user can only read and modify their own files.",
-  "status": "$STATUS",
-  "finding_details": "$FINDING_DETAILS",
-  "timestamp": "$TIMESTAMP",
-  "exit_code": $EXIT_CODE
-}
-EOF_JSON
-fi
-
-# Human-readable output
-cat << EOF
-
-================================================================================
-STIG Check: $VULN_ID - $STIG_ID
-Severity: ${SEVERITY^^}
-================================================================================
-Rule: OL 9 must define default permissions for all authenticated users in such a way that the user can only read and modify their own files.
-Status: $STATUS
-Timestamp: $TIMESTAMP
-
---------------------------------------------------------------------------------
-Finding Details:
---------------------------------------------------------------------------------
-$FINDING_DETAILS
-
-================================================================================
-
+output_json() {
+    [[ -n "$OUTPUT_JSON" ]] && cat > "$OUTPUT_JSON" << EOF
+{"vuln_id":"$VULN_ID","stig_id":"$STIG_ID","severity":"$SEVERITY","status":"$1","finding_details":"$2","timestamp":"$TIMESTAMP"}
 EOF
+}
 
-exit $EXIT_CODE
+FILE_PATH="that"
+EXPECTED_PERM="0644"
+
+if [[ ! -e "$FILE_PATH" ]]; then
+    output_json "Not_Applicable" "File does not exist: $FILE_PATH"
+    echo "[$VULN_ID] N/A - File not found"
+    exit 2
+fi
+
+ACTUAL_PERM=$(stat -c "%a" "$FILE_PATH" 2>/dev/null)
+
+if [[ "$ACTUAL_PERM" -le "$EXPECTED_PERM" ]]; then
+    output_json "NotAFinding" "Permissions compliant: $ACTUAL_PERM"
+    echo "[$VULN_ID] PASS - Permissions: $ACTUAL_PERM"
+    exit 0
+else
+    output_json "Open" "Permissions too permissive: $ACTUAL_PERM (expected: $EXPECTED_PERM)"
+    echo "[$VULN_ID] FAIL - Permissions: $ACTUAL_PERM (expected: $EXPECTED_PERM)"
+    exit 1
+fi

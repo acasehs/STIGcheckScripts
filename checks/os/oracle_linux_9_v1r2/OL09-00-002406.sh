@@ -1,130 +1,42 @@
 #!/usr/bin/env bash
 ################################################################################
 # STIG Check: V-271745
-# Severity: medium
-# Rule Title: OL 9 must restrict access to the kernel message buffer.
 # STIG ID: OL09-00-002406
-# Rule ID: SV-271745r1091947
+# Severity: medium
+# Rule Title: OL 9 must restrict access to the kernel message buffer....
 #
-# Description:
-#     Preventing unauthorized information transfers mitigates the risk of information, including encrypted representations of information, produced by the actions of prior users/roles (or the actions of processes acting on behalf of prior users/roles) from being available to any current users/roles (or current processes) that obtain access to shared system resources (e.g., registers, main memory, hard disks) after those resources have been released back to information systems. The control of informati
-#
-# Check Content:
-#     Verify that OL 9 is configured to restrict access to the kernel message buffer with the following commands:
-
-Check the status of the kernel.dmesg_restrict kernel parameter.
-
-$ sudo sysctl kernel.dmesg_restrict
-kernel.dmesg_restrict = 1
-
-If \"kernel.dmesg_restrict\" is not set to \"1\" or is missing, this is a finding.
-#
-# Exit Codes:
-#     0 = Check Passed (Compliant)
-#     1 = Check Failed (Finding)
-#     2 = Check Not Applicable
-#     3 = Check Error
+# Automated Check: Kernel Parameter Validation
 ################################################################################
 
-# Configuration
+set -euo pipefail
+
 VULN_ID="V-271745"
 STIG_ID="OL09-00-002406"
 SEVERITY="medium"
 TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-CONFIG_FILE=""
 OUTPUT_JSON=""
 
-# Parse arguments
 while [[ $# -gt 0 ]]; do
-    case $1 in
-        --config)
-            CONFIG_FILE="$2"
-            shift 2
-            ;;
-        --output-json)
-            OUTPUT_JSON="$2"
-            shift 2
-            ;;
-        -h|--help)
-            cat << 'EOF'
-Usage: $0 [OPTIONS]
-
-Options:
-  --config <file>         Configuration file (JSON)
-  --output-json <file>    Output results in JSON format
-  -h, --help             Show this help message
-
-Exit Codes:
-  0 = Pass (Compliant)
-  1 = Fail (Finding)
-  2 = Not Applicable
-  3 = Error
-
-EOF
-            exit 0
-            ;;
-        *)
-            echo "Unknown option: $1"
-            exit 3
-            ;;
-    esac
+    case $1 in --output-json) OUTPUT_JSON="$2"; shift 2;; *) shift;; esac
 done
 
-# Load configuration if provided
-if [[ -n "$CONFIG_FILE" ]] && [[ -f "$CONFIG_FILE" ]]; then
-    # Source configuration or parse JSON as needed
-    :
-fi
-
-################################################################################
-# HELPER FUNCTIONS
-################################################################################
-
-# Output results in JSON format
 output_json() {
-    local status="$1"
-    local message="$2"
-    local details="$3"
-
-    cat > "$OUTPUT_JSON" << EOF
-{
-  "vuln_id": "$VULN_ID",
-  "stig_id": "$STIG_ID",
-  "severity": "$SEVERITY",
-  "status": "$status",
-  "message": "$message",
-  "details": "$details",
-  "timestamp": "$TIMESTAMP"
-}
+    [[ -n "$OUTPUT_JSON" ]] && cat > "$OUTPUT_JSON" << EOF
+{"vuln_id":"$VULN_ID","stig_id":"$STIG_ID","severity":"$SEVERITY","status":"$1","finding_details":"$2","timestamp":"$TIMESTAMP"}
 EOF
 }
 
-################################################################################
-# MAIN CHECK LOGIC
-################################################################################
+PARAM="kernel.dmesg_restrict"
+EXPECTED="1"
 
-main() {
-    PARAM="kernel.dmesg_restrict"
-    EXPECTED="1"
+ACTUAL=$(sysctl -n "$PARAM" 2>/dev/null || echo "NOT_SET")
 
-    actual=$(sysctl -n "$PARAM" 2>/dev/null)
-    if [[ -z "$actual" ]]; then
-        echo "ERROR: Parameter not found"
-        [[ -n "$OUTPUT_JSON" ]] && output_json "ERROR" "Not found" "$PARAM"
-        exit 3
-    fi
-
-    if [[ "$actual" == "$EXPECTED" ]]; then
-        echo "PASS: $PARAM = $actual (compliant)"
-        [[ -n "$OUTPUT_JSON" ]] && output_json "PASS" "Compliant" "$PARAM=$actual"
-        exit 0
-    else
-        echo "FAIL: $PARAM = $actual (expected: $EXPECTED)"
-        [[ -n "$OUTPUT_JSON" ]] && output_json "FAIL" "Mismatch" "Expected: $EXPECTED"
-        exit 1
-    fi
-
-}
-
-# Run main check
-main "$@"
+if [[ "$ACTUAL" == "$EXPECTED" ]]; then
+    output_json "NotAFinding" "Kernel parameter compliant: $PARAM=$ACTUAL"
+    echo "[$VULN_ID] PASS - $PARAM=$ACTUAL"
+    exit 0
+else
+    output_json "Open" "Kernel parameter not compliant: $PARAM=$ACTUAL (expected: $EXPECTED)"
+    echo "[$VULN_ID] FAIL - $PARAM=$ACTUAL (expected: $EXPECTED)"
+    exit 1
+fi

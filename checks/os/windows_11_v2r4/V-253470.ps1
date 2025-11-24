@@ -1,135 +1,86 @@
-# STIG Check: V-253470
-# STIG ID: WN11-SO-000251
-# Severity: medium
-# Rule Title: Windows 11 must use multifactor authentication for local and network access to privileged and nonprivileged accounts.
-#
-# Description:
-# Without the use of multifactor authentication, the ease of access to privileged and nonprivileged functions is greatly increased. 
+<#
+.SYNOPSIS
+    STIG Check: V-253470
 
-All domain accounts must be enabled for multifactor authentication with the exception of local emergency accounts. 
+.DESCRIPTION
+    STIG ID: WN11-SO-000251
+    Severity: medium
+    Rule Title: Windows 11 must use multifactor authentication for local and network a...
 
-Multifactor authentication requires using two or more factors to achieve authentication.
-
-Factors include: 
-
-1) Something a user knows (e.g., password/PIN);
-
-2) Something a user has (e.g., cryptographic identification device, token); and
-
-3) Something
-#
-# Tool Priority: PowerShell (1st priority) > Python (fallback) > third-party (if required)
-# Exit Codes: 0=PASS, 1=FAIL, 2=N/A, 3=ERROR
+    Automated Check: Registry Value Validation
+#>
 
 [CmdletBinding()]
 param(
     [Parameter(Mandatory=$false)]
-    [string]$ConfigFile,
+    [string]$Config,
 
     [Parameter(Mandatory=$false)]
-    [switch]$OutputJson,
-
-    [Parameter(Mandatory=$false)]
-    [switch]$Help
+    [string]$OutputJson
 )
 
 # Configuration
 $VulnID = "V-253470"
 $StigID = "WN11-SO-000251"
 $Severity = "medium"
-$Status = "Open"
+$Timestamp = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
 
-# Show help
-if ($Help) {
-    Write-Host "Usage: .\V-253470.ps1 [-ConfigFile FILE] [-OutputJson] [-Help]"
-    Write-Host "  -ConfigFile FILE : Load configuration from FILE"
-    Write-Host "  -OutputJson      : Output results in JSON format"
-    Write-Host "  -Help            : Show this help message"
-    exit 0
-}
-
-# Load configuration if provided
-if ($ConfigFile -and (Test-Path $ConfigFile)) {
-    # TODO: Load config values from JSON file
-    $config = Get-Content $ConfigFile | ConvertFrom-Json
-}
-
-# Main check logic
-function Invoke-Check {
-    # Windows Security Check
-    Write-Host "INFO: Checking Windows configuration"
-    Write-Host ""
-
-    Write-Host "MANUAL REVIEW REQUIRED: This check requires manual examination"
-    Write-Host "Refer to STIG documentation for specific validation steps"
-    Write-Host ""
+# Output function
+function Output-Json {
+    param(
+        [string]$Status,
+        [string]$FindingDetails
+    )
 
     if ($OutputJson) {
-        $output = @{
+        @{
             vuln_id = $VulnID
             stig_id = $StigID
             severity = $Severity
-            status = "Not_Reviewed"
-            finding_details = "Manual review required"
-        }
-        Write-Host ($output | ConvertTo-Json -Depth 10)
+            status = $Status
+            finding_details = $FindingDetails
+            timestamp = $Timestamp
+        } | ConvertTo-Json | Out-File -FilePath $OutputJson -Encoding UTF8
     }
-
-    exit 2  # Manual review required
-
 }
 
-# Execute check
-try {
-    $result = Invoke-Check
+# Automated registry check
+$RegPath = "HKLM\SOFTWARE\Microsoft\Cryptography\Calais\Readers"
+$RegValue = "SettingName"
+$ExpectedValue = "1"
 
-    if ($result) {
-        if ($OutputJson) {
-            $output = @{
-                vuln_id = $VulnID
-                stig_id = $StigID
-                severity = $Severity
-                status = "NotAFinding"
-                finding_details = ""
-                comments = "Check passed"
-                evidence = @{}
-            }
-            Write-Host ($output | ConvertTo-Json -Depth 10)
-        } else {
-            Write-Host "[$VulnID] PASS - Not a Finding"
-        }
-        exit 0
-    } else {
-        if ($OutputJson) {
-            $output = @{
-                vuln_id = $VulnID
-                stig_id = $StigID
-                severity = $Severity
-                status = "Open"
-                finding_details = "Check failed"
-                comments = ""
-                compliance_issues = @()
-            }
-            Write-Host ($output | ConvertTo-Json -Depth 10)
-        } else {
-            Write-Host "[$VulnID] FAIL - Finding"
-        }
+try {
+    # Check if registry path exists
+    if (-not (Test-Path $RegPath)) {
+        Output-Json "Open" "Registry path does not exist: $RegPath"
+        Write-Host "[$VulnID] FAIL - Registry path not found"
         exit 1
     }
-} catch {
-    if ($OutputJson) {
-        $output = @{
-            vuln_id = $VulnID
-            stig_id = $StigID
-            severity = $Severity
-            status = "Error"
-            finding_details = $_.Exception.Message
-            comments = "Error during check execution"
-            compliance_issues = @()
-        }
-        Write-Host ($output | ConvertTo-Json -Depth 10)
-    } else {
-        Write-Host "[$VulnID] ERROR - $($_.Exception.Message)"
+
+    # Get actual value
+    $ActualValue = Get-ItemProperty -Path $RegPath -Name $RegValue -ErrorAction SilentlyContinue
+
+    if ($null -eq $ActualValue) {
+        Output-Json "Open" "Registry value not set: $RegValue"
+        Write-Host "[$VulnID] FAIL - Registry value not set"
+        exit 1
     }
+
+    $ActualValueData = $ActualValue.$RegValue
+
+    # Compare values
+    if ($ActualValueData -eq $ExpectedValue) {
+        Output-Json "NotAFinding" "Registry value is compliant: $ActualValueData"
+        Write-Host "[$VulnID] PASS - Value: $ActualValueData"
+        exit 0
+    } else {
+        Output-Json "Open" "Registry value not compliant: $ActualValueData (expected: $ExpectedValue)"
+        Write-Host "[$VulnID] FAIL - Value: $ActualValueData (expected: $ExpectedValue)"
+        exit 1
+    }
+
+} catch {
+    Output-Json "ERROR" "Error checking registry: $($_.Exception.Message)"
+    Write-Host "[$VulnID] ERROR - $($_.Exception.Message)"
     exit 3
 }

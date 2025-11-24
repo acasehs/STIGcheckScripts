@@ -1,49 +1,13 @@
 <#
 .SYNOPSIS
-    O365-OU-000019 - Outlook must be configured to not run scripts in forms in which the script and the layout are contained within the message.
+    STIG Check: V-223364
 
 .DESCRIPTION
     STIG ID: O365-OU-000019
-    Rule Title: Outlook must be configured to not run scripts in forms in which the script and the layout are contained within the message.
     Severity: medium
-    Vuln ID: V-223364
-    Rule ID: SV-223364r961092
+    Rule Title: Outlook must be configured to not run scripts in forms in which the sc...
 
-    This script checks Microsoft Office 365 ProPlus configuration compliance.
-
-.PARAMETER Config
-    Path to JSON configuration file for customized check parameters.
-
-.PARAMETER OutputJson
-    Output results in JSON format.
-
-.PARAMETER Help
-    Display this help message.
-
-.EXAMPLE
-    .\O365-OU-000019.ps1
-    Run the check with default parameters
-
-.EXAMPLE
-    .\O365-OU-000019.ps1 -Config custom_config.json
-    Run the check with custom configuration
-
-.EXAMPLE
-    .\O365-OU-000019.ps1 -OutputJson
-    Run the check and output results in JSON format
-
-.NOTES
-    Exit Codes:
-    0 = PASS (Compliant)
-    1 = FAIL (Non-Compliant)
-    2 = N/A (Not Applicable)
-    3 = ERROR (Script execution error)
-
-    Registry Check:
-    Key: HKCU\Software\Policies\Microsoft\Office\16.0\outlook\security
-    Value: EnableOneOffFormScripts
-    Type: REG_DWORD
-    Expected: 0
+    Automated Check: Registry Value Validation
 #>
 
 [CmdletBinding()]
@@ -52,112 +16,71 @@ param(
     [string]$Config,
 
     [Parameter(Mandatory=$false)]
-    [switch]$OutputJson,
-
-    [Parameter(Mandatory=$false)]
-    [switch]$Help
+    [string]$OutputJson
 )
 
-# Display help if requested
-if ($Help) {
-    Get-Help $MyInvocation.MyCommand.Path -Detailed
-    exit 0
+# Configuration
+$VulnID = "V-223364"
+$StigID = "O365-OU-000019"
+$Severity = "medium"
+$Timestamp = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
+
+# Output function
+function Output-Json {
+    param(
+        [string]$Status,
+        [string]$FindingDetails
+    )
+
+    if ($OutputJson) {
+        @{
+            vuln_id = $VulnID
+            stig_id = $StigID
+            severity = $Severity
+            status = $Status
+            finding_details = $FindingDetails
+            timestamp = $Timestamp
+        } | ConvertTo-Json | Out-File -FilePath $OutputJson -Encoding UTF8
+    }
 }
 
-# Initialize result object
-$result = @{
-    STIG_ID = "O365-OU-000019"
-    Rule_Title = "Outlook must be configured to not run scripts in forms in which the script and the layout are contained within the message."
-    Severity = "medium"
-    Status = "Not_Reviewed"
-    Finding_Details = ""
-    Comments = ""
-}
+# Automated registry check
+$RegPath = "HKCU\Software\Policies\Microsoft\Office\16.0\outlook\security"
+$RegValue = "for User Configuration >> Administrative Templates >> Microsoft Outlook 2016 >> Security >> Security Form Settings >> Custom Form Security "Allow scripts in one-off Outlook forms" is set to "Disabled"."
+$ExpectedValue = "1"
 
 try {
-    # Load custom configuration if provided
-    $customConfig = $null
-    if ($Config -and (Test-Path $Config)) {
-        try {
-            $customConfig = Get-Content $Config -Raw | ConvertFrom-Json
-            Write-Verbose "Loaded custom configuration from $Config"
-        }
-        catch {
-            Write-Warning "Failed to load configuration file: $_"
-        }
+    # Check if registry path exists
+    if (-not (Test-Path $RegPath)) {
+        Output-Json "Open" "Registry path does not exist: $RegPath"
+        Write-Host "[$VulnID] FAIL - Registry path not found"
+        exit 1
     }
 
-    # Check registry setting
-    $regPath = "HKCU:\Software\Policies\Microsoft\Office\16.0\outlook\security"
-    $regValueName = "EnableOneOffFormScripts"
-    $expectedValue = 0
+    # Get actual value
+    $ActualValue = Get-ItemProperty -Path $RegPath -Name $RegValue -ErrorAction SilentlyContinue
 
-    
-    # MS Office Registry Check Implementation
-    Write-Host "INFO: Checking Microsoft Office registry configuration"
-
-    # Registry path is already defined above as $regPath
-    if (Test-Path $regPath) {
-        Write-Host "Registry path found: $regPath"
-
-        # Try to read registry values
-        try {
-            $regValues = Get-ItemProperty -Path $regPath -ErrorAction SilentlyContinue
-
-            if ($regValues) {
-                Write-Host "Registry values retrieved successfully"
-                $result.Status = "Not_Reviewed"
-                $result.Finding_Details = "Registry path exists. Manual review required to validate specific values against STIG requirements."
-                $result.Comments = "Review registry values for compliance"
-            }
-            else {
-                $result.Status = "Not_Reviewed"
-                $result.Finding_Details = "Registry path exists but values could not be read. Manual review required."
-            }
-        }
-        catch {
-            $result.Status = "ERROR"
-            $result.Finding_Details = "Error reading registry: $($_.Exception.Message)"
-        }
-    }
-    else {
-        $result.Status = "Not_Reviewed"
-        $result.Finding_Details = "Registry path not found: $regPath. This may indicate non-compliance or N/A condition. Manual review required."
-        $result.Comments = "Verify if this registry setting should exist for this Office installation"
+    if ($null -eq $ActualValue) {
+        Output-Json "Open" "Registry value not set: $RegValue"
+        Write-Host "[$VulnID] FAIL - Registry value not set"
+        exit 1
     }
 
-    # Implementation complete
-     until implementation is complete
-    $result.Status = "Not_Reviewed"
-    $result.Comments = "Automated check not yet implemented - requires Office domain expertise"
-    $result.Finding_Details = "This check requires registry validation"
+    $ActualValueData = $ActualValue.$RegValue
 
-}
-catch {
-    $result.Status = "ERROR"
-    $result.Finding_Details = "Error: $($_.Exception.Message)"
-    $result.Comments = "Script execution failed"
-}
-
-# Output results
-if ($OutputJson) {
-    $result | ConvertTo-Json
-}
-else {
-    Write-Host "STIG ID: $($result.STIG_ID)"
-    Write-Host "Status: $($result.Status)"
-    Write-Host "Finding Details: $($result.Finding_Details)"
-    if ($result.Comments) {
-        Write-Host "Comments: $($result.Comments)"
+    # Compare values
+    if ($ActualValueData -eq $ExpectedValue) {
+        Output-Json "NotAFinding" "Registry value is compliant: $ActualValueData"
+        Write-Host "[$VulnID] PASS - Value: $ActualValueData"
+        exit 0
+    } else {
+        Output-Json "Open" "Registry value not compliant: $ActualValueData (expected: $ExpectedValue)"
+        Write-Host "[$VulnID] FAIL - Value: $ActualValueData (expected: $ExpectedValue)"
+        exit 1
     }
-}
 
-# Exit with appropriate code
-switch ($result.Status) {
-    "PASS" { exit 0 }
-    "FAIL" { exit 1 }
-    "Not_Reviewed" { exit 2 }
-    "N/A" { exit 2 }
-    "ERROR" { exit 3 }
-    default { exit 3 }
+} catch {
+    Output-Json "ERROR" "Error checking registry: $($_.Exception.Message)"
+    Write-Host "[$VulnID] ERROR - $($_.Exception.Message)"
+    exit 3
 }

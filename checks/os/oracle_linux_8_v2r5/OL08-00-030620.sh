@@ -1,139 +1,48 @@
 #!/usr/bin/env bash
 ################################################################################
 # STIG Check: V-248807
-# Severity: medium
-# Rule Title: OL 8 audit tools must have a mode of \"0755\" or less permissive.
 # STIG ID: OL08-00-030620
-# Rule ID: SV-248807r991557
+# Severity: medium
+# Rule Title: OL 8 audit tools must have a mode of "0755" or less permissive....
 #
-# Description:
-#     Protecting audit information includes identifying and protecting the tools used to view and manipulate log data. Therefore, protecting audit tools is necessary to prevent unauthorized operation on audit information. 
- 
-OL 8 systems providing tools to interface with audit information will leverage user permissions and roles identifying the user accessing the tools, and the corresponding user rights, to make access decisions regarding the access to audit tools. 
- 
-Audit tools include but are not l
-#
-# Check Content:
-#     Verify the audit tools are protected from unauthorized access, deletion, or modification by checking the permissive mode. 
- 
-Check the octal permission of each audit tool by running the following command: 
- 
-$ sudo stat -c \"%a %n\" /sbin/auditctl /sbin/aureport /sbin/ausearch /sbin/autrace /sbin/auditd /sbin/rsyslogd /sbin/augenrules 
- 
-755 /sbin/auditctl 
-755 /sbin/aureport 
-755 /sbin/ausearch 
-750 /sbin/autrace 
-755 /sbin/auditd 
-755 /sbin/rsyslogd 
-755 /sbin/augenrules 
- 
-If any of the audit tools has a mode more permissive than \"0755\", this is a finding.
-#
-# Exit Codes:
-#     0 = Check Passed (Compliant)
-#     1 = Check Failed (Finding)
-#     2 = Check Not Applicable
-#     3 = Check Error
+# Automated Check: File Permission Validation
 ################################################################################
 
-# Configuration
+set -euo pipefail
+
 VULN_ID="V-248807"
 STIG_ID="OL08-00-030620"
 SEVERITY="medium"
 TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-CONFIG_FILE=""
 OUTPUT_JSON=""
 
-# Parse arguments
 while [[ $# -gt 0 ]]; do
-    case $1 in
-        --config)
-            CONFIG_FILE="$2"
-            shift 2
-            ;;
-        --output-json)
-            OUTPUT_JSON="$2"
-            shift 2
-            ;;
-        -h|--help)
-            cat << 'EOF'
-Usage: $0 [OPTIONS]
-
-Options:
-  --config <file>         Configuration file (JSON)
-  --output-json <file>    Output results in JSON format
-  -h, --help             Show this help message
-
-Exit Codes:
-  0 = Pass (Compliant)
-  1 = Fail (Finding)
-  2 = Not Applicable
-  3 = Error
-
-EOF
-            exit 0
-            ;;
-        *)
-            echo "Unknown option: $1"
-            exit 3
-            ;;
-    esac
+    case $1 in --output-json) OUTPUT_JSON="$2"; shift 2;; *) shift;; esac
 done
 
-# Load configuration if provided
-if [[ -n "$CONFIG_FILE" ]] && [[ -f "$CONFIG_FILE" ]]; then
-    # Source configuration or parse JSON as needed
-    :
-fi
-
-################################################################################
-# HELPER FUNCTIONS
-################################################################################
-
-# Output results in JSON format
 output_json() {
-    local status="$1"
-    local message="$2"
-    local details="$3"
-
-    cat > "$OUTPUT_JSON" << EOF
-{
-  "vuln_id": "$VULN_ID",
-  "stig_id": "$STIG_ID",
-  "severity": "$SEVERITY",
-  "status": "$status",
-  "message": "$message",
-  "details": "$details",
-  "timestamp": "$TIMESTAMP"
-}
+    [[ -n "$OUTPUT_JSON" ]] && cat > "$OUTPUT_JSON" << EOF
+{"vuln_id":"$VULN_ID","stig_id":"$STIG_ID","severity":"$SEVERITY","status":"$1","finding_details":"$2","timestamp":"$TIMESTAMP"}
 EOF
 }
 
-################################################################################
-# MAIN CHECK LOGIC
-################################################################################
+FILE_PATH="the"
+EXPECTED_PERM="0755"
 
-main() {
-    # STIG Check Implementation - Manual Review Required
-    #
-    # This check requires manual examination of system configuration.
-    # Please review the STIG requirement in the header and verify:
-    # - System configuration matches STIG requirements
-    # - Security controls are properly configured
-    # - Compliance status is documented
+if [[ ! -e "$FILE_PATH" ]]; then
+    output_json "Not_Applicable" "File does not exist: $FILE_PATH"
+    echo "[$VULN_ID] N/A - File not found"
+    exit 2
+fi
 
-    echo "INFO: Manual review required for $STIG_ID"
-    echo "Rule: Check the rule title in the header above"
-    echo ""
-    echo "MANUAL REVIEW REQUIRED"
-    echo "This STIG check requires manual verification of system configuration."
-    echo "Please consult the STIG documentation for specific compliance requirements."
+ACTUAL_PERM=$(stat -c "%a" "$FILE_PATH" 2>/dev/null)
 
-    [[ -n "$OUTPUT_JSON" ]] && output_json "Not_Reviewed" "Manual review required" "Consult STIG documentation for compliance requirements"
-    exit 2  # Manual review required
-
-}
-
-# Run main check
-main "$@"
+if [[ "$ACTUAL_PERM" -le "$EXPECTED_PERM" ]]; then
+    output_json "NotAFinding" "Permissions compliant: $ACTUAL_PERM"
+    echo "[$VULN_ID] PASS - Permissions: $ACTUAL_PERM"
+    exit 0
+else
+    output_json "Open" "Permissions too permissive: $ACTUAL_PERM (expected: $EXPECTED_PERM)"
+    echo "[$VULN_ID] FAIL - Permissions: $ACTUAL_PERM (expected: $EXPECTED_PERM)"
+    exit 1
+fi

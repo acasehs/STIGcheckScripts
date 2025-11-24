@@ -1,145 +1,42 @@
 #!/usr/bin/env bash
 ################################################################################
 # STIG Check: V-248576
-# Severity: medium
-# Rule Title: OL 8 must prevent the loading of a new kernel for later execution.
 # STIG ID: OL08-00-010372
-# Rule ID: SV-248576r1015033
+# Severity: medium
+# Rule Title: OL 8 must prevent the loading of a new kernel for later execution....
 #
-# Description:
-#     Changes to any software components can have significant effects on the overall security of the operating system. This requirement ensures the software has not been tampered with and that it has been provided by a trusted vendor.
-
-Disabling \"kexec_load\" prevents an unsigned kernel image (that could be a windows kernel or modified vulnerable kernel) from being loaded. Kexec can be used to subvert the entire secureboot process and should be avoided at all costs, especially since it can load unsig
-#
-# Check Content:
-#     Note: For OL 8 systems using the Oracle Unbreakable Enterprise Kernel (UEK) Release 6 or above and with secureboot enabled, this requirement is Not Applicable.
-
-Verify the operating system is configured to disable kernel image loading with the following commands.
-
-Check the status of the \"kernel.kexec_load_disabled\" kernel parameter:
-
-$ sudo sysctl kernel.kexec_load_disabled
-
-kernel.kexec_load_disabled = 1
-
-If \"kernel.kexec_load_disabled\" is not set to \"1\" or is missing, this is a finding.
-
-Check that the configuration files are present to enable this kernel parameter:
-
-$ sudo grep -r kernel.kexec_load_disabled /run/sysctl.d/*.conf /usr/local/lib/sysctl.d/*.conf /usr/lib/sysctl.d/*.conf /lib/sysctl.d/*.conf /etc/sysctl.conf /etc/sysctl.d/*.conf
-
-/etc/sysctl.d/99-sysctl.conf:kernel.kexec_load_disabled = 1
-
-If \"kernel.kexec_load_disabled\" is not set to \"1\" or is missing or commented out, this is a finding.
-
-If conflicting results are returned, this is a finding.
-#
-# Exit Codes:
-#     0 = Check Passed (Compliant)
-#     1 = Check Failed (Finding)
-#     2 = Check Not Applicable
-#     3 = Check Error
+# Automated Check: Kernel Parameter Validation
 ################################################################################
 
-# Configuration
+set -euo pipefail
+
 VULN_ID="V-248576"
 STIG_ID="OL08-00-010372"
 SEVERITY="medium"
 TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-CONFIG_FILE=""
 OUTPUT_JSON=""
 
-# Parse arguments
 while [[ $# -gt 0 ]]; do
-    case $1 in
-        --config)
-            CONFIG_FILE="$2"
-            shift 2
-            ;;
-        --output-json)
-            OUTPUT_JSON="$2"
-            shift 2
-            ;;
-        -h|--help)
-            cat << 'EOF'
-Usage: $0 [OPTIONS]
-
-Options:
-  --config <file>         Configuration file (JSON)
-  --output-json <file>    Output results in JSON format
-  -h, --help             Show this help message
-
-Exit Codes:
-  0 = Pass (Compliant)
-  1 = Fail (Finding)
-  2 = Not Applicable
-  3 = Error
-
-EOF
-            exit 0
-            ;;
-        *)
-            echo "Unknown option: $1"
-            exit 3
-            ;;
-    esac
+    case $1 in --output-json) OUTPUT_JSON="$2"; shift 2;; *) shift;; esac
 done
 
-# Load configuration if provided
-if [[ -n "$CONFIG_FILE" ]] && [[ -f "$CONFIG_FILE" ]]; then
-    # Source configuration or parse JSON as needed
-    :
-fi
-
-################################################################################
-# HELPER FUNCTIONS
-################################################################################
-
-# Output results in JSON format
 output_json() {
-    local status="$1"
-    local message="$2"
-    local details="$3"
-
-    cat > "$OUTPUT_JSON" << EOF
-{
-  "vuln_id": "$VULN_ID",
-  "stig_id": "$STIG_ID",
-  "severity": "$SEVERITY",
-  "status": "$status",
-  "message": "$message",
-  "details": "$details",
-  "timestamp": "$TIMESTAMP"
-}
+    [[ -n "$OUTPUT_JSON" ]] && cat > "$OUTPUT_JSON" << EOF
+{"vuln_id":"$VULN_ID","stig_id":"$STIG_ID","severity":"$SEVERITY","status":"$1","finding_details":"$2","timestamp":"$TIMESTAMP"}
 EOF
 }
 
-################################################################################
-# MAIN CHECK LOGIC
-################################################################################
+PARAM="kernel.kexec_load_disabled"
+EXPECTED="1"
 
-main() {
-    PARAM="kernel.kexec_load_disabled"
-    EXPECTED="1"
+ACTUAL=$(sysctl -n "$PARAM" 2>/dev/null || echo "NOT_SET")
 
-    actual=$(sysctl -n "$PARAM" 2>/dev/null)
-    if [[ -z "$actual" ]]; then
-        echo "ERROR: Parameter not found"
-        [[ -n "$OUTPUT_JSON" ]] && output_json "ERROR" "Not found" "$PARAM"
-        exit 3
-    fi
-
-    if [[ "$actual" == "$EXPECTED" ]]; then
-        echo "PASS: $PARAM = $actual (compliant)"
-        [[ -n "$OUTPUT_JSON" ]] && output_json "PASS" "Compliant" "$PARAM=$actual"
-        exit 0
-    else
-        echo "FAIL: $PARAM = $actual (expected: $EXPECTED)"
-        [[ -n "$OUTPUT_JSON" ]] && output_json "FAIL" "Mismatch" "Expected: $EXPECTED"
-        exit 1
-    fi
-
-}
-
-# Run main check
-main "$@"
+if [[ "$ACTUAL" == "$EXPECTED" ]]; then
+    output_json "NotAFinding" "Kernel parameter compliant: $PARAM=$ACTUAL"
+    echo "[$VULN_ID] PASS - $PARAM=$ACTUAL"
+    exit 0
+else
+    output_json "Open" "Kernel parameter not compliant: $PARAM=$ACTUAL (expected: $EXPECTED)"
+    echo "[$VULN_ID] FAIL - $PARAM=$ACTUAL (expected: $EXPECTED)"
+    exit 1
+fi
