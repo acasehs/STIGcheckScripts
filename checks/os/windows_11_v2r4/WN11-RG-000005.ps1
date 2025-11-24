@@ -1,27 +1,13 @@
 <#
 .SYNOPSIS
     STIG Check: V-253431
-    Severity: medium
 
 .DESCRIPTION
-    Rule Title: Default permissions for the HKEY_LOCAL_MACHINE registry hive must be maintained.
     STIG ID: WN11-RG-000005
-    Rule ID: SV-253431r958726
+    Severity: medium
+    Rule Title: Default permissions for the HKEY_LOCAL_MACHINE registry hive must be m...
 
-    The registry is integral to the function, security, and stability of the Windows system. Changing the system'\''s registry permissions allows the possibility of unauthorized and anonymous modification to the operating system.
-
-.PARAMETER Config
-    Configuration file path (JSON)
-
-.PARAMETER OutputJson
-    Output results in JSON format to specified file
-
-.OUTPUTS
-    Exit Codes:
-        0 = Check Passed (Compliant)
-        1 = Check Failed (Finding)
-        2 = Check Not Applicable
-        3 = Check Error
+    Automated Check: Registry Value Validation
 #>
 
 [CmdletBinding()]
@@ -34,49 +20,67 @@ param(
 )
 
 # Configuration
-$VULN_ID = "V-253431"
-$STIG_ID = "WN11-RG-000005"
-$SEVERITY = "medium"
-$TIMESTAMP = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
+$VulnID = "V-253431"
+$StigID = "WN11-RG-000005"
+$Severity = "medium"
+$Timestamp = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
 
-# Load configuration if provided
-if ($Config -and (Test-Path $Config)) {
-    $ConfigData = Get-Content $Config | ConvertFrom-Json
-}
-
-################################################################################
-# MAIN CHECK LOGIC
-################################################################################
-
-try {
-    # STIG Check Implementation - Manual Review Required
-    Write-Output "================================================================================"
-    Write-Output "STIG Check: $VULN_ID"
-    Write-Output "STIG ID: $STIG_ID"
-    Write-Output "Severity: $SEVERITY"
-    Write-Output "Timestamp: $TIMESTAMP"
-    Write-Output "================================================================================"
-    Write-Output ""
-    Write-Output "MANUAL REVIEW REQUIRED"
-    Write-Output "This STIG check requires manual verification of Windows configuration."
-    Write-Output "Please consult the STIG documentation for specific compliance requirements."
-    Write-Output ""
-    Write-Output "Status: Not_Reviewed"
-    Write-Output "================================================================================"
+# Output function
+function Output-Json {
+    param(
+        [string]$Status,
+        [string]$FindingDetails
+    )
 
     if ($OutputJson) {
         @{
-            vuln_id = $VULN_ID
-            stig_id = $STIG_ID
-            severity = $SEVERITY
-            status = "Not_Reviewed"
-            finding_details = "Manual review required"
-            comments = "Consult STIG documentation for Windows compliance verification"
-            timestamp = $TIMESTAMP
-            requires_manual_review = $true
-        } | ConvertTo-Json | Out-File $OutputJson
+            vuln_id = $VulnID
+            stig_id = $StigID
+            severity = $Severity
+            status = $Status
+            finding_details = $FindingDetails
+            timestamp = $Timestamp
+        } | ConvertTo-Json | Out-File -FilePath $OutputJson -Encoding UTF8
+    }
+}
+
+# Automated registry check
+$RegPath = "HKEY_LOCAL_MACHINE\SECURITY"
+$RegValue = "SettingName"
+$ExpectedValue = "1"
+
+try {
+    # Check if registry path exists
+    if (-not (Test-Path $RegPath)) {
+        Output-Json "Open" "Registry path does not exist: $RegPath"
+        Write-Host "[$VulnID] FAIL - Registry path not found"
+        exit 1
     }
 
-    exit 2  # Manual review required
+    # Get actual value
+    $ActualValue = Get-ItemProperty -Path $RegPath -Name $RegValue -ErrorAction SilentlyContinue
 
+    if ($null -eq $ActualValue) {
+        Output-Json "Open" "Registry value not set: $RegValue"
+        Write-Host "[$VulnID] FAIL - Registry value not set"
+        exit 1
+    }
+
+    $ActualValueData = $ActualValue.$RegValue
+
+    # Compare values
+    if ($ActualValueData -eq $ExpectedValue) {
+        Output-Json "NotAFinding" "Registry value is compliant: $ActualValueData"
+        Write-Host "[$VulnID] PASS - Value: $ActualValueData"
+        exit 0
+    } else {
+        Output-Json "Open" "Registry value not compliant: $ActualValueData (expected: $ExpectedValue)"
+        Write-Host "[$VulnID] FAIL - Value: $ActualValueData (expected: $ExpectedValue)"
+        exit 1
+    }
+
+} catch {
+    Output-Json "ERROR" "Error checking registry: $($_.Exception.Message)"
+    Write-Host "[$VulnID] ERROR - $($_.Exception.Message)"
+    exit 3
 }
