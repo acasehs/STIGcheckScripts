@@ -1,0 +1,399 @@
+{
+  "summary": {
+    "total": 1470,
+    "automatable": 1276,
+    "not_automatable": 194,
+    "automation_percentage": 86.8
+  },
+  "by_complexity": {
+    "simple": 909,
+    "complex": 312,
+    "medium": 249
+  },
+  "automation_methods": {
+    "service_status": 524,
+    "file_permissions": 15,
+    "active_directory": 225,
+    "application_registry": 747,
+    "certificate_store": 52,
+    "event_log": 18,
+    "registry_query": 633,
+    "firewall_rules": 26,
+    "group_policy": 529,
+    "bitlocker": 4,
+    "user_rights": 152,
+    "audit_policy": 180
+  },
+  "barriers": {
+    "No clear automation method identified": 178,
+    "Requires manual interview/documentation": 29,
+    "Requires Active Directory environment": 225,
+    "Requires organization-defined parameters": 7,
+    "Requires GUI tools or manual steps": 231,
+    "Requires domain environment": 112,
+    "Requires physical/console access": 8
+  },
+  "required_tools": {
+    "Application-specific registry keys": 747,
+    "PowerShell Get-ItemProperty": 633,
+    "gpresult or GPMC": 529,
+    "Get-Service or sc.exe": 524,
+    "Active Directory PowerShell module": 225,
+    "auditpol.exe": 180,
+    "secedit or Get-LocalUser": 152,
+    "Get-ChildItem Cert:": 52,
+    "Get-NetFirewallRule": 26,
+    "Get-WinEvent": 18,
+    "Get-Acl or icacls.exe": 15,
+    "manage-bde.exe or Get-BitLockerVolume": 4
+  },
+  "detailed_analysis": {
+    "complex_checks": [
+      {
+        "vuln_id": "V-214307",
+        "benchmark": "Apache Server 2.4 Windows Server",
+        "rule_title": "The Apache web server must perform server-side session manag",
+        "barriers": [
+          "No clear automation method identified"
+        ],
+        "tools": [],
+        "methods": []
+      },
+      {
+        "vuln_id": "V-214315",
+        "benchmark": "Apache Server 2.4 Windows Server",
+        "rule_title": "The log information from the Apache web server must be prote",
+        "barriers": [],
+        "tools": [
+          "Get-Service or sc.exe"
+        ],
+        "methods": [
+          "service_status"
+        ]
+      },
+      {
+        "vuln_id": "V-214318",
+        "benchmark": "Apache Server 2.4 Windows Server",
+        "rule_title": "The Apache web server must not perform user management for h",
+        "barriers": [
+          "Requires Active Directory environment",
+          "Requires manual interview/documentation"
+        ],
+        "tools": [
+          "Active Directory PowerShell module",
+          "Application-specific registry keys"
+        ],
+        "methods": [
+          "active_directory",
+          "application_registry"
+        ]
+      },
+      {
+        "vuln_id": "V-214319",
+        "benchmark": "Apache Server 2.4 Windows Server",
+        "rule_title": "The Apache web server must only contain services and functio",
+        "barriers": [],
+        "tools": [
+          "Get-Service or sc.exe"
+        ],
+        "methods": [
+          "service_status"
+        ]
+      },
+      {
+        "vuln_id": "V-214321",
+        "benchmark": "Apache Server 2.4 Windows Server",
+        "rule_title": "The Apache web server must provide install options to exclud",
+        "barriers": [
+          "No clear automation method identified"
+        ],
+        "tools": [],
+        "methods": []
+      },
+      {
+        "vuln_id": "V-214322",
+        "benchmark": "Apache Server 2.4 Windows Server",
+        "rule_title": "Apache web server application directories,  libraries, and c",
+        "barriers": [
+          "Requires manual interview/documentation"
+        ],
+        "tools": [
+          "Get-Service or sc.exe",
+          "Application-specific registry keys"
+        ],
+        "methods": [
+          "service_status",
+          "application_registry"
+        ]
+      },
+      {
+        "vuln_id": "V-214329",
+        "benchmark": "Apache Server 2.4 Windows Server",
+        "rule_title": "Apache web server accounts accessing the directory tree, the",
+        "barriers": [
+          "No clear automation method identified"
+        ],
+        "tools": [],
+        "methods": []
+      },
+      {
+        "vuln_id": "V-214335",
+        "benchmark": "Apache Server 2.4 Windows Server",
+        "rule_title": "The Apache web server must generate unique session identifie",
+        "barriers": [],
+        "tools": [
+          "Application-specific registry keys"
+        ],
+        "methods": [
+          "application_registry"
+        ]
+      },
+      {
+        "vuln_id": "V-214342",
+        "benchmark": "Apache Server 2.4 Windows Server",
+        "rule_title": "The Apache web server must set an inactive timeout for compl",
+        "barriers": [],
+        "tools": [
+          "Get-ChildItem Cert:"
+        ],
+        "methods": [
+          "certificate_store"
+        ]
+      },
+      {
+        "vuln_id": "V-214351",
+        "benchmark": "Apache Server 2.4 Windows Server",
+        "rule_title": "The Apache web server must generate log records that can be ",
+        "barriers": [
+          "No clear automation method identified"
+        ],
+        "tools": [],
+        "methods": []
+      },
+      {
+        "vuln_id": "V-214353",
+        "benchmark": "Apache Server 2.4 Windows Server",
+        "rule_title": "The Apache web server must be protected from being stopped b",
+        "barriers": [],
+        "tools": [
+          "Get-Service or sc.exe"
+        ],
+        "methods": [
+          "service_status"
+        ]
+      },
+      {
+        "vuln_id": "V-214357",
+        "benchmark": "Apache Server 2.4 Windows Server",
+        "rule_title": "All accounts installed with the Apache web server software a",
+        "barriers": [],
+        "tools": [
+          "Get-Service or sc.exe",
+          "Application-specific registry keys"
+        ],
+        "methods": [
+          "service_status",
+          "application_registry"
+        ]
+      },
+      {
+        "vuln_id": "V-214358",
+        "benchmark": "Apache Server 2.4 Windows Server",
+        "rule_title": "The Apache web server must be configured in accordance with ",
+        "barriers": [],
+        "tools": [
+          "Get-Service or sc.exe"
+        ],
+        "methods": [
+          "service_status"
+        ]
+      },
+      {
+        "vuln_id": "V-214363",
+        "benchmark": "Apache Server 2.4 Windows Site",
+        "rule_title": "The Apache web server must perform server-side session manag",
+        "barriers": [
+          "No clear automation method identified"
+        ],
+        "tools": [],
+        "methods": []
+      },
+      {
+        "vuln_id": "V-214365",
+        "benchmark": "Apache Server 2.4 Windows Site",
+        "rule_title": "The Apache web server must not perform user management for h",
+        "barriers": [
+          "Requires Active Directory environment",
+          "Requires manual interview/documentation"
+        ],
+        "tools": [
+          "Active Directory PowerShell module",
+          "Application-specific registry keys"
+        ],
+        "methods": [
+          "active_directory",
+          "application_registry"
+        ]
+      },
+      {
+        "vuln_id": "V-214370",
+        "benchmark": "Apache Server 2.4 Windows Site",
+        "rule_title": "The Apache web server must perform RFC 5280-compliant certif",
+        "barriers": [],
+        "tools": [
+          "Get-ChildItem Cert:"
+        ],
+        "methods": [
+          "certificate_store"
+        ]
+      },
+      {
+        "vuln_id": "V-214372",
+        "benchmark": "Apache Server 2.4 Windows Site",
+        "rule_title": "Apache web server accounts accessing the directory tree, the",
+        "barriers": [
+          "No clear automation method identified"
+        ],
+        "tools": [],
+        "methods": []
+      },
+      {
+        "vuln_id": "V-214380",
+        "benchmark": "Apache Server 2.4 Windows Site",
+        "rule_title": "The Apache web server must augment re-creation to a stable a",
+        "barriers": [
+          "Requires manual interview/documentation",
+          "No clear automation method identified"
+        ],
+        "tools": [],
+        "methods": []
+      },
+      {
+        "vuln_id": "V-214387",
+        "benchmark": "Apache Server 2.4 Windows Site",
+        "rule_title": "The Apache web server must set an inactive timeout for compl",
+        "barriers": [],
+        "tools": [
+          "Get-ChildItem Cert:"
+        ],
+        "methods": [
+          "certificate_store"
+        ]
+      },
+      {
+        "vuln_id": "V-214390",
+        "benchmark": "Apache Server 2.4 Windows Site",
+        "rule_title": "The Apache web server must prohibit or restrict the use of n",
+        "barriers": [],
+        "tools": [
+          "Get-Service or sc.exe"
+        ],
+        "methods": [
+          "service_status"
+        ]
+      }
+    ],
+    "manual_checks": [
+      {
+        "vuln_id": "V-214312",
+        "benchmark": "Apache Server 2.4 Windows Server",
+        "rule_title": "An Apache web server, behind a load balancer or proxy server"
+      },
+      {
+        "vuln_id": "V-214316",
+        "benchmark": "Apache Server 2.4 Windows Server",
+        "rule_title": "The log data and records from the Apache web server must be "
+      },
+      {
+        "vuln_id": "V-214318",
+        "benchmark": "Apache Server 2.4 Windows Server",
+        "rule_title": "The Apache web server must not perform user management for h"
+      },
+      {
+        "vuln_id": "V-214322",
+        "benchmark": "Apache Server 2.4 Windows Server",
+        "rule_title": "Apache web server application directories,  libraries, and c"
+      },
+      {
+        "vuln_id": "V-214336",
+        "benchmark": "Apache Server 2.4 Windows Server",
+        "rule_title": "The Apache web server must be built to fail to a known safe "
+      },
+      {
+        "vuln_id": "V-214344",
+        "benchmark": "Apache Server 2.4 Windows Server",
+        "rule_title": "The Apache web server must be configured to immediately disc"
+      },
+      {
+        "vuln_id": "V-214365",
+        "benchmark": "Apache Server 2.4 Windows Site",
+        "rule_title": "The Apache web server must not perform user management for h"
+      },
+      {
+        "vuln_id": "V-214373",
+        "benchmark": "Apache Server 2.4 Windows Site",
+        "rule_title": "Anonymous user access to the Apache web server application d"
+      },
+      {
+        "vuln_id": "V-214380",
+        "benchmark": "Apache Server 2.4 Windows Site",
+        "rule_title": "The Apache web server must augment re-creation to a stable a"
+      },
+      {
+        "vuln_id": "V-221591",
+        "benchmark": "Google Chrome Current Windows",
+        "rule_title": "WebUSB must be disabled."
+      },
+      {
+        "vuln_id": "V-241787",
+        "benchmark": "Google Chrome Current Windows",
+        "rule_title": "Web Bluetooth API must be disabled."
+      },
+      {
+        "vuln_id": "V-220701",
+        "benchmark": "Microsoft Windows 10",
+        "rule_title": "Windows 10 must employ automated mechanisms to determine the"
+      },
+      {
+        "vuln_id": "V-268319",
+        "benchmark": "Microsoft Windows 10",
+        "rule_title": "Windows 10 systems must use either Group Policy or an approv"
+      },
+      {
+        "vuln_id": "V-253258",
+        "benchmark": "Microsoft Windows 11",
+        "rule_title": "Windows 11 must employ automated mechanisms to determine the"
+      },
+      {
+        "vuln_id": "V-268318",
+        "benchmark": "Microsoft Windows 11",
+        "rule_title": "Windows 11 systems must use either Group Policy or an approv"
+      },
+      {
+        "vuln_id": "V-243460",
+        "benchmark": "Microsoft Windows PAW",
+        "rule_title": "The Windows PAW must be configured so that all inbound ports"
+      },
+      {
+        "vuln_id": "V-205728",
+        "benchmark": "Microsoft Windows Server 2019",
+        "rule_title": "Windows Server 2019 must employ automated mechanisms to dete"
+      },
+      {
+        "vuln_id": "V-254266",
+        "benchmark": "Microsoft Windows Server 2022",
+        "rule_title": "Windows Server 2022 must employ automated mechanisms to dete"
+      },
+      {
+        "vuln_id": "V-259353",
+        "benchmark": "Microsoft Windows Server Domain Name System (DNS)",
+        "rule_title": "In a split DNS configuration between the external and intern"
+      },
+      {
+        "vuln_id": "V-259356",
+        "benchmark": "Microsoft Windows Server Domain Name System (DNS)",
+        "rule_title": "The Windows DNS Server must implement internal/external role"
+      }
+    ]
+  }
+}
