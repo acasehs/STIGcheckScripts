@@ -1,139 +1,48 @@
 #!/usr/bin/env bash
 ################################################################################
 # STIG Check: V-248737
-# Severity: medium
-# Rule Title: The OL 8 audit log directory must have a mode of 0700 or less permissive to prevent unauthorized read access.
 # STIG ID: OL08-00-030120
-# Rule ID: SV-248737r958434
+# Severity: medium
+# Rule Title: The OL 8 audit log directory must have a mode of 0700 or less permissi...
 #
-# Description:
-#     Unauthorized disclosure of audit records can reveal system and configuration data to attackers, thus compromising its confidentiality. 
- 
-Audit information includes all information (e.g., audit records, audit settings, audit reports) needed to successfully audit OL 8 system activity.
-
-Satisfies: SRG-OS-000057-GPOS-00027, SRG-OS-000058-GPOS-00028, SRG-OS-000059-GPOS-00029
-#
-# Check Content:
-#     Verify the audit log directories have a mode of \"0700\" or less permissive by first determining where the audit logs are stored with the following command: 
- 
-$ sudo grep -iw log_file /etc/audit/auditd.conf 
- 
-log_file = /var/log/audit/audit.log 
- 
-Using the location of the audit log, determine the directory where the audit logs are stored (ex: \"/var/log/audit\"). Run the following command to determine the permissions for the audit log folder: 
- 
-$ sudo stat -c \"%a %n\" /var/log/audit 
- 
-700 /var/log/audit 
- 
-If the audit log directory has a mode more permissive than \"0700\", this is a finding.
-#
-# Exit Codes:
-#     0 = Check Passed (Compliant)
-#     1 = Check Failed (Finding)
-#     2 = Check Not Applicable
-#     3 = Check Error
+# Automated Check: File Permission Validation
 ################################################################################
 
-# Configuration
+set -euo pipefail
+
 VULN_ID="V-248737"
 STIG_ID="OL08-00-030120"
 SEVERITY="medium"
 TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-CONFIG_FILE=""
 OUTPUT_JSON=""
 
-# Parse arguments
 while [[ $# -gt 0 ]]; do
-    case $1 in
-        --config)
-            CONFIG_FILE="$2"
-            shift 2
-            ;;
-        --output-json)
-            OUTPUT_JSON="$2"
-            shift 2
-            ;;
-        -h|--help)
-            cat << 'EOF'
-Usage: $0 [OPTIONS]
-
-Options:
-  --config <file>         Configuration file (JSON)
-  --output-json <file>    Output results in JSON format
-  -h, --help             Show this help message
-
-Exit Codes:
-  0 = Pass (Compliant)
-  1 = Fail (Finding)
-  2 = Not Applicable
-  3 = Error
-
-EOF
-            exit 0
-            ;;
-        *)
-            echo "Unknown option: $1"
-            exit 3
-            ;;
-    esac
+    case $1 in --output-json) OUTPUT_JSON="$2"; shift 2;; *) shift;; esac
 done
 
-# Load configuration if provided
-if [[ -n "$CONFIG_FILE" ]] && [[ -f "$CONFIG_FILE" ]]; then
-    # Source configuration or parse JSON as needed
-    :
-fi
-
-################################################################################
-# HELPER FUNCTIONS
-################################################################################
-
-# Output results in JSON format
 output_json() {
-    local status="$1"
-    local message="$2"
-    local details="$3"
-
-    cat > "$OUTPUT_JSON" << EOF
-{
-  "vuln_id": "$VULN_ID",
-  "stig_id": "$STIG_ID",
-  "severity": "$SEVERITY",
-  "status": "$status",
-  "message": "$message",
-  "details": "$details",
-  "timestamp": "$TIMESTAMP"
-}
+    [[ -n "$OUTPUT_JSON" ]] && cat > "$OUTPUT_JSON" << EOF
+{"vuln_id":"$VULN_ID","stig_id":"$STIG_ID","severity":"$SEVERITY","status":"$1","finding_details":"$2","timestamp":"$TIMESTAMP"}
 EOF
 }
 
-################################################################################
-# MAIN CHECK LOGIC
-################################################################################
+FILE_PATH="the"
+EXPECTED_PERM="0700"
 
-main() {
-    TARGET="/etc/audit/auditd.conf"
-    REQUIRED="0700"
+if [[ ! -e "$FILE_PATH" ]]; then
+    output_json "Not_Applicable" "File does not exist: $FILE_PATH"
+    echo "[$VULN_ID] N/A - File not found"
+    exit 2
+fi
 
-    if [[ ! -e "$TARGET" ]]; then
-        echo "ERROR: File not found"
-        [[ -n "$OUTPUT_JSON" ]] && output_json "ERROR" "File not found" "$TARGET"
-        exit 3
-    fi
+ACTUAL_PERM=$(stat -c "%a" "$FILE_PATH" 2>/dev/null)
 
-    actual=$(stat -c "%a" "$TARGET" 2>/dev/null)
-    if [[ $((8#$actual)) -le $((8#$REQUIRED)) ]]; then
-        echo "PASS: Permissions $actual (compliant)"
-        [[ -n "$OUTPUT_JSON" ]] && output_json "PASS" "Compliant" "$actual"
-        exit 0
-    else
-        echo "FAIL: Permissions $actual (required: $REQUIRED or less)"
-        [[ -n "$OUTPUT_JSON" ]] && output_json "FAIL" "Too permissive" "$actual"
-        exit 1
-    fi
-
-}
-
-# Run main check
-main "$@"
+if [[ "$ACTUAL_PERM" -le "$EXPECTED_PERM" ]]; then
+    output_json "NotAFinding" "Permissions compliant: $ACTUAL_PERM"
+    echo "[$VULN_ID] PASS - Permissions: $ACTUAL_PERM"
+    exit 0
+else
+    output_json "Open" "Permissions too permissive: $ACTUAL_PERM (expected: $EXPECTED_PERM)"
+    echo "[$VULN_ID] FAIL - Permissions: $ACTUAL_PERM (expected: $EXPECTED_PERM)"
+    exit 1
+fi

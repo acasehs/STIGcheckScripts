@@ -26,7 +26,7 @@ output_json() {
 EOF
 }
 
-PARAM=".d"
+PARAM="kernel.randomize_va_space"
 EXPECTED="2"
 
 ACTUAL=$(sysctl -n "$PARAM" 2>/dev/null || echo "NOT_SET")

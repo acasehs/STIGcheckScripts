@@ -5,7 +5,7 @@
 # Severity: medium
 # Rule Title: Oracle Database must enforce password maximum lifetime restrictions....
 #
-# Automated Check: Oracle Database Query Validation
+# Automated Check: SQL Query Validation
 ################################################################################
 
 set -euo pipefail
@@ -26,25 +26,28 @@ output_json() {
 EOF
 }
 
-# Check for Oracle environment
+# Check Oracle environment
 if [[ -z "$ORACLE_HOME" || -z "$ORACLE_SID" ]]; then
-    output_json "Not_Applicable" "Oracle Database not configured"
+    output_json "Not_Applicable" "Oracle Database not configured (ORACLE_HOME or ORACLE_SID not set)"
     echo "[$VULN_ID] N/A - Oracle not configured"
     exit 2
 fi
 
-# Execute query (requires sysdba or appropriate privileges)
+# Check for sqlplus
 if ! command -v sqlplus &>/dev/null; then
-    output_json "Not_Applicable" "Oracle client not available"
+    output_json "Not_Applicable" "SQL*Plus not available"
     echo "[$VULN_ID] N/A - SQL*Plus not found"
     exit 2
 fi
 
-# Note: Requires proper Oracle credentials
-# This is a template - adjust query and validation logic as needed
-QUERY="SELECT p1.profile, CASE DECODE(p1.limit, 'DEFAULT', p3.limit, p1.limit) WHEN 'UNLIMITED' THEN 'UNLIMITED' ELSE CASE DECODE(p2.limit, 'DEFAULT', p4.limit, p2.limit) WHEN 'UNLIMITED' THEN 'UNLIMITED' ELSE TO_CHAR(DECODE(p1.limit, 'DEFAULT', p3.limit, p1.limit) + DECODE(p2.limit, 'DEFAULT', p4.limit, p2.limit)) END END effective_life_time FROM dba_profiles"
+# SQL Query to execute
+QUERY="SELECT p1.profile, CASE DECODE(p1.limit, 'DEFAULT', p3.limit, p1.limit) WHEN 'UNLIMITED' THEN 'UNLIMITED' ELSE CASE DECODE(p2.limit, 'DEFAULT', p4.limit, p2.limit) WHEN 'UNLIMITED' THEN 'UNLIMITED' ELSE TO_CHAR(DECODE(p1.limit, 'DEFAULT', p3.limit, p1.limit) + DECODE(p2.limit, 'DEFAULT', p4.limit, p2.limit)) END END effective_life_time FROM dba_profiles p1, dba_profiles p2, dba_profiles p3, dba_profiles p4 WHERE p1.profile=p2.profile AND p3.profile='DEFAULT' AND p4.profile='DEFAULT' AND p1.resou"
 
-output_json "Not_Reviewed" "Database check requires DBA credentials and manual verification"
-echo "[$VULN_ID] MANUAL - Database query: $QUERY"
-echo "Run with: sqlplus / as sysdba"
+# Note: This requires proper Oracle credentials
+# Execute query and check results
+# This is a template - adjust validation logic based on specific check requirements
+
+output_json "Not_Reviewed" "Database check requires DBA credentials. Query: $QUERY"
+echo "[$VULN_ID] MANUAL - Requires SQL execution with proper credentials"
+echo "Query: $QUERY"
 exit 2

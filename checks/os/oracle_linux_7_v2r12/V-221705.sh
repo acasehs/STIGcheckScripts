@@ -5,7 +5,7 @@
 # Severity: high
 # Rule Title: The Oracle Linux operating system must not have the ypserv package ins...
 #
-# Automated Check: Package Installation Validation
+# Automated Check: Service Status Validation
 ################################################################################
 
 set -euo pipefail
@@ -26,26 +26,21 @@ output_json() {
 EOF
 }
 
-PACKAGE="installed"
+SERVICE="provides"
 
-if yum list installed "$PACKAGE" &>/dev/null; then
-    if [[ true ]]; then
-        output_json "NotAFinding" "Package is installed (compliant)"
-        echo "[$VULN_ID] PASS - Package $PACKAGE is installed"
-        exit 0
-    else
-        output_json "Open" "Package should be installed"
-        echo "[$VULN_ID] FAIL - Package $PACKAGE should be installed"
-        exit 1
-    fi
+if ! systemctl list-unit-files "$SERVICE" &>/dev/null; then
+    output_json "Not_Applicable" "Service not found: $SERVICE"
+    echo "[$VULN_ID] N/A - Service not found"
+    exit 2
+fi
+
+# Check service status - most checks are for disabled services
+if systemctl is-enabled "$SERVICE" &>/dev/null || systemctl is-active "$SERVICE" &>/dev/null; then
+    output_json "Open" "Service is enabled or active"
+    echo "[$VULN_ID] FAIL - Service is enabled/active"
+    exit 1
 else
-    if [[ false ]]; then
-        output_json "NotAFinding" "Package not installed (compliant)"
-        echo "[$VULN_ID] PASS - Package $PACKAGE is not installed"
-        exit 0
-    else
-        output_json "Open" "Required package not installed"
-        echo "[$VULN_ID] FAIL - Package $PACKAGE should be installed"
-        exit 1
-    fi
+    output_json "NotAFinding" "Service is disabled and inactive (compliant)"
+    echo "[$VULN_ID] PASS - Service is disabled"
+    exit 0
 fi

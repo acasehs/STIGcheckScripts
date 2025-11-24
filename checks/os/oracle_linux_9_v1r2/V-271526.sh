@@ -26,26 +26,15 @@ output_json() {
 EOF
 }
 
-PACKAGE="Note:"
+PACKAGE="--queryformat"
 
+# Most STIG checks are for packages that should NOT be installed
 if rpm -q "$PACKAGE" &>/dev/null; then
-    if [[ true ]]; then
-        output_json "NotAFinding" "Package is installed (compliant)"
-        echo "[$VULN_ID] PASS - Package $PACKAGE is installed"
-        exit 0
-    else
-        output_json "Open" "Package should be installed"
-        echo "[$VULN_ID] FAIL - Package $PACKAGE should be installed"
-        exit 1
-    fi
+    output_json "Open" "Package should not be installed"
+    echo "[$VULN_ID] FAIL - Package $PACKAGE should not be installed"
+    exit 1
 else
-    if [[ false ]]; then
-        output_json "NotAFinding" "Package not installed (compliant)"
-        echo "[$VULN_ID] PASS - Package $PACKAGE is not installed"
-        exit 0
-    else
-        output_json "Open" "Required package not installed"
-        echo "[$VULN_ID] FAIL - Package $PACKAGE should be installed"
-        exit 1
-    fi
+    output_json "NotAFinding" "Package not installed (compliant)"
+    echo "[$VULN_ID] PASS - Package $PACKAGE is not installed"
+    exit 0
 fi

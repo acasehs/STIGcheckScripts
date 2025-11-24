@@ -26,7 +26,7 @@ output_json() {
 EOF
 }
 
-PARAM=".d"
+PARAM="net.ipv4.conf.all.rp_filter"
 EXPECTED="1"
 
 ACTUAL=$(sysctl -n "$PARAM" 2>/dev/null || echo "NOT_SET")

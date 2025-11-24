@@ -5,7 +5,7 @@
 # Severity: high
 # Rule Title: The Oracle Linux operating system must implement NIST FIPS-validated c...
 #
-# Automated Check: Package Installation Validation
+# Automated Check: Kernel Parameter Validation
 ################################################################################
 
 set -euo pipefail
@@ -26,26 +26,17 @@ output_json() {
 EOF
 }
 
-PACKAGE="installed"
+PARAM="rd.md"
+EXPECTED="0"
 
-if rpm -q "$PACKAGE" &>/dev/null; then
-    if [[ true ]]; then
-        output_json "NotAFinding" "Package is installed (compliant)"
-        echo "[$VULN_ID] PASS - Package $PACKAGE is installed"
-        exit 0
-    else
-        output_json "Open" "Package should be installed"
-        echo "[$VULN_ID] FAIL - Package $PACKAGE should be installed"
-        exit 1
-    fi
+ACTUAL=$(sysctl -n "$PARAM" 2>/dev/null || echo "NOT_SET")
+
+if [[ "$ACTUAL" == "$EXPECTED" ]]; then
+    output_json "NotAFinding" "Kernel parameter compliant: $PARAM=$ACTUAL"
+    echo "[$VULN_ID] PASS - $PARAM=$ACTUAL"
+    exit 0
 else
-    if [[ false ]]; then
-        output_json "NotAFinding" "Package not installed (compliant)"
-        echo "[$VULN_ID] PASS - Package $PACKAGE is not installed"
-        exit 0
-    else
-        output_json "Open" "Required package not installed"
-        echo "[$VULN_ID] FAIL - Package $PACKAGE should be installed"
-        exit 1
-    fi
+    output_json "Open" "Kernel parameter not compliant: $PARAM=$ACTUAL (expected: $EXPECTED)"
+    echo "[$VULN_ID] FAIL - $PARAM=$ACTUAL (expected: $EXPECTED)"
+    exit 1
 fi

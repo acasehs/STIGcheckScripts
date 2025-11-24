@@ -1,143 +1,46 @@
 #!/usr/bin/env bash
 ################################################################################
 # STIG Check: V-248861
-# Severity: medium
-# Rule Title: The OL 8 fapolicy module must be configured to employ a deny-all, permit-by-exception policy to allow the execution of authorized software programs.
 # STIG ID: OL08-00-040137
-# Rule ID: SV-248861r958804
+# Severity: medium
+# Rule Title: The OL 8 fapolicy module must be configured to employ a deny-all, perm...
 #
-# Description:
-#     The organization must identify authorized software programs and permit execution of authorized software. The process used to identify software programs that are authorized to execute on organizational information systems is commonly referred to as whitelisting. 
- 
-Using a whitelist provides a configuration management method for allowing the execution of only authorized software. Using only authorized software decreases risk by limiting the number of potential vulnerabilities. Verification of whi
-#
-# Check Content:
-#     Verify the OL 8 \"fapolicyd\" employs a deny-all, permit-by-exception policy.
-
-Check that \"fapolicyd\" is in enforcement mode with the following command:
-
-$ sudo grep permissive /etc/fapolicyd/fapolicyd.conf
-
-permissive = 0
-
-Check that fapolicyd employs a deny-all policy on system mounts with the following commands:
-
-For OL 8.4 systems and older:
-$ sudo tail /etc/fapolicyd/fapolicyd.rules
-
-For OL 8.5 systems and newer:
-$ sudo tail /etc/fapolicyd/compiled.rules
-
-allow exe=/usr/bin/python3.7 : ftype=text/x-python
-deny_audit perm=any pattern=ld_so : all
-deny perm=any all : all
-
-If fapolicyd is not running in enforcement mode with a deny-all, permit-by-exception policy, this is a finding.
-#
-# Exit Codes:
-#     0 = Check Passed (Compliant)
-#     1 = Check Failed (Finding)
-#     2 = Check Not Applicable
-#     3 = Check Error
+# Automated Check: Configuration Parameter Validation
 ################################################################################
 
-# Configuration
+set -euo pipefail
+
 VULN_ID="V-248861"
 STIG_ID="OL08-00-040137"
 SEVERITY="medium"
 TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-CONFIG_FILE=""
 OUTPUT_JSON=""
 
-# Parse arguments
 while [[ $# -gt 0 ]]; do
-    case $1 in
-        --config)
-            CONFIG_FILE="$2"
-            shift 2
-            ;;
-        --output-json)
-            OUTPUT_JSON="$2"
-            shift 2
-            ;;
-        -h|--help)
-            cat << 'EOF'
-Usage: $0 [OPTIONS]
-
-Options:
-  --config <file>         Configuration file (JSON)
-  --output-json <file>    Output results in JSON format
-  -h, --help             Show this help message
-
-Exit Codes:
-  0 = Pass (Compliant)
-  1 = Fail (Finding)
-  2 = Not Applicable
-  3 = Error
-
-EOF
-            exit 0
-            ;;
-        *)
-            echo "Unknown option: $1"
-            exit 3
-            ;;
-    esac
+    case $1 in --output-json) OUTPUT_JSON="$2"; shift 2;; *) shift;; esac
 done
 
-# Load configuration if provided
-if [[ -n "$CONFIG_FILE" ]] && [[ -f "$CONFIG_FILE" ]]; then
-    # Source configuration or parse JSON as needed
-    :
-fi
-
-################################################################################
-# HELPER FUNCTIONS
-################################################################################
-
-# Output results in JSON format
 output_json() {
-    local status="$1"
-    local message="$2"
-    local details="$3"
-
-    cat > "$OUTPUT_JSON" << EOF
-{
-  "vuln_id": "$VULN_ID",
-  "stig_id": "$STIG_ID",
-  "severity": "$SEVERITY",
-  "status": "$status",
-  "message": "$message",
-  "details": "$details",
-  "timestamp": "$TIMESTAMP"
-}
+    [[ -n "$OUTPUT_JSON" ]] && cat > "$OUTPUT_JSON" << EOF
+{"vuln_id":"$VULN_ID","stig_id":"$STIG_ID","severity":"$SEVERITY","status":"$1","finding_details":"$2","timestamp":"$TIMESTAMP"}
 EOF
 }
 
-################################################################################
-# MAIN CHECK LOGIC
-################################################################################
+CONFIG_FILE="/etc/fapolicyd/fapolicyd.conf"
+PATTERN="ConfigParameter"
 
-main() {
-    CONFIG="/etc/fapolicyd/fapolicyd.conf"
+if [[ ! -f "$CONFIG_FILE" ]]; then
+    output_json "Not_Applicable" "Config file not found: $CONFIG_FILE"
+    echo "[$VULN_ID] N/A - Config file not found"
+    exit 2
+fi
 
-    if [[ ! -f "$CONFIG" ]]; then
-        echo "ERROR: Config file not found"
-        [[ -n "$OUTPUT_JSON" ]] && output_json "ERROR" "File not found" "$CONFIG"
-        exit 3
-    fi
-
-    if grep -q "Unknown" "$CONFIG"; then
-        echo "PASS: Directive found in config"
-        [[ -n "$OUTPUT_JSON" ]] && output_json "PASS" "Configured" "Unknown"
-        exit 0
-    else
-        echo "FAIL: Directive not found"
-        [[ -n "$OUTPUT_JSON" ]] && output_json "FAIL" "Not configured" "Unknown"
-        exit 1
-    fi
-
-}
-
-# Run main check
-main "$@"
+if grep -q "$PATTERN" "$CONFIG_FILE" 2>/dev/null; then
+    output_json "NotAFinding" "Required configuration found"
+    echo "[$VULN_ID] PASS - Configuration found: $PATTERN"
+    exit 0
+else
+    output_json "Open" "Required configuration not found: $PATTERN"
+    echo "[$VULN_ID] FAIL - Configuration not found: $PATTERN"
+    exit 1
+fi

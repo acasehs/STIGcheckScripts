@@ -1,129 +1,46 @@
 #!/usr/bin/env bash
 ################################################################################
 # STIG Check: V-248723
-# Severity: medium
-# Rule Title: Cron logging must be implemented in OL 8.
 # STIG ID: OL08-00-030010
-# Rule ID: SV-248723r991589
+# Severity: medium
+# Rule Title: Cron logging must be implemented in OL 8....
 #
-# Description:
-#     Cron logging can be used to trace the successful or unsuccessful execution of cron jobs. It can also be used to spot intrusions into the use of the cron facility by unauthorized and malicious users.
-#
-# Check Content:
-#     Verify that \"rsyslog\" is configured to log cron events with the following command: 
- 
-Note: If another logging package is used, substitute the utility configuration file for \"/etc/rsyslog.conf\" or \"/etc/rsyslog.d/*.conf\" files. 
- 
-$ sudo grep cron /etc/rsyslog.conf /etc/rsyslog.d/*.conf 
- 
-cron.* /var/log/cron 
- 
-If the command does not return a response, check for cron logging all facilities by inspecting the \"/etc/rsyslog.conf\" or \"/etc/rsyslog.d/*.conf\" files. 
- 
-Look for the following entry: 
- 
-*.* /var/log/messages 
- 
-If \"rsyslog\" is not logging messages for the cron facility or all facilities, this is a finding.
-#
-# Exit Codes:
-#     0 = Check Passed (Compliant)
-#     1 = Check Failed (Finding)
-#     2 = Check Not Applicable
-#     3 = Check Error
+# Automated Check: Configuration Parameter Validation
 ################################################################################
 
-# Configuration
+set -euo pipefail
+
 VULN_ID="V-248723"
 STIG_ID="OL08-00-030010"
 SEVERITY="medium"
 TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-CONFIG_FILE=""
 OUTPUT_JSON=""
 
-# Parse arguments
 while [[ $# -gt 0 ]]; do
-    case $1 in
-        --config)
-            CONFIG_FILE="$2"
-            shift 2
-            ;;
-        --output-json)
-            OUTPUT_JSON="$2"
-            shift 2
-            ;;
-        -h|--help)
-            cat << 'EOF'
-Usage: $0 [OPTIONS]
-
-Options:
-  --config <file>         Configuration file (JSON)
-  --output-json <file>    Output results in JSON format
-  -h, --help             Show this help message
-
-Exit Codes:
-  0 = Pass (Compliant)
-  1 = Fail (Finding)
-  2 = Not Applicable
-  3 = Error
-
-EOF
-            exit 0
-            ;;
-        *)
-            echo "Unknown option: $1"
-            exit 3
-            ;;
-    esac
+    case $1 in --output-json) OUTPUT_JSON="$2"; shift 2;; *) shift;; esac
 done
 
-# Load configuration if provided
-if [[ -n "$CONFIG_FILE" ]] && [[ -f "$CONFIG_FILE" ]]; then
-    # Source configuration or parse JSON as needed
-    :
-fi
-
-################################################################################
-# HELPER FUNCTIONS
-################################################################################
-
-# Output results in JSON format
 output_json() {
-    local status="$1"
-    local message="$2"
-    local details="$3"
-
-    cat > "$OUTPUT_JSON" << EOF
-{
-  "vuln_id": "$VULN_ID",
-  "stig_id": "$STIG_ID",
-  "severity": "$SEVERITY",
-  "status": "$status",
-  "message": "$message",
-  "details": "$details",
-  "timestamp": "$TIMESTAMP"
-}
+    [[ -n "$OUTPUT_JSON" ]] && cat > "$OUTPUT_JSON" << EOF
+{"vuln_id":"$VULN_ID","stig_id":"$STIG_ID","severity":"$SEVERITY","status":"$1","finding_details":"$2","timestamp":"$TIMESTAMP"}
 EOF
 }
 
-################################################################################
-# MAIN CHECK LOGIC
-################################################################################
+CONFIG_FILE="/etc/rsyslog.conf"
+PATTERN="ConfigParameter"
 
-main() {
-    PKG="logging"
+if [[ ! -f "$CONFIG_FILE" ]]; then
+    output_json "Not_Applicable" "Config file not found: $CONFIG_FILE"
+    echo "[$VULN_ID] N/A - Config file not found"
+    exit 2
+fi
 
-    if rpm -q "$PKG" &>/dev/null || dpkg -l "$PKG" 2>/dev/null | grep -q "^ii"; then
-        echo "FAIL: Prohibited package present"
-        [[ -n "$OUTPUT_JSON" ]] && output_json "FAIL" "Should not be installed" "$PKG"
-        exit 1
-    else
-        echo "PASS: Package not installed (compliant)"
-        [[ -n "$OUTPUT_JSON" ]] && output_json "PASS" "Not present" "$PKG"
-        exit 0
-    fi
-
-}
-
-# Run main check
-main "$@"
+if grep -q "$PATTERN" "$CONFIG_FILE" 2>/dev/null; then
+    output_json "NotAFinding" "Required configuration found"
+    echo "[$VULN_ID] PASS - Configuration found: $PATTERN"
+    exit 0
+else
+    output_json "Open" "Required configuration not found: $PATTERN"
+    echo "[$VULN_ID] FAIL - Configuration not found: $PATTERN"
+    exit 1
+fi

@@ -5,7 +5,7 @@
 # Severity: medium
 # Rule Title: Oracle Database must verify account lockouts persist until reset by an...
 #
-# Automated Check: Oracle Database Query Validation
+# Automated Check: SQL Query Validation
 ################################################################################
 
 set -euo pipefail
@@ -26,25 +26,28 @@ output_json() {
 EOF
 }
 
-# Check for Oracle environment
+# Check Oracle environment
 if [[ -z "$ORACLE_HOME" || -z "$ORACLE_SID" ]]; then
-    output_json "Not_Applicable" "Oracle Database not configured"
+    output_json "Not_Applicable" "Oracle Database not configured (ORACLE_HOME or ORACLE_SID not set)"
     echo "[$VULN_ID] N/A - Oracle not configured"
     exit 2
 fi
 
-# Execute query (requires sysdba or appropriate privileges)
+# Check for sqlplus
 if ! command -v sqlplus &>/dev/null; then
-    output_json "Not_Applicable" "Oracle client not available"
+    output_json "Not_Applicable" "SQL*Plus not available"
     echo "[$VULN_ID] N/A - SQL*Plus not found"
     exit 2
 fi
 
-# Note: Requires proper Oracle credentials
-# This is a template - adjust query and validation logic as needed
-QUERY="SELECT profile FROM dba_users"
+# SQL Query to execute
+QUERY="SELECT profile FROM dba_users WHERE username = '<username>' This will return the profile name assigned to that user. The user profile, ORA_STIG_PROFILE, has been provided to satisfy the STIG requirements pertaining to the profile parameters. Oracle recommends that this profile be customized with any site-specific requirements and assigned to all users where applicable. Note: It remains necessary to create a customized replacement for the password validation function, ORA12C_STIG_VERIFY_FUNCTION,"
 
-output_json "Not_Reviewed" "Database check requires DBA credentials and manual verification"
-echo "[$VULN_ID] MANUAL - Database query: $QUERY"
-echo "Run with: sqlplus / as sysdba"
+# Note: This requires proper Oracle credentials
+# Execute query and check results
+# This is a template - adjust validation logic based on specific check requirements
+
+output_json "Not_Reviewed" "Database check requires DBA credentials. Query: $QUERY"
+echo "[$VULN_ID] MANUAL - Requires SQL execution with proper credentials"
+echo "Query: $QUERY"
 exit 2

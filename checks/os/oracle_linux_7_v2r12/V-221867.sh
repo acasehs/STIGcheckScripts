@@ -26,7 +26,7 @@ output_json() {
 EOF
 }
 
-PARAM=".d"
+PARAM="net.ipv4.tcp_invalid_ratelimit"
 EXPECTED="500"
 
 ACTUAL=$(sysctl -n "$PARAM" 2>/dev/null || echo "NOT_SET")

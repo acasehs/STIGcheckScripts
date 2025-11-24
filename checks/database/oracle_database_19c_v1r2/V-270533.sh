@@ -5,7 +5,7 @@
 # Severity: medium
 # Rule Title: Oracle application administration roles must be disabled if not requir...
 #
-# Automated Check: Oracle Database Query Validation
+# Automated Check: SQL Query Validation
 ################################################################################
 
 set -euo pipefail
@@ -26,25 +26,28 @@ output_json() {
 EOF
 }
 
-# Check for Oracle environment
+# Check Oracle environment
 if [[ -z "$ORACLE_HOME" || -z "$ORACLE_SID" ]]; then
-    output_json "Not_Applicable" "Oracle Database not configured"
+    output_json "Not_Applicable" "Oracle Database not configured (ORACLE_HOME or ORACLE_SID not set)"
     echo "[$VULN_ID] N/A - Oracle not configured"
     exit 2
 fi
 
-# Execute query (requires sysdba or appropriate privileges)
+# Check for sqlplus
 if ! command -v sqlplus &>/dev/null; then
-    output_json "Not_Applicable" "Oracle client not available"
+    output_json "Not_Applicable" "SQL*Plus not available"
     echo "[$VULN_ID] N/A - SQL*Plus not found"
     exit 2
 fi
 
-# Note: Requires proper Oracle credentials
-# This is a template - adjust query and validation logic as needed
-QUERY="select grantee, granted_role from dba_role_privs"
+# SQL Query to execute
+QUERY="select grantee, granted_role from dba_role_privs where default_role='YES' and granted_role in (select grantee from dba_sys_privs where upper(privilege) like '%USER%') and grantee not in (<list of nonapplicable accounts>) and grantee not in (select distinct owner from dba_tables) and grantee not in (select distinct username from dba_users where upper(account_status) like '%LOCKED%')"
 
-output_json "Not_Reviewed" "Database check requires DBA credentials and manual verification"
-echo "[$VULN_ID] MANUAL - Database query: $QUERY"
-echo "Run with: sqlplus / as sysdba"
+# Note: This requires proper Oracle credentials
+# Execute query and check results
+# This is a template - adjust validation logic based on specific check requirements
+
+output_json "Not_Reviewed" "Database check requires DBA credentials. Query: $QUERY"
+echo "[$VULN_ID] MANUAL - Requires SQL execution with proper credentials"
+echo "Query: $QUERY"
 exit 2

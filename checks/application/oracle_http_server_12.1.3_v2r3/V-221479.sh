@@ -5,7 +5,7 @@
 # Severity: medium
 # Rule Title: OHS must use FIPS modules to perform RFC 5280-compliant certification ...
 #
-# Automated Check: Oracle HTTP Server Configuration Validation
+# Automated Check: Oracle HTTP Server Configuration
 ################################################################################
 
 set -euo pipefail
@@ -26,27 +26,26 @@ output_json() {
 EOF
 }
 
-# Check for Oracle HTTP Server installation
+# Check for Oracle HTTP Server
 if [[ -z "$DOMAIN_HOME" ]]; then
     output_json "Not_Applicable" "Oracle HTTP Server not configured (DOMAIN_HOME not set)"
     echo "[$VULN_ID] N/A - OHS not configured"
     exit 2
 fi
 
-CONFIG_FILE="$DOMAIN_HOME/config/fmwconfig/components/OHS/*/httpd.conf"
-DIRECTIVE="SSLFIPS"
+# Find config file
+CONFIG_FILE=$(find "$DOMAIN_HOME/config/fmwconfig/components/OHS/" -name "ssl.conf" 2>/dev/null | head -1)
 
-# Find actual config file
-ACTUAL_CONFIG=$(find "$DOMAIN_HOME/config/fmwconfig/components/OHS/" -name "httpd.conf" 2>/dev/null | head -1)
-
-if [[ -z "$ACTUAL_CONFIG" || ! -f "$ACTUAL_CONFIG" ]]; then
-    output_json "Not_Applicable" "Config file not found: httpd.conf"
+if [[ -z "$CONFIG_FILE" || ! -f "$CONFIG_FILE" ]]; then
+    output_json "Not_Applicable" "Config file not found: ssl.conf"
     echo "[$VULN_ID] N/A - Config file not found"
     exit 2
 fi
 
 # Check for directive
-if grep -qi "^[[:space:]]*$DIRECTIVE" "$ACTUAL_CONFIG" 2>/dev/null; then
+DIRECTIVE="SSLFIPS"
+
+if grep -qi "^[[:space:]]*$DIRECTIVE" "$CONFIG_FILE" 2>/dev/null; then
     output_json "NotAFinding" "Directive found in configuration"
     echo "[$VULN_ID] PASS - Directive $DIRECTIVE configured"
     exit 0

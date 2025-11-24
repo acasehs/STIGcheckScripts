@@ -26,7 +26,7 @@ output_json() {
 EOF
 }
 
-PARAM=".d"
+PARAM="net.ipv4.conf.all.accept_redirects"
 EXPECTED="0"
 
 ACTUAL=$(sysctl -n "$PARAM" 2>/dev/null || echo "NOT_SET")

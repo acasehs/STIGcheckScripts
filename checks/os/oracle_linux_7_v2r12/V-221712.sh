@@ -5,7 +5,7 @@
 # Severity: medium
 # Rule Title: The Oracle Linux operating system must be configured to disable USB ma...
 #
-# Automated Check: Configuration Parameter Validation
+# Automated Check: Kernel Parameter Validation
 ################################################################################
 
 set -euo pipefail
@@ -26,21 +26,17 @@ output_json() {
 EOF
 }
 
-CONFIG_FILE="blacklist.conf""
-PATTERN="/bin/false"
+PARAM="kernel.param"
+EXPECTED="1"
 
-if [[ ! -f "$CONFIG_FILE" ]]; then
-    output_json "Not_Applicable" "Config file not found: $CONFIG_FILE"
-    echo "[$VULN_ID] N/A - Config file not found"
-    exit 2
-fi
+ACTUAL=$(sysctl -n "$PARAM" 2>/dev/null || echo "NOT_SET")
 
-if grep -q "$PATTERN" "$CONFIG_FILE" 2>/dev/null; then
-    output_json "NotAFinding" "Required configuration found"
-    echo "[$VULN_ID] PASS - Configuration found: $PATTERN"
+if [[ "$ACTUAL" == "$EXPECTED" ]]; then
+    output_json "NotAFinding" "Kernel parameter compliant: $PARAM=$ACTUAL"
+    echo "[$VULN_ID] PASS - $PARAM=$ACTUAL"
     exit 0
 else
-    output_json "Open" "Required configuration not found: $PATTERN"
-    echo "[$VULN_ID] FAIL - Configuration not found: $PATTERN"
+    output_json "Open" "Kernel parameter not compliant: $PARAM=$ACTUAL (expected: $EXPECTED)"
+    echo "[$VULN_ID] FAIL - $PARAM=$ACTUAL (expected: $EXPECTED)"
     exit 1
 fi
